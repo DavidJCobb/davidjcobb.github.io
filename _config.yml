@@ -1,0 +1,13 @@
+title: Cobb
+theme: null
+markdown: kramdown
+kramdown:
+  input: GFM
+destination: ./_site
+exclude: [_working]
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: "default"
