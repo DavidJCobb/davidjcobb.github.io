@@ -9,13 +9,6 @@
    height:1px;
 }
 
-/* mobile text size tweak */
-@media only screen and (hover: none) and (max-aspect-ratio:3/5) {
-   html {
-      font-size:clamp(1rem, calc(1rem + 1vh), 2.5rem);
-   }
-}
-
 @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@600&family=Source+Sans+Pro&display=swap');
 h1, h2, h3, h4, h5, h6 {
    font-family:'Raleway';
@@ -204,9 +197,7 @@ section + section {
       
       li {
          display:inline;
-      }
-      li+li {
-         margin-left:1em;
+         padding-right:1em; /* margin results in odd and inconsistent indentation when word-wrapping */
       }
       li.screen-reader-only:not(:focus, :focus-within) {
          @include screen-reader;
@@ -235,3 +226,13 @@ section + section {
          background-image:url(icons/nexusmods.png);
       }
    }
+
+/* mobile text size tweak */
+@media only screen and (hover: none) and (max-aspect-ratio:3/5) {
+   html {
+      font-size:clamp(1rem, calc(1rem + 1vh), 2.5rem);
+   }
+   .work-list>aside {
+      margin-left:1rem;
+   }
+}
