@@ -156,95 +156,70 @@ section + section {
    aside {
       float:right;
       margin-left:2.5rem;
-   }
-      aside>img:first-child:last-child {
+      
+      >img:first-child:last-child {
          border:1px solid #888;
       }
+      >iframe {
+         border:0;
+      }
+         
+      /* safe maximum width, for mobile devices in portrait orientation */
+      max-width:calc(100% - 24ch);
+      >img,
+      >iframe {
+         max-width:100%;
+      }
+   }
    section>*:last-child{
       margin-bottom:0;
    }
 
-.work-list {
+.extra-links {
    list-style:none;
    padding:0;
    margin:0;
+   clear:both;
+   text-align:initial;
    
-   >li {
-      padding:1em 0;
-      margin:1em 0;
-      text-align:justify;
-      
-      >img {
-         order:2;
-         margin-left:3rem;
-         display:block;
-         max-width:200px;
-         align-self:start;
-      }
-      >aside {
-         float:right;
-         margin-left:2.5rem;
-         
-         max-width:calc(100% - 24ch);
-         
-         >img,
-         >iframe {
-            max-width:100%;
-         }
-      }
-      
-      h3 {
-         font-family:'Raleway';
-         font-size:1.5rem;
-         margin-top:0;
-      }
+   li {
+      display:inline;
+      padding-right:1em; /* margin results in odd and inconsistent indentation when word-wrapping */
+   }
+   li.screen-reader-only:not(:focus, :focus-within) {
+      @include screen-reader;
+   }
+   
+   a {
+      display:inline-block;
+      padding:.25em;
+      text-decoration:none;
+   }
+   
+   a::before {
+      content:" ";
+      display:inline-block;
+      width:1em;
+      height:1em;
+      margin-right:.5em;
+      vertical-align:-10%;
+      background-size:1em 1em;
+      background-image:url(icons/generic.png);
+   }
+   li.github a::before {
+      background-image:url(icons/github.png);
+   }
+   li.nexus a::before {
+      background-image:url(icons/nexusmods.png);
    }
 }
-   .extra-links {
-      list-style:none;
-      padding:0;
-      margin:0;
-      clear:both;
-      text-align:initial;
-      
-      li {
-         display:inline;
-         padding-right:1em; /* margin results in odd and inconsistent indentation when word-wrapping */
-      }
-      li.screen-reader-only:not(:focus, :focus-within) {
-         @include screen-reader;
-      }
-      
-      a {
-         display:inline-block;
-         padding:.25em;
-         text-decoration:none;
-      }
-      
-      a::before {
-         content:" ";
-         display:inline-block;
-         width:1em;
-         height:1em;
-         margin-right:.5em;
-         vertical-align:-10%;
-         background-size:1em 1em;
-         background-image:url(icons/generic.png);
-      }
-      li.github a::before {
-         background-image:url(icons/github.png);
-      }
-      li.nexus a::before {
-         background-image:url(icons/nexusmods.png);
-      }
-   }
 
 /* mobile text size tweak */
 @media only screen and (hover: none) and (max-aspect-ratio:3/5) {
    html {
       font-size:clamp(1rem, calc(1rem + 1vh), 2.5rem);
    }
-   .work-list>aside {
-      margin-left:.75rem!important;
+   section>aside {
+      margin-left:1rem!important;
    }
 }
