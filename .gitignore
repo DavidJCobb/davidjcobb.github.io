@@ -1,0 +1,3 @@
+# ignore test builds
+/_site/
+/.jekyll-cache/*

@@ -1,1 +1,10 @@
-<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50" fill="#000000" /><circle cx="50" cy="50" r="49.5" fill="#ECE7E0" /><circle cx="50" cy="50" r="40" fill="#000000" /><circle cx="50" cy="50" r="38.5" fill="#FF7400" /><circle cx="63" cy="43" r="24" fill="#000000" /></svg>
+<svg viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+   <desc>An orange crescent moon with a black cutout, bordered by a white ring.</desc>
+   <circle cx="0" cy="0" r="50" fill="#000" />
+   <circle cx="0" cy="0" r="45" fill="#221611" />
+   <g id="moon" x="0" y="0" transform="scale(0.8)">
+      <circle cx="0" cy="0" r="38.5" fill="#FF7400" />
+      <circle cx="13" cy="-7" r="24" fill="#221611" />
+   </g>
+   <circle cx="0" cy="0" r="44.75" fill="none" stroke="#ECE7E0" stroke-width="9.5" transform="scale(0.9)" />
+</svg>

@@ -1,6 +1,8 @@
 ---
 ---
 
+$inline-asides-on-smartphone: true !default;
+
 @mixin screen-reader {
    position:absolute;
    left:-100vw;
@@ -20,7 +22,9 @@ h4 { font-size:1.35rem; }
 h5 { font-size:1.25rem; }
 h6 { font-size:1.10rem; }
 
-html{
+p{margin:1em 0}
+
+html {
    background-color:#AAA;
    background-attachment:fixed;
    background-image:
@@ -54,6 +58,7 @@ html{
          #654e62 72%
       );
 }
+
 html::after { /* background layer: scanline effect */
    content:"";
    position:fixed;
@@ -214,12 +219,53 @@ section + section {
    }
 }
 
-/* mobile text size tweak */
+/*
+   styles for smartphones. there's no good query for these, so we have 
+   to go with:
+   
+    - device has a screen
+    - device does not have a pointer that can "hover" over things
+    - maximum aspect ratio ensures we only affect portrait orientation
+    
+*/
 @media only screen and (hover: none) and (max-aspect-ratio:3/5) {
+
+   /* text size tweaks */
    html {
       font-size:clamp(1rem, calc(1rem + 1vh), 2.5rem);
    }
-   section>aside {
-      margin-left:1rem!important;
+   @if not $inline-asides-on-smartphone {
+      section>aside {
+         margin-left:1rem!important;
+      }
+   }
+   /* text size tweaks -- end */
+   
+   @if $inline-asides-on-smartphone {
+   
+      /* use flexbox to allow reordering */
+      section{display:flex;flex-flow:column nowrap}
+      section>*{order:0}
+      section>aside{order:1}
+      section>p:nth-of-type(1)~*{order:2}
+      
+      /* un-float the asides and stretch their widths */
+      section>aside {
+         float:none!important;
+         width:100%;
+         max-width:none;
+         margin:0 auto;
+      }
+      section>aside>*{
+         width:100%;
+      }
+      section>aside>iframe[width][height] {
+         height:auto!important; /* kill the height attribute */
+      }
+      
+      /* margins don't collapse in flexboxes or grids... */
+      section>p{margin-top:0}
+      section>aside {margin-bottom:1em!important}
+      
    }
 }

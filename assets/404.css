@@ -1,0 +1,42 @@
+/*
+   An additional CSS file loaded for the 404 page. This changes the site's 
+   background theme from blue skies over sand, to dusk.
+*/
+html{
+   background-color:#334;
+   background-attachment:fixed;
+   background-image:
+      linear-gradient(to top,
+         #00000020,
+         transparent 90%
+      ),
+      linear-gradient(to top,
+         #000000C0,
+         #000000C0 20%,
+         transparent 50%
+      ),
+      radial-gradient(circle at center,
+         #CCDDFF70,
+         #FFFFFF30 80%,
+         transparent
+      ),
+      radial-gradient(circle at top,
+         #000010,
+         transparent 80%
+      ),
+      linear-gradient(to bottom,
+         #06163C,
+         transparent 80%
+      ),
+      linear-gradient(to bottom,
+         #080808,
+         transparent 80%
+      ),
+      radial-gradient(600vh at center -240vh,
+         transparent,
+         transparent 30%,
+         #000 33%,
+         #000 50%,
+         #306080 58%
+      );
+}

@@ -3,12 +3,18 @@
    <head>
       <meta charset="utf-8" />
       <link rel="stylesheet" href="{{ 'assets/main.css' | relative_url }}" />
+      {%- if page.extra_css_files -%}
+         {%- for filename in page.extra_css_files -%}
+            {%- capture current_path %}assets/{{ filename }}{% endcapture -%}
+      <link rel="stylesheet" href="{{ current_path | relative_url }}" />
+         {%- endfor -%}
+      {%- endif %}
       <meta name="viewport" content="width=1000, user-scalable=yes" />
       <title>{{ page.title }}</title>
-      <link rel="icon" href="assets/favicon.ico" type="image/x-icon" sizes="64" />
-      <link rel="icon" href="assets/favicon64.png" type="image/png" sizes="64" />
-      <link rel="icon" href="assets/favicon128.png" type="image/png" sizes="128" />
-      <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" sizes="any" />
+      <link rel="icon" href="{{ 'assets/favicon64.ico'  | relative_url }}" type="image/x-icon" sizes="64" />
+      <link rel="icon" href="{{ 'assets/favicon64.png'  | relative_url }}" type="image/png" sizes="64" />
+      <link rel="icon" href="{{ 'assets/favicon128.png' | relative_url }}" type="image/png" sizes="128" />
+      <link rel="icon" href="{{ 'assets/favicon.svg'    | relative_url }}" type="image/svg+xml" sizes="any" />
    </head>
    <body>
       <header role="banner">
