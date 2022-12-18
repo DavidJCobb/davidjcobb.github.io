@@ -1,0 +1,120 @@
+
+@import "utils";
+
+$theme-mixins-are-imported: true;
+
+$card-back-color:  #FFF;
+$card-text-color:  #000;
+$card-corner-size: 1rem;
+
+$theme-background-color: #AAA !default;
+$theme-gradient-background-layers: apply-all-to(
+   (
+      "attach": "fixed",
+   ),
+   wrap-items-in-key("image",
+      linear-gradient(to top,
+         #00000020,
+         transparent 90%
+      ),
+      radial-gradient(circle at center,
+         #FFFFFF80,
+         #FFFFFF40 80%,
+         transparent
+      ),
+      radial-gradient(circle at top,
+         #35406e,
+         transparent 80%
+      ),
+      linear-gradient(to bottom,
+         #35406e,
+         transparent 80%
+      ),
+      linear-gradient(to bottom,
+         #35406e,
+         transparent 80%
+      ),
+      radial-gradient(600vh at center -240vh,
+         transparent,
+         transparent 40%,
+         #F99875 43%,
+         #F99875 50%,
+         #754f57 70%,
+         #654e62 72%
+      )
+   )
+) !default;
+
+@mixin content-card-shadow($inset: false) {
+   $-inset-str: unquote("");
+   @if $inset {
+      $-inset-str: inset;
+   }
+   
+   /* Overlaying several subtle shadows results in a softer, gentler look: */
+   box-shadow:
+      $-inset-str 0  0px  4px rgba(0, 0, 0, 0.05),
+      $-inset-str 0  5px  6px rgba(0, 0, 0, 0.05),
+      $-inset-str 0  6px  8px rgba(0, 0, 0, 0.06),
+      $-inset-str 0  8px 10px rgba(0, 0, 0, 0.06),
+      $-inset-str 0 10px 12px rgba(0, 0, 0, 0.07),
+      $-inset-str 0 20px 24px rgba(0, 0, 0, 0.07),
+      $-inset-str 0 30px 36px rgba(0, 0, 0, 0.08);
+}
+$content-card-shadow-max-size:36px;
+
+@mixin content-card {
+   background:$card-back-color;
+   color:$card-text-color;
+   border-radius:$card-corner-size;
+   padding:1.5rem 2rem;
+   @include content-card-shadow(false);
+}
+@mixin content-card-cutout {
+   @include theme-background();
+   
+   border-radius:1rem;
+   padding:1rem;
+   @include content-card-shadow(true);
+}
+
+@mixin scanline-bg-params {
+   --pinstripe-color:rgba(0, 0, 0, 0.06);
+   --pinstripe-width:1;
+   --pinstripe-gap:2;
+   
+   --pinstripe-adapt:calc(100% / ((var(--pinstripe-width) + var(--pinstripe-gap)) * 2));
+   --pinstripe-x-a:var(--pinstripe-width);
+   --pinstripe-x-b:calc(var(--pinstripe-x-a) + var(--pinstripe-gap));
+   --pinstripe-x-c:calc(var(--pinstripe-x-b) + var(--pinstripe-width));
+}
+
+@mixin theme-background($include-gradients: true, $include-scanlines: true) {
+   $all-backgrounds: ();
+
+   @if $include-gradients {
+      $all-backgrounds: $theme-gradient-background-layers;
+   }
+   @if $include-scanlines {
+      @include scanline-bg-params;
+      
+      $scanline-bg: (
+         "image": quote(linear-gradient(to bottom,
+               var(--pinstripe-color) 0%,
+               var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-a)),
+               transparent            calc(var(--pinstripe-adapt) * var(--pinstripe-x-a)),
+               transparent            calc(var(--pinstripe-adapt) * var(--pinstripe-x-b)),
+               var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-b)),
+               var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-c)),
+               transparent            calc(var(--pinstripe-adapt) * var(--pinstripe-x-c))
+            )),
+         "attach": "fixed",
+         "repeat": "repeat",
+         "size":   "10px calc((var(--pinstripe-width) + var(--pinstripe-gap)) * 2px)"
+      );
+      
+      $all-backgrounds: list-prepend($all-backgrounds, $scanline-bg);
+   }
+   
+   background: unpack-backgrounds($all-backgrounds), $theme-background-color;
+}

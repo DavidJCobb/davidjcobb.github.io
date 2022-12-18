@@ -1,0 +1,217 @@
+---
+---
+
+@import "utils";
+@import "common-visual.scss";
+
+/*
+   You need to have imported "common-visual.scss" before this.
+*/
+@if $cobb-common-visual-was-imported != true {
+   @error "You must import the `common-visual.scss` file first.";
+}
+
+$theme-center-footer-under-full-page: true !default;
+
+#skip-to-content,
+a[name="page-content"] {
+   @include screen-reader;
+}
+
+/*
+
+   This file defines a layout that is as follows:
+   
+    - Sidebar
+    
+       - Site logo
+       
+       - Site navigation
+       
+       - Page navigation (i.e. table of contents)
+    
+    - Main content area
+    
+       - Header
+       
+       - Page
+       
+   The page navigation is sticky: as you scroll, it will follow you down, but it will never 
+   move above its original position (to overlap the site navigation). Moreover, if it is 
+   too large to fit on screen all at once, it will not begin "following" the user until they 
+   have scrolled down enough to see its bottom.
+   
+   When viewed on mobile, the layout changes as follows:
+   
+    - The site logo and site navigation are placed into a topbar.
+    
+       - The site navigation will anchor to the top of the screen only if the user actually 
+         opens it.
+    
+    - The page navigation is hidden entirely.
+
+*/
+
+body {
+
+   $-bottom-grid-row: "_ footer";
+   @if $theme-center-footer-under-full-page {
+      $-bottom-grid-row: "footer footer";
+   }
+
+   box-sizing:border-box;
+   min-height:100vh;
+
+   width:max-content;
+   max-width:100%;
+   margin:0 auto;
+   padding:0 0 7rem 0;
+   
+   display:grid;
+   grid-template-columns: min-content 1fr;
+   grid-template-rows: min-content 1fr;
+   grid-template: 
+      "icon    header "
+      "socials page   "
+      "sitenav page   "
+      "pagenav page   " 1fr
+      $-bottom-grid-row / minmax(16em, 20em) minmax(720px, 960px);
+   gap: 0 2rem;
+}
+#site-chrome {
+   display:contents;
+}
+#logo {
+   grid-area: icon;
+
+   display:block;
+   margin:2rem auto;
+   
+   >img {
+      display:block;
+      
+      /*
+         The IMG element will have explicit dimensions set in order to avoid insensible behavior 
+         (e.g. SVGs eating the whole screen) in the moments before the styles load. Clear those 
+         explicit dimensions here so we have full control in CSS.
+      */
+      width:auto;
+      
+      height:calc(2rem * 2 + 2.5rem * 1.2); /* half the h1.grand-header margin, times two, plus the grand-header font-size times the line height */
+   }
+}
+#content {
+   display:contents;
+   
+   >header {
+      grid-area: header;
+   }
+   >main {
+      grid-area: page;
+   }
+}
+body>footer {
+   grid-area: footer;
+}
+
+#socials,
+#site-nav,
+#page-nav>details {
+   @include content-card;
+}
+#site-nav,
+#page-nav {
+   summary {
+      font-weight: bold;
+      padding:0 .5em;
+      list-style-position: outside;
+      cursor:pointer;
+   }
+   
+   menu {
+      list-style:none;
+      padding:0;
+      margin:0;
+   }
+   a {
+      display:block;
+      padding:.25em .5em;
+      line-height:1.4em;
+      text-decoration:none;
+      border-radius:.5em;
+      
+      &:not(.you-are-here):hover {
+         background:#EEE;
+      }
+      
+      &.you-are-here {
+         cursor:default;
+         font-weight:bold;
+      }
+   }
+   
+   li:nth-last-of-type(2)>a {
+      border-radius:.5em .5em 0 0; /* flatten bottom edge of item before "View All," to match drawn border */
+   }
+   li.view-all>a {
+      border-top:1px solid #DDD;
+      border-radius:0 0 .5em .5em; /* flatten top edge of "View All," to match drawn border */
+   }
+}
+
+#socials {
+   grid-area: socials;
+   
+   header {
+      font-weight:bold;
+      padding:.25em .5em;
+   }
+   ul {
+      list-style:none;
+      padding:0;
+      margin:0;
+   }
+   li {
+      margin:0;
+   }
+   a {
+      display:block;
+      padding:.25em .5em;
+      text-decoration:none;
+      border-radius:.5em;
+      
+      &:hover {
+         background:#EEE;
+      }
+   }
+   a::before {
+      content:" ";
+      display:inline-block;
+      width:1em;
+      height:1em;
+      margin-right:.5em;
+      vertical-align:-10%;
+      background-size:1em 1em;
+      background-image:url(icons/generic.png);
+      background-repeat:no-repeat;
+   }
+   li.github a::before {
+      background-image:url(icons/github.png);
+   }
+   li.nexus a::before {
+      background-image:url(icons/nexusmods.png);
+   }
+}
+#site-nav {
+   grid-area: sitenav;
+   margin-top:2rem;
+}
+#page-nav {
+   grid-area: pagenav;
+   margin-top:2rem;
+   
+   >details {
+      position:sticky;
+      top:2rem;
+   }
+}

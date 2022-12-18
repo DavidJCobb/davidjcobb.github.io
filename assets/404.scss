@@ -1,11 +1,17 @@
+---
+---
+
+@import "utils";
+
 /*
-   An additional CSS file loaded for the 404 page. This changes the site's 
-   background theme from blue skies over sand, to dusk.
+   Changes the site's background theme from blue skies over sand, to dusk.
 */
-html{
-   background-color:#334;
-   background-attachment:fixed;
-   background-image:
+$theme-background-color: #334;
+$theme-gradient-background-layers: apply-all-to(
+   (
+      "attach": "fixed",
+   ),
+   wrap-items-in-key("image",
       linear-gradient(to top,
          #00000020,
          transparent 90%
@@ -38,5 +44,8 @@ html{
          #000 33%,
          #000 50%,
          #306080 58%
-      );
-}
+      )
+   )
+);
+
+@import "common-visual.scss";

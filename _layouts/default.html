@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'en-US' }}">
+   <head>
+      <meta charset="utf-8" />
+      <link rel="stylesheet" href="{{ '/assets/layout-with-sidebar.css' | relative_url }}" />
+      <link rel="stylesheet" href="{{ '/assets/layout-with-sidebar.mobile-not-firefox.css' | relative_url }}"
+         media="only screen and (any-hover: none)"
+      />
+      <link rel="stylesheet" href="{{ '/assets/layout-with-sidebar.mobile-firefox.css' | relative_url }}"
+         media="only screen and (any-hover: none) and (max-aspect-ratio:3/5)"
+      />
+      {%- include html-head.html -%}
+   </head>
+   <body>
+      <a id="skip-to-content" href="#page-content">skip to content</a>
+      <aside id="socials">
+         <header>Find me on...</header>
+         <ul>
+            <li class="github">
+               <a href="https://github.com/davidjcobb">GitHub</a>
+            </li>
+            <li class="nexus">
+               <a href="https://www.nexusmods.com/users/9663214">NexusMods</a>
+            </li>
+         </ul>
+      </aside>
+      <nav id="site-chrome">
+         {%- if page.collection %}
+            {%- assign nav_collection = "" -%}
+            {%- for item in site.collections -%}
+               {%- if item.label == page.collection -%}
+                  {%- assign nav_collection = item -%}
+               {%- endif -%}
+            {%- endfor -%}
+         <details id="site-nav">
+            <summary>
+               {%- if nav_collection and nav_collection.name != "" -%}
+                  {{ nav_collection.name }}
+               {%- else -%}
+                  More like this
+               {%- endif -%}
+            </summary>
+            <menu>
+               {%- for article in site[page.collection] limit:5 %}
+               <li>
+                  {%- if article.id == page.id -%}
+                  <a class="you-are-here">
+                  {%- else -%}
+                  <a href="{{ article.url }}">
+                  {%- endif -%}
+                     {{- article.title -}}
+                  </a>
+               </li>
+               {%- endfor %}
+               <li class="view-all">
+                  <a href="{{ page.collection | prepend: '/' | append: '/' | absolute_url }}">View all</a>
+               </li>
+            </menu>
+         </details>
+         {%- endif -%}
+         <a id="logo" href="{{ '/' | absolute_url }}">
+            {%- comment -%}
+               Set an explicit size on this because browsers render SVGs as full-screen by default; we want 
+               to ensure relatively sane behavior while the stylesheet loads
+            {%- endcomment -%}
+            <img width="100" height="100" alt="Cobb - home page" src="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml" />
+         </a>
+      </nav>
+      <div id="content">
+{% if page.table_of_contents %}
+         <nav id="page-nav">
+            <details open>
+               <summary>Contents</summary>
+               <menu>
+{%- for item in page.table_of_contents -%}
+   {%- unless item.id and item.title -%}
+      {%- continue -%}
+   {%- endunless -%}
+   <li><a href="#{{ item.id }}">{{ item.title }}</a></li>
+{%- endfor -%}
+               </menu>
+            </details>
+         </nav>
+{% endif %}
+         <a name="page-content"></a>
+         <header role="banner">
+            <h1 class="grand-header">{{ page.title }}</h1>
+         </header>
+         <main>
+{{ content }}
+         </main>
+      </div>
+      {%- include footer.html -%}
+   </body>
+</html>

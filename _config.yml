@@ -5,9 +5,19 @@ kramdown:
   input: GFM
 destination: ./_site
 exclude: ['_working', '_docs']
+collections:
+   articles:
+      name: Articles
+      layout: default
+      output: true
+      permalink: /:collection/:path
+      prepend_css_files:
+       - article.css
 defaults:
   -
     scope:
       path: ""
     values:
       layout: "default"
+sass:
+    sass_dir: _sass

@@ -1,0 +1,175 @@
+
+@import "utils";
+@import "theme-mixins";
+
+$cobb-common-visual-was-imported: false !default;
+@if not $cobb-common-visual-was-imported { /* start include guard */
+$cobb-common-visual-was-imported: true;
+
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@600&family=Source+Sans+Pro&display=swap');
+
+h1, h2, h3, h4, h5, h6 {
+   font-family:'Raleway',"Segoe UI","Source Sans Pro",sans-serif;
+}
+h1 { font-size:2.00rem; }
+h2 { font-size:1.75rem; }
+h3 { font-size:1.50rem; }
+h4 { font-size:1.35rem; }
+h5 { font-size:1.25rem; }
+h6 { font-size:1.10rem; }
+:is(h1,h2,h3,h4,h5,h6) {
+   line-height:1.2em;
+}
+h1, h2 {
+   margin:0.83em 0;
+}
+h3, h4, h5, h6 {
+   margin:1.00em 0;
+}
+
+:is(ol, ul)>li {
+   margin:1em 0;
+}
+p{margin:1em 0}
+
+*:first-child{margin-top:0}
+*:last-child{margin-bottom:0}
+
+/*
+   Specific theming and site layout
+*/
+
+html {
+   @include theme-background();
+}
+body{
+   font-family:"Segoe UI","Source Sans Pro",sans-serif;
+   line-height:1.7em;
+   
+   margin:0;
+   padding:0 0 7rem 0;
+}
+   #content {
+      width:960px;
+      margin:0 auto;
+      
+      >header{
+         h1{
+            font-size:2.5rem;
+            font-weight:bold;
+         }
+      }
+   }
+      main{flex:1 1 760px}
+
+.grand-header {
+   text-align:center;
+   margin:4rem 0;
+   color:#FFFFFF;
+   /* Overlaying several subtle shadows results in a softer, gentler look: */
+   text-shadow:
+       0   0  2px #000000,
+       0   0  3px #000000,
+       2px 0  4px rgba(0, 0, 0, 0.30),
+      -2px 0  4px rgba(0, 0, 0, 0.30),
+       4px 0  6px rgba(0, 0, 0, 0.20),
+      -4px 0  6px rgba(0, 0, 0, 0.20),
+       8px 0  8px rgba(0, 0, 0, 0.15),
+      -8px 0  8px rgba(0, 0, 0, 0.15),
+      12px 0 12px rgba(0, 0, 0, 0.10),
+     -12px 0 12px rgba(0, 0, 0, 0.10);
+   
+   &.no-descenders {
+      line-height:1.7rem;
+   }
+}
+.grand-header-cluster .grand-header {
+   line-height:1.2em;
+
+   &:not(:last-child) {
+      margin-bottom:0;
+   }
+   &:not(:first-child) {
+      margin-top:.5rem;
+   }
+}
+
+main>section {
+   @include content-card;
+   
+   &>:first-child:is(h1, h2, h3, h4, h5, h6) {
+      padding-top:1rem;
+   }
+   &>:first-child:is(h1, h2, h3, h4, h5, h6)~*:last-child {
+      margin-bottom:1rem;
+   }
+   
+   /* spacing */
+   &+section {
+      margin-top:4rem;
+   }
+}
+
+body>footer {
+   margin-top:7rem;
+   text-align:center;
+   
+   ul {
+      display:flex;
+      flex-flow:row nowrap;
+      justify-content:center;
+      gap: 2em;
+      width:min-content;
+      
+      list-style:none;
+      padding:0;
+      margin:0 auto;
+   }
+   li {
+      margin:0;
+   }
+   a {
+      display:block;
+      padding:.25em 1em;
+      
+      @include content-card-shadow(false);
+      background:$card-back-color;
+      border-radius:$card-corner-size;
+      
+      text-transform:lowercase;
+      text-decoration:none;
+      
+      transition-property:box-shadow;
+      transition-duration: 0.2s; /* fast mouseout anim */
+      &:hover {
+         transition-duration: 1s; /* medium-speed mouseover anim */
+         box-shadow: 
+            0 0 6px #FFF,
+            0 .5em 12px #FFFFFFA0,
+            0 .5em 24px #FFFFFF80,
+            0 -1em 32px #FFFFFF60,
+            .5em -.75em 32px #FFFFFF60,
+            -.5em -.75em 32px #FFFFFF60
+         ;
+      }
+   }
+}
+@media (prefers-reduced-motion) {
+   body>footer a {
+      transition-duration:0!important;
+   }
+}
+
+@include for-smartphones-only-portrait {
+   /* text size tweaks */
+   html {
+      font-size:clamp(1rem, calc(1rem + 1vh), 2.5rem);
+   }
+   
+   body>footer ul {
+      flex-flow:column nowrap;
+      justify-content:initial;
+   }
+}
+
+/* end include guard */ }

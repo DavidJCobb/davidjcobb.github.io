@@ -1,0 +1,14 @@
+<footer>
+   <nav>
+      <ul>
+         {%- if page.url != '/' -%}
+         <li>
+            <a href="{{ '/' | absolute_url }}">Home</a>
+         </li>
+         {%- endif -%}
+         <li>
+            <a href="{{ '/articles/' | absolute_url }}">Articles</a>
+         </li>
+      </ul>
+   </nav>
+</footer>

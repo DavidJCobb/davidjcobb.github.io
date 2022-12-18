@@ -1,0 +1,25 @@
+---
+---
+@import "theme-mixins";
+
+#collection-items {
+   list-style:none;
+   padding:0;
+   margin:0;
+   
+   li {
+      @include content-card;
+      
+      &>:first-child:is(h1, h2, h3, h4, h5, h6) {
+         padding-top:1rem;
+      }
+      &>:first-child:is(h1, h2, h3, h4, h5, h6)~*:last-child {
+         margin-bottom:1rem;
+      }
+      
+      /* spacing */
+      &+section {
+         margin-top:4rem;
+      }
+   }
+}

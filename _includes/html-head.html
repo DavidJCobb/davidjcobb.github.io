@@ -1,0 +1,55 @@
+      {%- if page.collection -%}
+         {%- assign nav_collection = "" -%}
+         {%- for item in site.collections -%}
+            {%- if item.label == page.collection -%}
+               {%- assign nav_collection = item -%}
+            {%- endif -%}
+         {%- endfor -%}
+         {%- if nav_collection.prepend_css_files -%}
+            {%- for filename in nav_collection.prepend_css_files -%}
+               {%- capture current_path %}assets/{{ filename }}{% endcapture -%}
+         <link rel="stylesheet" href="{{ current_path | relative_url }}" />
+            {%- endfor -%}
+         {%- endif -%}
+      {%- endif %}
+      {%- if page.extra_css_files -%}
+         {%- for filename in page.extra_css_files -%}
+            {%- capture current_path %}assets/{{ filename }}{% endcapture -%}
+      <link rel="stylesheet" href="{{ current_path | relative_url }}" />
+         {%- endfor -%}
+      {%- endif %}
+      <meta name="viewport" content="width=1000, user-scalable=yes" />
+      <title>
+         {%- if page.title == "Cobb" -%}
+            {{ page.title }}
+         {%- else -%}
+            {{ page.title }} | Cobb
+         {%- endif -%}
+      </title>
+      <link rel="icon" href="{{ '/assets/favicon64.ico'  | relative_url }}" type="image/x-icon" sizes="64" />
+      <link rel="icon" href="{{ '/assets/favicon64.png'  | relative_url }}" type="image/png" sizes="64" />
+      <link rel="icon" href="{{ '/assets/favicon128.png' | relative_url }}" type="image/png" sizes="128" />
+      <link rel="icon" href="{{ '/assets/favicon.svg'    | relative_url }}" type="image/svg+xml" sizes="any" />
+      {%- if page.social_media %}
+      <meta name="theme-color" content="#FF7400" />
+      <meta property="og:locale" content="{{ site.lang | default: 'en-US' | replace: '-', '_' }}" />
+         {%- if page.social_media.title %}
+      <meta property="og:title" content="{{ page.social_media.title }}" />
+         {%- endif -%}
+         {%- if page.social_media.description %}
+      <meta property="og:image" content="{{ page.social_media.description }}" />
+         {%- endif -%}
+         {%- if page.social_media.site_name %}
+      <meta property="og:site_name" content="{{ page.social_media.site_name }}" />
+         {%- else %}
+      <meta property="og:site_name" content="Cobb" />
+         {%- endif -%}
+         {%- if page.social_media.image %}
+      <meta property="og:image" content="{{ page.social_media.image | relative_url }}" />
+         {%- else %}
+      <meta property="og:image" content="{{ 'assets/favicon32.png' | relative_url }}" />
+      <meta property="og:image:width" content="32" />
+      <meta property="og:image:height" content="32" />
+      <meta property="og:image:alt" content="Site logo: an orange crescent moon with a black shadow, bordered by a white ring." />
+         {%- endif -%}
+      {%- endif %}

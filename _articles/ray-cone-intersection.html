@@ -1,0 +1,1013 @@
+---
+title: Ray/cone intersections
+tags:
+ - 3D
+ - geometry
+ - intersection
+ - math
+ - raycasting
+social_media:
+   title: Cobb - Ray/cone intersections
+   description: The math behind doing raycasts for 3D cones, with the mathematical derivation fully explained step, by step.
+extra_css_files:
+ - lu-math.css
+table_of_contents:
+ - id:    parametric
+   title: Parametric surface of a cone
+ - id:    implicit
+   title: Implicit surface of a cone
+ - id:    transformed
+   title: Handling a translated and rotated cone
+ - id:    solving
+   title: Solving for the ray
+   
+---
+{%- include lu-math/defines.html -%}
+{%- capture graph_rel_url -%}
+   {%- comment -%}
+      We want to strip the file extension off of the path to this current article, if it 
+      has one (this will depend on the permalink).
+   {%- endcomment -%}
+   {%- assign temporary = page.url | split: "." -%}
+   {{- page.dir -}}
+   {%- if temporary.size > 1 -%}
+      {%- for item in temporary -%}
+         {%- unless forloop.last -%}{{ item }}{%- endunless -%}
+      {%- endfor -%}
+   {%- else -%}
+      {{ temporary[0] }}
+   {%- endif -%}
+   {%- comment -%}
+      Next, we add the name of the asset file we want.
+   {%- endcomment -%}
+   /line-graph-utils.svg
+{%- endcapture -%}
+{%- assign graph_rel_url = graph_rel_url -%}
+<section>
+   <p>
+      There are a lot of people out on the web who are willing to share raycasting code, 
+      but not a whole lot of them bother to actually apply a permissive license to it so 
+      that people can legally use it. What's more, a lot of them don't explain how they 
+      actually derived the math involved either.
+   </p>
+   <p>
+      Here, I'm going to walk through how to put together a cone/ray intersection test.
+   </p>
+</section>
+
+<section>
+   <h2><a name="parametric">Parametric surface of a cone</a></h2>
+   <p>
+      The parametric equations (that is, equations with parameters) for a cone are as follows:
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>C<sub>h</sub></var></dt>
+               <dd>height of the cone</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>C<sub>r</sub></var></dt>
+               <dd>radius of the cone's base</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>o</sub></var></dt>
+               <dd>height offset on the range [0, <var>C<sub>h</sub></var>], where 0 is aligned with the cone's base</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>&theta;</var></dt>
+               <dd>any angle, basically</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-aligned data-equation-number="1">
+         {%- assign common_args = "<var>H<sub>o</sub></var>, <var>&theta;</var>" | split: ", " -%}
+         <lu-math-row>
+            <lu-math-part>
+               {%- include lu-math/function-def.html
+                  name="f<sub><var>x</var></sub>"
+                  args=common_args
+               %}
+               =
+            </lu-math-part>
+            <lu-math-part><!--
+            -->{% include lu-math/fraction.html
+                  numer="<var>C<sub>h</sub></var> - <var>H<sub>o</sub></var>"
+                  denom="<var>C<sub>h</sub></var>"
+                  
+                  numer_is_expr=true
+               -%}
+               <lu-math-raw> &times; </lu-math-raw>
+               <var>C<sub>r</sub></var> &times; cos(<var>&theta;</var>)<!--
+         --></lu-math-part>
+         </lu-math-row>
+         <lu-math-row>
+            <lu-math-part>
+               {%- include lu-math/function-def.html
+                  name="f<sub><var>y</var></sub>"
+                  args=common_args
+               %}
+               =
+            </lu-math-part>
+            <lu-math-part><!--
+            -->{% include lu-math/fraction.html
+                  numer="<var>C<sub>h</sub></var> - <var>H<sub>o</sub></var>"
+                  denom="<var>C<sub>h</sub></var>"
+                  
+                  numer_is_expr=true
+               %}
+               <lu-math-raw> &times; </lu-math-raw>
+               <var>C<sub>r</sub></var> &times; sin(<var>&theta;</var>)<!--
+         --></lu-math-part>
+         </lu-math-row>
+         <lu-math-row>
+            <lu-math-part>
+               {%- include lu-math/function-def.html
+                  name="f<sub><var>z</var></sub>"
+                  args=common_args
+               %}
+               =
+            </lu-math-part>
+            <lu-math-part><!--
+            --><var>H<sub>o</sub></var><!--
+         --></lu-math-part>
+         </lu-math-row>
+      </lu-math-aligned>
+   </lu-math>
+   <p>
+      Technically, these equations describe an infinite cone &mdash; one with no endcap, 
+      which extends forever in both directions. (Yes, both. When you go above the tip, the  
+      cone turns inside out and starts widening again.) However, we can still use them to 
+      put together the tests for a finite cone with an endcap.
+   </p>
+
+   <aside>
+      <p>
+         The above equation works if you imagine the cone viewed from two perpendicular 
+         angles. Let's start with a 2D cross-section of the cone as seen from the side. 
+      </p>
+      <figure class="card-cutout mathematical-graph">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200"
+            alt="A 2D graph showing a cone as seen from the side: it is two lines extending rightward from the origin. One increases slightly; the other decreases slightly by the same amount, dipping into the negative half of the graph."
+         >
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" />
+            
+            <line x1="0" y1="0" x2="5" y2="-2.5" stroke="#8000FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            <line x1="0" y1="0" x2="5" y2=" 2.5" stroke="#8000FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+         </svg>
+      </figure>
+      <p>
+         Think about getting the slope of a line on a line graph: <lu-math data-inline><var>y</var></lu-math> divided 
+         by <lu-math data-inline><var>x</var></lu-math>. For a cross-section of the cone, with the tip at <lu-math data-inline>(0, 0)</lu-math> and 
+         the base towards the right, the cone's surface would be a line that passes 
+         through (and terminates at) <lu-math data-inline>(<var>C<sub>h</sub></var>, <var>C<sub>r</sub></var>)</lu-math>. The equation for this 
+         line would therefore be:
+      </p>
+      <lu-math data-equation-number="2">
+         <lu-math-part><!--
+         --><var>y</var><!--
+         -->&nbsp;=&nbsp;<!--
+      --></lu-math-part><!--
+      --><lu-math-part>
+            <lu-math-raw>(</lu-math-raw>
+            {%- include lu-math/fraction.html
+               numer="<var>C<sub>r</sub></var>"
+               denom="<var>C<sub>h</sub></var>"
+            -%}
+            <lu-math-raw>)</lu-math-raw>
+            <var>x</var>
+         </lu-math-part>
+      </lu-math>
+      <p>
+         We can check this with a simple test: the point <lu-math data-inline>(5, 10)</lu-math> is on the line <lu-math data-inline><var>y</var> = 2<var>x</var></lu-math>, and so:
+      </p>
+      <lu-math>
+         <lu-math-part><!--
+         --><var>y</var><!--
+         -->&nbsp;=&nbsp;<!--
+      --></lu-math-part><!--
+      --><lu-math-part>
+            <lu-math-raw>(</lu-math-raw>
+            {%- include lu-math/fraction.html
+               numer="10"
+               denom="5"
+            -%}
+            <lu-math-raw>)</lu-math-raw>
+            <var>x</var><!--
+      --></lu-math-part><!--
+      --><lu-math-part><!--
+         -->&nbsp;=&nbsp;<!--
+         -->2<var>x</var><!--
+      --></lu-math-part>
+      </lu-math>
+      <p>
+         And this all makes sense, right? The cone doesn't curve or bend; pick any point along the edge of 
+         the cone's base, and you can connect that point to the cone's tip with a straight line. The length 
+         of that line will be proportional to the cone's radius and height. That explains the fractions in 
+         the equations for <lu-math data-inline><b>f</b><sub><var>x</var></sub></lu-math> and <lu-math data-inline><b>f</b><sub><var>y</var></sub></lu-math>.
+      </p>
+      <p>
+         Let's focus next on a 2D view of our cone along its main axis. The result is, 
+         naturally, a circle:
+      </p>
+      <figure class="card-cutout mathematical-graph">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200"
+            alt="A 2D graph showing a cone as seen from above or below. It is a circle."
+         >
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" />
+            
+            <circle cx="0" cy="0" r="3"  stroke="#8000FF" stroke-width="4" stroke-linecap="round" fill="transparent" vector-effect="non-scaling-stroke" />
+         </svg>
+      </figure>
+      <p>
+         That's where <lu-math data-inline><var>&theta;</var></lu-math> and the sine and cosine functions come in. Scale those by 
+         <lu-math data-inline><var>C<sub>r</sub></var></lu-math> and we get the coordinates of the edge of the cone's base.
+      </p>
+      <p>
+         We know that given any point <lu-math data-inline>(<var>x</var>, <var>y</var>)</lu-math>, the distance from that 
+         point to the circle's boundary will be given by:
+      </p>
+      <lu-math>
+         {{ lu_math_raw_endcap -}}
+         {%- capture temporary -%}
+            <var>x</var>{% include lu-math/exponent.html exponent=2 %} + <var>y</var>{% include lu-math/exponent.html exponent=2 %}
+         {%- endcapture -%}
+         {%- include lu-math/sqrt.html content=temporary -%}
+         {{- lu_math_raw_endcap -}}
+      </lu-math>
+      <p>
+         Therefore, a point lies on the circle's boundary if, given the radius <lu-math data-inline><var>C<sub>r</sub></var></lu-math>, 
+         the following expression is true:
+      </p>
+      <lu-math>
+         {{ lu_math_raw_endcap -}}
+         {%- capture temporary -%}
+            <var>x</var>{% include lu-math/exponent.html exponent=2 %} + <var>y</var>{% include lu-math/exponent.html exponent=2 %}
+         {%- endcapture -%}
+         {%- include lu-math/sqrt.html content=temporary %}<!--
+      -->&nbsp;=&nbsp;<!--
+      --><var>C<sub>r</sub></var>
+      </lu-math>
+      <p>
+         Of course, we don't need the square root operation:
+      </p>
+      <lu-math data-equation-number="3">
+         <var>x</var>{% include lu-math/exponent.html exponent=2 %} + <var>y</var>{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      --><var>C<sub>r</sub></var>{% include lu-math/exponent.html exponent=2 %}
+      </lu-math>
+      <p>
+         So how do we take these two views and create a 3D cone with them? Well, for simplicity's sake, let's say that our cone's base is centered on the world origin <lu-math data-inline>(0,&nbsp;0,&nbsp;0)</lu-math> and aligned with the XY plane &mdash; so the cone points upward on the Z-axis. For now, we just want to explore some basic facts and relationships about points on cones, and anchoring the cone at that place and orientation will simplify the math involved.
+      </p>
+      <p>
+         There are a few observations we can make about the first graph:
+      </p>
+      <ul>
+         <li>
+            Suppose we relabel our axes to reflect our use of a 3D cone: we are now graphing <lu-math data-inline><var>x</var></lu-math> and <lu-math data-inline><var>z</var></lu-math>. This means that the first graph depicts our cone shifted by <lu-math data-inline>-<var>C<sub>h</sub></var></lu-math>.
+         </li>
+         <li>
+            Suppose we relabel our axes a different way: we're graphing <lu-math data-inline><var>y</var></lu-math> and <lu-math data-inline><var>z</var></lu-math>. The graph looks identical!
+         </li>
+      </ul>
+      <p>
+         This means that <lu-math data-inline><var>x</var></lu-math> and <lu-math data-inline><var>y</var></lu-math> have the same relationship with <lu-math data-inline><var>z</var></lu-math>. If we look at the definitions of <lu-math data-inline><b>f<sub><var>x</var></sub></b></lu-math> and <lu-math data-inline><b>f<sub><var>y</var></sub></b></lu-math>, we see that the only difference between <lu-math data-inline><var>x</var></lu-math> and <lu-math data-inline><var>y</var></lu-math> &mdash; the thing that <em>makes</em> one of them <lu-math data-inline><var>x</var></lu-math> and the other one <lu-math data-inline><var>y</var></lu-math> &mdash; is our choice of trigonometric function. Therefore, the rest of that equation must define their relationship with <lu-math data-inline><var>z</var></lu-math>. And indeed, if the cone's base is at <lu-math data-inline>(0,&nbsp;0,&nbsp;0)</lu-math> and its height is measured along the Z-axis, then <lu-math data-inline><var>z</var></lu-math> must be the offset-height, <lu-math data-inline><var>H<sub>o</sub></var></lu-math>.
+      </p>
+   </aside>
+</section>
+
+<section>
+   <h2><a name="implicit">Implicit surface of a cone</a></h2>
+   <p>
+      At the top of this page, we define a cone as a <dfn>parametric surface</dfn> &mdash; that is, we have three <dfn>parametric equations</dfn> (equations that take parameters) which define all points on the surface of the cone. However, if we can come up with an <dfn>implicit surface</dfn> &mdash; that is, a surface defined by a single equation, wherein <lu-math data-inline><var>x</var></lu-math>, <lu-math data-inline><var>y</var></lu-math>, and <lu-math data-inline><var>z</var></lu-math> are on one side, and 0 is on the other side &mdash; then we can use vector math to deal with the cone more easily.
+   </p>
+   <p>
+      We know from our exploration above that at the cone's base, a point lies on the cone's surface (the edge of the base) if Equation 3 is true. We can represent that equation in terms of any arbitrary 2D vector <lu-math data-inline><var>P</var></lu-math>:
+   </p>
+   <lu-math data-equation-number="4">
+      ||<var>P</var>||<!--
+   -->&nbsp;=&nbsp;<!--
+   --><var>C<sub>r</sub></var>
+   </lu-math>
+   <p>
+      We also know that as we move further along the cone's height, to its tip, the radius shrinks proportional to the cone's height. Therefore:
+   </p>
+   <lu-math>
+      <var>x</var>{% include lu-math/exponent.html exponent=2 %} + <var>y</var>{% include lu-math/exponent.html exponent=2 %}<!--
+   -->&nbsp;=&nbsp;<!--
+   -->{%- include lu-math/fraction.html
+         numer="<var>C<sub>r</sub></var>"
+         denom="<var>C<sub>h</sub></var> - <var>z</var>"
+         
+         denom_is_expr=true
+      -%}
+      {{- lu_math_raw_endcap -}}
+   </lu-math>
+</section>
+
+<section>
+   <h2><a name="transformed">Handling a translated and rotated cone</a></h2>
+   <p>
+      The cone's local <lu-math data-inline><var>z</var></lu-math>-axis is its <dfn>main axis</dfn>, while its local <lu-math data-inline><var>x</var></lu-math>- 
+      and <lu-math data-inline><var>y</var></lu-math>-axes are its <dfn>cross axes</dfn>. The above relationship establishes the 
+      distance that any point on the cone's surface must have along the cross axes, given the point's 
+      distance from the base along the main axis.
+   </p>
+   <p>
+      Let's define some variables real quick:
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>C<sub>t</sub></var></dt>
+               <dd>top vertex of the cone</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>C<sub>b</sub></var></dt>
+               <dd>centerpoint of the cone's base</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>C<sub>s</sub></var></dt>
+               <dd>"spine" of the cone: a vector from the tip to the base, equal to <var>C<sub>t</sub></var> - <var>C<sub>b</sub></var></dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>C<sub>a</sub></var></dt>
+               <dd>axis of the cone: normalized spine</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>p</sub></var></dt>
+               <dd>hit position: a point that we presume is on the cone's curved surface</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>s</sub></var></dt>
+               <dd>hit spine position: the hit position projected onto <var>C<sub>s</sub></var>; this position = ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var></dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>o</sub></var></dt>
+               <dd>the height offset from our cone equations; this is the distance from <var>H<sub>s</sub></var> to <var>C<sub>b</sub></var> i.e. ||<var>H<sub>s</sub></var> - <var>C<sub>b</sub></var>||.</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+   </lu-math>
+   <p>
+      <lu-math data-inline><var>H<sub>s</sub></var></lu-math> is what we get when we project the hit position <lu-math data-inline><var>H<sub>p</sub></var></lu-math> onto the cone's axis &mdash; its "spine." In other words, we have flattened the cone from 3D into 2D, and are looking at it from the spine: this is the circle graph from above. <lu-math data-inline><var>H<sub>s</sub></var></lu-math> is the nearest point on the cone's "spine" to <lu-math data-inline><var>H<sub>p</sub></var></lu-math>, so the distance between the two points is the distance from the hit position to the "spine" as a whole, and therefore also the 2D distance from the hit position to the circle's (cone's) center.
+   </p>
+   <p>
+      We can use two equations to check whether the hit position is on the outer edge of the cone's base. The first equation is a check between the distance and the radius; recall Equations 3 and 4. The second equation constrains this check to 2D, by requiring that there be no distance between the projected hit position and the plane we've projected it onto (otherwise it would be a point/sphere test).
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>||<!--
+      -->&nbsp;=&nbsp;<!--
+      --><var>C<sub>r</sub></var>
+      </lu-math-row>
+      <lu-math-row>
+         ||<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>||&nbsp;=&nbsp;0
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Meanwhile the distance from <lu-math data-inline><var>H<sub>s</sub></var></lu-math> to the center of the cone's base, <lu-math data-inline><var>C<sub>b</sub></var></lu-math>, is the height offset: the radius, the distance, that we want to check will be proportional to this. Recall Equation 2, which established the exact relationship between the height offset and radius; we can substitute this into our equation to go from 2D to 3D:
+   </p>
+   <lu-math>
+      ||<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>||<!--
+   -->&nbsp;=&nbsp;
+      <lu-math-raw>(</lu-math-raw>
+      {%- include lu-math/fraction.html
+         numer="<var>C<sub>h</sub></var> - <var>H<sub>o</sub></var>"
+         denom="<var>C<sub>h</sub></var>"
+         
+         numer_is_expr=true
+      -%}
+      <lu-math-raw>)</lu-math-raw>
+      <var>C<sub>r</sub></var>
+   </lu-math>
+   <p>
+      We can double-check this with some simple mental tests.
+   </p>
+   <ul>
+      <li>
+         If our hit position is at the bottom of the cone, then <lu-math data-inline><var>H<sub>o</sub></var></lu-math> is zero. The righthand side resolves to a division of the cylinder's height by itself, yielding 1, which is multiplied by the cylinder's radius. Ultimately, this resolves out to a 2D radius check, as expected.
+      </li>
+      <li>
+         If our hit position is at the top of the cone, then <lu-math data-inline><var>H<sub>o</sub></var> = <var>C<sub>h</sub></var></lu-math>. The righthand side's numerator comes out to zero, so the radius at the top of the cone is zero: a single point. This, too, is as expected.
+      </li>
+      <li>
+         If our hit position is halfway along the cone's height, then the numerator on the righthand side computes to half of the cone's height. Dividing that by the cylinder's height gives us 0.5, so we end up comparing to half of the cone's radius at its base, as expected.
+      </li>
+   </ul>
+   <p>
+      Putting content on the righthand side in terms of vectors (except for the height, because leaving that as-is will make things easier later on):
+   </p>
+   <lu-math>
+      ||<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>||<!--
+   -->&nbsp;=&nbsp;
+      <lu-math-raw>(</lu-math-raw>
+      {%- include lu-math/fraction.html
+         numer="||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||"
+         denom="<var>C<sub>h</sub></var>"
+         
+         numer_is_expr=true
+      -%}
+      <lu-math-raw>)</lu-math-raw>
+      <var>C<sub>r</sub></var>
+   </lu-math>
+   <p>
+      Next, we'll divide both sides by <lu-math data-inline>||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||</lu-math> so that <lu-math data-inline><var>C<sub>r</sub></var></lu-math> is the lone numerator on the right. (Mathematical notation sort of obscures this fact, visually, but on the righthand side, because <lu-math data-inline><var>C<sub>r</sub></var></lu-math> is multiplied by the entire fraction, it is effectively part of the righthand-side numerator. We can divide by the <em>rest</em> of the righthand-side numerator to get the radius on its own.)
+   </p>
+   <lu-math>
+      {{- lu_math_raw_endcap -}}
+      {%- include lu-math/fraction.html
+         numer="||<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>||"
+         denom="||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||"
+         
+         numer_is_expr=true
+         denom_is_expr=true
+      -%}<!--
+   -->&nbsp;=&nbsp;<!--
+   -->{%- include lu-math/fraction.html
+         numer="<var>C<sub>r</sub></var>"
+         denom="<var>C<sub>h</sub></var>"
+      -%}<!--
+   -->{{- lu_math_raw_endcap -}}
+   </lu-math>
+   <p>
+      Let's split up that lefthand-side fraction.
+   </p>
+   <lu-math>
+      ||<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>||<!--
+   -->&nbsp;=&nbsp;
+      {%- include lu-math/fraction.html
+         numer="<var>C<sub>r</sub></var>"
+         denom="<var>C<sub>h</sub></var>"
+      -%}
+      &nbsp;&times;&nbsp;||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||
+   </lu-math>
+   <p>
+      This will be a little easier if we separate the cone's height-to-radius ratio out into a different variable, and if we square our equations. Let's do both at the same time:
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>C<sub>q</sub></var></dt>
+               <dd>cone ratio squared</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-row>
+         <var>C<sub>q</sub></var><!--
+      -->&nbsp;=&nbsp;
+         {%- capture numerator -%}
+            <var>C<sub>r</sub></var>{% include lu-math/exponent.html exponent=2 %}
+         {%- endcapture -%}
+         {%- capture denominator -%}
+            <var>C<sub>h</sub></var>{% include lu-math/exponent.html exponent=2 %}
+         {%- endcapture -%}
+         {%- include lu-math/fraction.html
+            numer=numerator
+            denom=denominator
+         -%}
+         {{- lu_math_raw_endcap -}}
+      </lu-math-row>
+      <lu-math-row data-equation-number="5">
+         ||<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      --><var>C<sub>q</sub></var><!--
+      -->&nbsp;&times;&nbsp;||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      I think our new Equation 5 would, technically, be enough to generate a ray/cone intersection solution. However, it's a bit messy: the lefthand side uses two points, one of which is the point we want to solve for (a raycast hit position) and the other of which is itself defined in terms of the point we want to solve for. We should try to fix that &mdash; make it so that one side of the equation contains only one unknown point (the hit position), possibly alongside other known points (i.e. points that "belong to" the cone).
+   </p>
+   <p>
+      Right now, the equation works in terms of three points in space: <lu-math data-inline><var>H<sub>p</sub></var></lu-math>, <lu-math data-inline><var>H<sub>s</sub></var></lu-math>, and <lu-math data-inline><var>C<sub>t</sub></var></lu-math>. These points form a triangle, and our equation describes the lengths of two edges: <lu-math data-inline><var>H<sub>p</sub></var></lu-math> to <lu-math data-inline><var>H<sub>s</sub></var></lu-math>, and <lu-math data-inline><var>C<sub>t</sub></var></lu-math> to <lu-math data-inline><var>H<sub>s</sub></var></lu-math>. We therefore need to find some property that is inherent to all triangles, that we can use to rearrange our equation; we need one side of the equation to be the <lu-math data-inline><var>H<sub>p</sub></var></lu-math> to <lu-math data-inline><var>C<sub>t</sub></var></lu-math> edge.
+   </p>
+   <p>
+      Let's break out the handy-dandy Pythagorean theorem, then, which describes the relationship between the lengths of a triangle's edges:
+   </p>
+   <lu-math>
+      <var>a</var>{% include lu-math/exponent.html exponent=2 %} + 
+      <var>b</var>{% include lu-math/exponent.html exponent=2 %} = 
+      <var>c</var>{% include lu-math/exponent.html exponent=2 %}
+   </lu-math>
+   <p>
+      And therefore:
+   </p>
+   <lu-math>
+      <var>c</var>{% include lu-math/exponent.html exponent=2 %} - 
+      <var>b</var>{% include lu-math/exponent.html exponent=2 %} = 
+      <var>a</var>{% include lu-math/exponent.html exponent=2 %}
+   </lu-math>
+   <p>
+      We can redefine <lu-math data-inline>||<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}</lu-math>, which takes the role of <lu-math data-inline><var>c</var></lu-math> in the Pythagorean theorem:
+   </p>
+   <lu-math>
+      ||<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+      =
+      ||<var>H<sub>p</sub></var> - <var>C<sub>t</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+      -
+      ||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+   </lu-math>
+   <p>
+      Let's substitute this whole formula in, replacing <lu-math data-inline>||<var>H<sub>p</sub></var> to <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}</lu-math>:
+   </p>
+   <lu-math>
+      ||<var>H<sub>p</sub></var> - <var>C<sub>t</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+      -
+      ||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+   -->&nbsp;=&nbsp;<!--
+   --><var>C<sub>q</sub></var><!--
+   -->&nbsp;&times;&nbsp;||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+   </lu-math>
+   <p>
+      We can add <lu-math data-inline>||<var>H<sub>p</sub></var> to <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}</lu-math> to both sides, to reduce the lefthand side down to just one length:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>H<sub>p</sub></var> - <var>C<sub>t</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      --><var>C<sub>q</sub></var><!--
+      -->&nbsp;&times;&nbsp;||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %} + 
+         ||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+      <lu-math-row data-equation-number="6">
+         ||<var>H<sub>p</sub></var> - <var>C<sub>t</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<var>C<sub>q</sub></var> + 1)<!--
+      -->&nbsp;&times;&nbsp;||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      This equation will lead to a cleaner solution. If we substitute the equation for a ray in place of <lu-math data-inline><var>H<sub>p</sub></var></lu-math>, the ray hit position, then we can solve for <lu-math data-inline><var>H<sub>p</sub></var></lu-math> to compute that hit position given any ray. However, there's still more cleanup we can do. Let's also try to replace <lu-math data-inline><var>H<sub>s</sub></var></lu-math> with something in terms of <lu-math data-inline><var>H<sub>p</sub></var></lu-math>. Recall that <lu-math data-inline><var>H<sub>s</sub></var></lu-math> is the projection of <lu-math data-inline><var>H<sub>p</sub></var></lu-math> onto the axis <lu-math data-inline><var>C<sub>a</sub></var></lu-math>.
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      -->||<var>C<sub>t</sub></var> - (<var>H<sub>p</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+      <lu-math-row>
+         ||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||<!--
+      -->&nbsp;=&nbsp;<!--
+      -->||<var>C<sub>t</sub></var> - (<var>H<sub>p</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>||
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Remember that <lu-math data-inline><var>H<sub>s</sub></var></lu-math> is the hit position projected onto the cylinder's "spine." To compute that, we start with <lu-math data-inline><var>H<sub>p</sub></var> - <var>C<sub>b</sub></var></lu-math>, to get the hit position relative to the cylinder's base. We then project <em>that</em> onto the cylinder's axis vector:
+   </p>
+   <lu-math>
+      ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>) &times; <var>C<sub>a</sub></var>
+   </lu-math>
+   <p>
+      And then finally, we add the cylinder's base position back in, to move us back to world-relative coordinates:
+   </p>
+   <lu-math>
+      <var>H<sub>s</sub></var>
+      = 
+      <var>C<sub>b</sub></var> + ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>) &times; <var>C<sub>a</sub></var>
+   </lu-math>
+   <p>
+      With that in mind, let's see if we can simplify the righthand side of Equation 6. Let's start by expanding <lu-math data-inline><var>H<sub>s</sub></var></lu-math>:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      -->||<var>C<sub>t</sub></var> - <mark>(<var>C<sub>b</sub></var> + ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>)</mark>||{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Now, if we think about it, the cylinder's tip is really just the cylinder's base, plus the cylinder's height times the cylinder's axis:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      -->||<mark>(<var>C<sub>b</sub></var> + <var>C<sub>a</sub></var><var>C<sub>h</sub></var>)</mark> - (<var>C<sub>b</sub></var> + ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>)||{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Within the righthand side, we can strip out the additions of the base on both sides. (The righthand side is taking the distance between two points; removing those additions means translating both points by the same vector, which has no effect on the distance between them and therefore is a valid way to simplify the equation.)
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      -->||(<var>C<sub>a</sub></var><var>C<sub>h</sub></var>) - ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      We can also drop the multiplications by <lu-math data-inline><var>C<sub>a</sub></var></lu-math>. Those multiplications were of lengths by an axis vector, to scale along that axis; dropping the multiplications means that we're working with raw lengths, so we go from a <lu-math data-inline>||length operator||</lu-math> to parentheses:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<var>C<sub>h</sub></var> - (<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Finally, we can flip the righthand side: instead of measuring the projected distance from <lu-math data-inline><var>H<sub>p</sub></var></lu-math> to the bottom of the cylinder and then subtracting that from the cylinder's height, we can instead measure the projected distance from <lu-math data-inline><var>H<sub>p</sub></var></lu-math> to the top of the cylinder.
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<mark>(<var>H<sub>p</sub></var> - <var>C<sub>t</sub></var>)</mark> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Our final cone equation, substituting out <lu-math data-inline>||<var>C<sub>t</sub></var> - <var>H<sub>s</sub></var>||{% include lu-math/exponent.html exponent=2 %}</lu-math> from Equation 6, is as follows:
+   </p>
+   <lu-math>
+      <lu-math-row data-equation-number="7">
+         ||<var>H<sub>p</sub></var> - <var>C<sub>t</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<var>C<sub>q</sub></var> + 1)<!--
+      -->&nbsp;&times;&nbsp;<mark>((<var>H<sub>p</sub></var> - <var>C<sub>t</sub></var>) &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}</mark>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Keep in mind that this equation only includes the variable for the cone's tip, not the cone's base. We have effectively removed most of our vectors from the equation, and so just like with the parametric equations, this implicit equation tests whether a point lies on the curved outer surface of an infinitely tall cone anchored at its tip. That's fine, though. Testing a finite cone just involves a distance check between the point and the tip; and testing against the cone's flat endcap involves a point/disc intersection check. Our equation here tests the "unique" part of the cone.
+   </p>
+</section>
+
+<section>
+   <h2><a name="solving">Solving for the ray</a></h2>
+   <p>
+      A ray is commonly defined in terms of a starting point, or <dfn>origin</dfn>, and a normalized direction vector. We can therefore define the hit position in terms of the same.
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>R<sub>o</sub></var></dt>
+               <dd>the ray's origin</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>R<sub>d</sub></var></dt>
+               <dd>the ray's direction</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>p</sub></var></dt>
+               <dd>the position at which the ray hits some surface</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>d</sub></var></dt>
+               <dd>the hit distance: the distance from the ray origin to the hit position</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-row>
+         <var>H<sub>p</sub></var><!--
+      -->&nbsp;=&nbsp;<!--
+      --><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      We can substitute this equation into our cone equation above, and then attempt to solve for the hit distance <lu-math data-inline><var>H<sub>d</sub></var></lu-math>:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<mark><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - <var>C<sub>t</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+          = 
+         <nobr>(<var>C<sub>q</sub></var> + 1)
+         <wbr/>&times;<wbr/> 
+         ((<mark><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - <var>C<sub>t</sub></var>) &bullet; <nobr><var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}</nobr>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      On both sides of the equation, we subtract <lu-math data-inline><var>C<sub>t</sub></var></lu-math> from <lu-math data-inline><var>R<sub>o</sub></var></lu-math>. Let's simplify the equation a bit by defining that difference as a vector:
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>R<sub>l</sub></var></dt>
+               <dd>the ray's cone-tip-relative origin = <var>R<sub>o</sub></var> - <var>C<sub>t</sub></var></dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-row>
+         ||<var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>||{% include lu-math/exponent.html exponent=2 %}<!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<var>C<sub>q</sub></var> + 1)<!--
+      -->&nbsp;&times;&nbsp;((<var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      The squared length of a vector is equal to the dot product of the vector with itself; we can use that to expand the lefthand side:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) &bullet; 
+         (<var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>)<!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<var>C<sub>q</sub></var> + 1)<!--
+      -->&nbsp;&times;&nbsp;((<var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      We can also expand the righthand side if we keep in mind that dot products obey <abbr title="First, inside; outside last">FOIL</abbr>. The squared parentheses on the righthand side only use three terms, nor four, but we can just add a zero term and then use FOIL.
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>V<sub>z</sub></var></dt>
+               <dd>the vector (0, 0, 0)</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) &bullet; <var>C<sub>a</sub></var><!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) &bullet; (<var>C<sub>a</sub></var> + <var>V<sub>z</sub></var>)
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) &bullet; (<var>C<sub>a</sub></var> + <var>V<sub>z</sub></var>)<!--
+      -->&nbsp;=&nbsp;<!--
+      --><var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var> + <var>R<sub>l</sub></var> &bullet; <var>V<sub>z</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>V<sub>z</sub></var>
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) &bullet; (<var>C<sub>a</sub></var> + <var>V<sub>z</sub></var>)<!--
+      -->&nbsp;=&nbsp;<!--
+      --><var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      So the ray-and-cone equation, with the righthand side expanded, is:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) &bullet; 
+         (<var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>)<!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<var>C<sub>q</sub></var> + 1)<!--
+      -->&nbsp;&times;&nbsp;(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      We can expand the dot product on the lefthand side using FOIL as well:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         <var>R<sub>l</sub></var> &bullet; </var><var>R<sub>l</sub></var> + <var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var><var>H<sub>d</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>R<sub>l</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var><var>H<sub>d</sub></var><!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<var>C<sub>q</sub></var> + 1)<!--
+      -->&nbsp;&times;&nbsp;(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>) + 
+         2(<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) + 
+         (<var>R<sub>d</sub></var><var>H<sub>d</sub></var>) &bullet; (<var>R<sub>d</sub></var><var>H<sub>d</sub></var>)<!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<var>C<sub>q</sub></var> + 1)<!--
+      -->&nbsp;&times;&nbsp;(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      We can expand the squaring on the righthand side as well:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>a</var> + <var>b</var>){% include lu-math/exponent.html exponent=2 %} 
+         = 
+         <var>a</var>{% include lu-math/exponent.html exponent=2 %} + 2<var>a</var><var>b</var> + <var>b</var>{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>) + 
+         2(<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) + 
+         (<var>R<sub>d</sub></var><var>H<sub>d</sub></var>) &bullet; (<var>R<sub>d</sub></var><var>H<sub>d</sub></var>)<!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<var>C<sub>q</sub></var> + 1) 
+         &times; 
+         ((<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %} + 2(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>) + (<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %})
+      </lu-math-row>
+   </lu-math>
+   <p>
+      And finally: for any vector <lu-math data-inline><var>V</var></lu-math> and scalar <lu-math data-inline><var>s</var></lu-math>:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>s</var><var>V</var>) &bullet; (<var>s</var><var>V</var>) = (<var>V</var> &bullet; <var>V</var>)<var>s</var>{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>) + 
+         2(<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) + 
+         (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<mark><var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %}</mark><!--
+      -->&nbsp;=&nbsp;<!--
+      -->(<var>C<sub>q</sub></var> + 1) 
+         &times; 
+         ((<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %} + 2(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>) + (<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %})
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Now, let's group them based on <lu-math data-inline><var>H<sub>d</sub></var></lu-math>. We'll start by subtracting one side of the equation from the other:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>) + 
+         2(<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) + 
+         (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %}<!--
+      --><mark> - 
+         (<var>C<sub>q</sub></var> + 1) 
+         &times; 
+         ((<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %} + 2(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>) + (<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}) 
+         = 0</mark>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Next, we'll unpack the multiplication by <lu-math data-inline>(<var>C<sub>q</sub> + 1)</lu-math>, and then merge the groups that are both multiplied by 2:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>) + 
+         2(<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) + 
+         (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %} 
+         - 
+         <mark>(<var>C<sub>q</sub></var> + 1)</mark>(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %} - 
+         2<mark>(<var>C<sub>q</sub></var> + 1)</mark>(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>) - 
+         <mark>(<var>C<sub>q</sub></var> + 1)</mark>(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}
+         = 0
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>) + 
+         2<mark>(</mark>(<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var><var>H<sub>d</sub></var>)<mark> - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>))</mark> + 
+         (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %}
+         - 
+         (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %} - 
+         (<var>C<sub>q</sub></var> + 1)(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}
+         = 0
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Next, we want to move <lu-math data-inline><var>H<sub>d</sub></var></lu-math> outside of some of the dot products. Multiplying a vector by a scalar is the same as taking the dot product of that vector with another vector whose terms are all that same scalar; and the dot product between two vectors is <dfn>commutative</dfn>: you can swap the lefthand and righthand sides around and get the same result; therefore, for any two vectors <lu-math data-inline><var>A</var></lu-math> and <lu-math data-inline><var>B</var></lu-math>, and a scalar <lu-math data-inline><var>c</var></lu-math>,
+   </p>
+   <lu-math>
+      <lu-math-row>
+         <var>c</var><var>A</var> &bullet; <var>B</var> = (<var>A</var> &bullet; <var>B</var>)<var>c</var>
+      </lu-math-row>
+      <lu-math-row>
+         (<var>c</var><lu-math-raw data-screen-reader-only> &times; </lu-math-raw><var>A</var> &bullet; <var>B</var>){% include lu-math/exponent.html exponent=2 %} = (<var>A</var> &bullet; <var>B</var>){% include lu-math/exponent.html exponent=2 %}<lu-math-raw> &times; </lu-math-raw><var>c</var>{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      and that means we can:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>) + 
+         2((<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var>)<mark><var>H<sub>d</sub></var></mark> - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark><var>H<sub>d</sub></var></mark>) + 
+         (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %}
+         - 
+         (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %} - 
+         (<var>C<sub>q</sub></var> + 1)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}<mark><var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %}</mark>
+         = 0
+      </lu-math-row>
+      <lu-math-row class="just-rearranging">
+         (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %} - 
+         (<var>C<sub>q</sub></var> + 1)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}<var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %}  + 
+         2((<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var> - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>)
+         - 
+         (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %} + 
+         (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>)
+         = 0
+      </lu-math-row>
+      <lu-math-row>
+         <mark>((<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>) - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %})</mark><var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %}</mark> + 
+         2((<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var> - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>)
+         - 
+         (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %} + 
+         (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>)
+         = 0
+      </lu-math-row>
+      <lu-math-row>
+         ((<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>) - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %})<var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %}</mark> + 
+         2((<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var>) - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>))<mark><var>H<sub>d</sub></var></mark>
+         - 
+         (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %} + 
+         (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>)
+         = 0
+      </lu-math-row>
+      <lu-math-row class="just-rearranging">
+         ((<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>) - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %})<var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %} + 
+         2((<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var>) - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>H<sub>d</sub></var><!--
+      --><mark> + 
+         (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>)
+          - 
+         (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}</mark>
+         = 0
+      </lu-math-row>
+   </lu-math>
+   <p>
+      This is a quadratic equation. Can you see it?
+   </p>
+   <lu-math>
+      <lu-math-row>
+         <mark class="mark-1"><var>a</var></mark><var>x</var>{% include lu-math/exponent.html exponent=2 %} + <mark class="mark-2"><var>b</var></mark><var>x</var> + <mark class="mark-3"><var>c</var></mark>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      If <lu-math data-inline><var>H<sub>d</sub></var></lu-math> is the "<lu-math data-inline><var>x</var></lu-math>" in our quadratic equation, then...
+   </p>
+   <lu-math>
+      <!--
+         For sighted users, visually highlight the different variables. for blind users, 
+         we'll just have to have some text annotations like "start of a" and "end of a."
+      -->
+      <lu-math-row><!--
+      --><lu-math-raw data-screen-reader-only>&nbsp;[start of A]&nbsp;</lu-math-raw><!--
+      --><mark class="mark-1">((<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>) - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %})</mark><!--
+      --><lu-math-raw data-screen-reader-only>&nbsp;[end of A]&nbsp;</lu-math-raw><!--
+      --><var>H<sub>d</sub></var>{% include lu-math/exponent.html exponent=2 %}
+         + 
+         <lu-math-raw data-screen-reader-only>&nbsp;[start of B]&nbsp;</lu-math-raw><!--
+      --><mark class="mark-2">2((<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var>) - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>))</mark><!--
+      --><lu-math-raw data-screen-reader-only>&nbsp;[end of B]&nbsp;</lu-math-raw><!--
+      --><var>H<sub>d</sub></var>
+          + 
+         <lu-math-raw data-screen-reader-only>&nbsp;[start of C]&nbsp;</lu-math-raw><!--
+      --><mark class="mark-3">(<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>)
+          - 
+         (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}</mark><!--
+      --><lu-math-raw data-screen-reader-only>&nbsp;[end of C]&nbsp;</lu-math-raw>
+         = 0
+      </lu-math-row>
+      <lu-math-aligned>
+         <lu-math-row>
+            <var>a</var> = (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>) - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}
+         </lu-math-row>
+         <lu-math-row>
+            <var>b</var> = 2((<var>R<sub>l</sub></var> &bullet; <var>R<sub>d</sub></var>) - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>))
+         </lu-math-row>
+         <lu-math-row>
+            <var>c</var> = (<var>R<sub>l</sub></var> &bullet; <var>R<sub>l</sub></var>) - (<var>C<sub>q</sub></var> + 1)(<var>R<sub>l</sub></var> &bullet; <var>C<sub>a</sub></var>){% include lu-math/exponent.html exponent=2 %}
+         </lu-math-row>
+      </lu-math-aligned>
+   </lu-math>
+   <p>
+      And of course, per the quadratic formula, the quadratic equation is true whenever <lu-math data-inline><var>H<sub>d</sub></var></lu-math> is defined as follows:
+   </p>
+   <lu-math>
+      <var>H<sub>d</sub></var>
+       = 
+      {%- capture temporary -%}
+         -<var>b</var> &plusmn; 
+         {% capture temporary -%}
+            <var>b</var>{% include lu-math/exponent.html exponent=2 %} - 4<var>a</var><var>c</var>
+         {%- endcapture -%}
+         {%- include lu-math/sqrt.html content=temporary -%}
+      {%- endcapture -%}
+      {%- include lu-math/fraction.html
+         numer=temporary
+         denom="<lu-math-denom>2<var>a</var></lu-math-denom>"
+         
+         numer_is_expr=true
+         denom_is_expr=true
+      -%}
+      {{- lu_math_raw_endcap -}}
+   </lu-math>
+   <p>
+      The <dfn>discrminant</dfn> can be used to check how many solutions exist &mdash; that is, whether the ray intersects the cone, and if so, how many times &mdash; and is defined as follows:
+   </p>
+   <lu-math>
+      <var>b</var>{% include lu-math/exponent.html exponent=2 %} - 4<var>a</var><var>c</var>
+   </lu-math>
+   <p>
+      If the discriminant is negative, then no solutions exist; there is no intersection. If the discriminant is positive, then there are two intersections. If the discriminant is zero, then there is only one intersection; if you compute the two intersection points (differing based on &plusmn; the square root of the discriminant), then they will be identical.
+   </p>
+   <p>
+      Recall that for any intersection, <lu-math data-inline><var>H<sub>p</sub></var> = <var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var></lu-math>. Our process above tests for an intersection against an infinite cone, so we now need to constrain it.
+   </p>
+   <p>
+      The following expression will be true if a hit position is on the finite cone. We are taking the hit position's distance to the cone's tip, projecting that onto the cone's axis to get the hit position's cone-relative height offset, and testing that projected distance against the cone's height.
+   </p>
+   <lu-math>
+      0 &leq; (<var>C<sub>t</sub></var> - <var>H<sub>p</sub></var>) &bullet; <var>C<sub>a</sub></var> &leq; ||<var>C<sub>t</sub> - <var>C<sub>b</sub></var>||
+   </lu-math>
+   <p>
+      The following expression will be true if the hit position is below the finite cone. In that case, you should test for a ray/disc intersection with the cone's endcap.
+   </p>
+   <lu-math>
+      (<var>C<sub>t</sub></var> - <var>H<sub>p</sub></var>) &bullet; <var>C<sub>a</sub></var> &gt; ||<var>C<sub>t</sub> - <var>C<sub>b</sub></var>||
+   </lu-math>
+   <p>
+      The following expression will be true if the hit position is above the finite cone. In this situation, you have to ignore the hit position. Remember that odd thing I pointed out at the start: our equations don't describe just <em>one</em> cone. The cone isn't bounded on <em>either side</em>, so if you go above the tip, the cone turns inside out and begins to widen again. Essentially, the equations describe something akin to an hourglass shape; so, we have to ignore everything above the tip where the normal cone and the inside-out cone meet.
+   </p>
+   <lu-math>
+      0 &gt; (<var>C<sub>t</sub></var> - <var>H<sub>p</sub></var>) &bullet; <var>C<sub>a</sub></var>
+   </lu-math>
+   <p>
+      Lastly, we also have to ignore any hit positions that result from a negative hit distance <lu-math data-inline><var>H<sub>d</sub></var></lu-math>, as these represent points behind the ray.
+   </p>
+</section>
+      
+      <!-- CONTINUE FROM HERE -->

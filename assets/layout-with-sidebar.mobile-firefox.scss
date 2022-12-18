@@ -1,0 +1,14 @@
+---
+---
+
+@import "utils";
+
+@include for-firefox-only {
+   @import "layout-with-sidebar.mobile-addon";
+}
+/*!
+media queries for touch devices are broken in Firefox; see bug 1806259.
+
+we have to either have no smartphone styles, or limit it to portrait orientation to 
+minimize likelihood of hitting desktop Firefox by mistake. went with the latter.
+*/

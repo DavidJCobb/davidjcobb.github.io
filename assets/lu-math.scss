@@ -1,0 +1,409 @@
+---
+---
+
+/* when paired with invisible-readable, makes text non-selectable 
+   and effectively only accessible to screen readers */
+@mixin unselectable-not-in-flow {
+   position:absolute;
+   user-select:none!important;
+}
+
+@mixin invisible-readable {
+   display:inline-block;
+   width:1px;
+   height:1px;
+   overflow:hidden;
+   margin:-1px 0 0 -1px;
+   
+   /* let's move it out of the document flow, too */
+   /* this approach breaks: copying the text forces line breaks
+   position:absolute;
+   */
+   text-indent:-999999px;
+   flex:0 0 1px;
+   
+   &:first-child {
+      margin:0 0 -1px -1px; /* needed for the negative margin hack to work on the first child in a column flexbox */
+   }
+}
+
+@mixin invisible-selectable-readable {
+   @include invisible-readable;
+   
+   &:first-child {
+      margin:0 0 -1px -1px; /* needed for the negative margin hack to work on the first child in a column flexbox */
+   }
+}
+
+@mixin screen-reader-only {
+   @include invisible-readable;
+   @include unselectable-not-in-flow;
+}
+
+lu-math{
+   display:block;
+   margin:1em 0;
+   text-align:center;
+   
+   font-family:Times New Roman,serif;
+   line-height:1.2em;
+   hyphens: none;
+   
+   &[data-inline] {
+      display:inline-block;
+      margin:initial;
+   }
+}
+
+/* keep "raw" content visible to screen readers */
+lu-math-raw{
+   @include invisible-selectable-readable;
+   
+   &[data-screen-reader-only] {
+      @include unselectable-not-in-flow;
+   }
+}
+
+lu-math var {
+   &>sub {
+      &::before,
+      &::after {
+         white-space:pre;
+         
+         @include invisible-readable;
+      }
+      &::before { content: " sub "; }
+      &::after { content: " base " }
+      
+      /*
+         edge-case: italicized subscript elements may overlap the next visible 
+         line box by 1px; if that box has a background color (e.g. a highlighted 
+         portion of an equation), it will clip the subscript.
+      */
+      &:last-child {
+         position:relative;
+         z-index:1;
+      }
+   }
+}
+
+/* if lu-math-raw denotes content at the start of a line, then you must place a 
+   lu-math-raw-endcap before the content, to ensure correct copy-and-paste behavior 
+   if the user drag-selects horizontally. for raw content at the end of a line, 
+   place the endcap after it.
+   
+   this element must contain at least one whitespace. */
+lu-math-raw-endcap {
+   white-space:pre;
+   
+   /* ordinarily, i'd set the font-size to something small. however, Firefox's text 
+      selection behavior is... unhinged. if the font size is smaller than the rest 
+      of the line, then the math-raw text that this element is supposed to cap off 
+      will only be caught in a drag-selection and copied if the user's cursor was 
+      dragged at or below the height of the font.
+      
+      like, dragging leftward and upward would cause the endcap to fail, whereas 
+      dragging leftward and downward would allow the endcap to work.
+      
+      keeping the font full-size and limiting the element to a 1px width seems to 
+      avoid this and work consistently. */
+   display:inline-block;
+   width:1px;
+   overflow:hidden;
+   
+   /* conceal selection */
+   opacity:0.03;
+}
+
+/* centering, with left-alignment of centered blocks */
+:is(lu-math-aligned, lu-math-givens) {
+   display:grid;
+   grid-template-columns:1fr max-content 1fr;
+}
+
+
+:is(lu-math-aligned, lu-math-givens) {
+   display:grid;
+   grid-template-columns:1fr max-content 1fr;
+   
+   &>* {
+      grid-column: 2;
+   }
+   &::after {
+      content:" ";
+      grid-column: 3;
+   }
+}
+
+lu-math-row {
+   display:block;
+   margin:0.5em 0;
+}
+
+/* use lu-math-aligned and lu-math-row to have groups of equations left-align */
+lu-math-aligned>lu-math-row{text-align:left}
+
+/* equation numbers */
+:is(lu-math, lu-math-row, lu-math-aligned)[data-equation-number] {
+   position:relative;
+   padding-inline-start:3em;
+   padding-inline-end:3em;
+   
+   &::after {
+      position:absolute;
+      right:1em;
+      top:50%;
+      transform:translate(0, -50%);
+      content:"(" attr(data-equation-number) ")";
+   }
+}
+
+lu-math-row {
+   orphans: 0; /* do not split equations across pages */
+}
+
+/* generic "horizontal part," to allow parts of an equation with differing heights to vertically center */
+lu-math-part {
+   display:inline-block;
+   vertical-align:middle;
+}
+
+lu-math-givens {
+   display:inline-block;
+   text-align:left;
+   margin-bottom:1em;
+   break-after:avoid;
+   
+   &>label {
+      display:block;
+      margin-bottom:.5em;
+   }
+   &>dl {
+      display:table;
+      margin:0;
+      
+      &>lu-math-dfn {
+         display:table-row;
+         
+         &>:is(dt, dd) {
+            display:table-cell;
+            vertical-align:top;
+         }
+         &>dt {
+            text-align:right;
+            white-space:nowrap;
+         }
+      }
+   }
+   
+   dt {
+      display:inline-block;
+      min-width:1.25em;
+      margin:0;
+      padding:0;
+      
+      ::after {
+         /*
+            non-breaking space needed because table styles collapse trailing spaces, apparently
+         */
+         content:" =\00A0";
+      }
+   }
+   dd {
+      display:inline;
+      margin:0;
+      padding:0;
+   }
+}
+
+lu-math-function-def {
+   &>lu-math-name,
+   &>lu-math-delim {
+      font-weight: bold;
+   }
+   
+   &>lu-math-delim:first-of-type::before {
+      content:" of ";
+      @include screen-reader-only;
+   }
+}
+lu-math-function-args>li {
+   display:inline;
+   padding:0;
+   margin:0;
+   list-style:none;
+   
+   &:not(:first-of-type)::before{
+      content:",";
+      margin:0 .5ch;
+      font-weight:bold;
+   }
+}
+
+/* this element allows you to display fractions with the numerator above the 
+   denominator, separated by a line. correct usage is as follows:
+   
+    - place the numerator in a lu-math-numer element
+    - place the denominator in a lu-math-denom element
+    - between the two, place a lu-math-raw element with text content "&divide;"
+    - if the numerator is an expression...
+       - place a lu-math-raw element before it with the text content "("
+       - add a ") " to the start of the lu-math-raw element between the numerator 
+         and denominator
+    - if the denominator is an expression...
+       - place a lu-math-raw element after it with the text content ")"
+       - add a " (" to the end of the lu-math-raw element between the numerator 
+         and denominator
+*/
+lu-math-fraction {
+   display:inline-flex;
+   vertical-align:middle;
+   flex-flow:column nowrap;
+   
+   &>:is(lu-math-numer, lu-math-denom) {
+      text-align:center;
+      padding:.1em .5ch;
+   }
+   
+   &>lu-math-numer {
+      order:0;
+   }
+   &>lu-math-denom,
+   &>lu-math-denom~* {
+      order:2;
+   }
+   
+   &::after {
+      order:1;
+      content:" ";
+      height:1px!important;
+      background:#000;
+   }
+}
+lu-math-fraction+var{margin-left:.25ch;}
+
+/* this element allows you to display exponents, with appropriate copy-and-paste 
+   and screen reader behavior. here is a usage example; brace yourself:
+   
+      <lu-math-exp><span aria-hidden="true"><lu-math-raw>^</lu-math-raw>2</span><lu-math-raw data-screen-reader-only>&nbsp;squared</lu-math-raw></lu-math-exp>
+   
+   there are three ways this element can be viewed.
+   
+    - when seen by a sighted user, it is "x" adorned with a superscript "2".
+    - when copied into plaintext, it is "x^2".
+    - when read by a screen reader, it is "x squared".
+   
+   correct setup for most cases is as follows:
+   
+    - the element's first child should be a SPAN with aria-hidden="true", to 
+      define content for sighted users and plaintext. this element's contents 
+      will vary depending on whether the exponent is...
+      
+       - ...a monomial (single term).
+       
+          - the first child should be a lu-math-raw with "^" as text content.
+          
+          - after this, just write the bare exponent.
+       
+       - ...an expression.
+       
+          - the first child should be a lu-math-raw with "^(" as text content.
+          
+          - the last child should be a lu-math-raw with ")" as text content.
+      
+    - the element's second child should be a lu-math-raw containing an attribute 
+      named data-screen-reader-only; this element should contain a non-breaking 
+      space, followed by the content intended for screen readers, followed by an 
+      additional non-breaking space:
+      
+       - if the exponent is 2, use "squared"
+       - if the exponent is 3, use "cubed"
+       - if the exponent is any single number besides those, use "to the N-th 
+         power" substituting the number in for "N".
+   
+   if the exponent is anything more complex than a single number, then alter the 
+   above instructions as follows:
+   
+    - move the screen-reader-only content to the start of the lu-math-exp element.
+    - use "&nbsp;to the power of&nbsp;" as the screen-reader-only content.
+    - move the exponent content (i.e. everything but the caret) outside of, and 
+      after, the aria-hidden element.
+   
+   example, with whitespace added (strip it when doing this yourself):
+   
+      <lu-math-exp>
+         <lu-math-raw data-screen-reader-only>
+            &nbsp;
+            to the power of
+            &nbsp;
+         </lu-math-raw>
+         <span aria-hidden="true"><lu-math-raw>^</lu-math-raw></span>
+         <lu-math-raw>(</lu-math-raw>
+         2<var>x</var> + <var>y</var>
+         <lu-math-raw>)</lu-math-raw>
+      </lu-math-exp>
+   
+   some developer notes:
+
+    - we need the non-breaking spaces so that screen readers don't collapse the 
+      word "squared" into the variable. using the example at the top of this 
+      comment, if we replace the non-breaking space with a normal one, then NVDA 
+      reads the value as "xsquared" (which sounds like "ssssquared," like, with a 
+      hiss). NVDA can see caret symbols but won't read them (i tested with it 
+      outside of the aria-hidden content, obviously). */
+lu-math-exp {
+   font-size:smaller;
+   vertical-align:super;
+}
+
+/* this element allows you to wrap expressions in a square-root "radical" symbol 
+   with an appropriate overline. correct usage is as follows:
+   
+    - first children are...
+       - a lu-math-raw-endcap with one whitespace as text cotnent
+       - a lu-math-raw with "&radic;(" as text content
+    - last children are...
+        - a lu-math-raw with ")" as text content
+        - a lu-math-raw-endcap
+    
+    - HTML comments are used to ensure that there is NO WHITESPACE between the 
+      raw and raw-endcap elements, and between the raw elements and the actual 
+      meaningful content
+
+   */
+lu-math-sqrt {
+   --radical-width:.5em;
+   
+   background:
+      /* radical (bendy prefix line): */
+      no-repeat left center/var(--radical-width) 100% url("data:image/svg+xml;charset=utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 100' width='50' height='100' preserveAspectRatio='none'>\
+   <line x1=' 0' y1=' 50' x2='25' y2='100' stroke='black' vector-effect='non-scaling-stroke' />\
+   <line x1='25' y1='100' x2='50' y2='0' stroke='black' vector-effect='non-scaling-stroke' />\
+</svg>"),
+      /* overline: */
+      no-repeat left top/100% 1px linear-gradient(to right, transparent var(--radical-width), black var(--radical-width), black);
+
+   padding-top:.25em;
+   padding-left:calc(var(--radical-width) + .5ch);
+   padding-right:.5ch;
+}
+
+lu-math-big-parens {
+   --glyph-width:1ch;
+   
+   display:inline-block;
+   
+   background:
+      no-repeat left top/var(--glyph-width) 100% url("data:image/svg+xml;charset=utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 100' width='30' height='100' preserveAspectRatio='none'>\
+   <text dominant-baseline='ideographic' x='0' y='100' textLength='30' fill='black' font-size='100'>(</text>\
+</svg>"),
+      no-repeat right top/var(--glyph-width) 100% url("data:image/svg+xml;charset=utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 100' width='30' height='100' preserveAspectRatio='none'>\
+   <text dominant-baseline='ideographic' x='0' y='100' textLength='30' fill='black' font-size='100'>)</text>\
+</svg>");
+
+   padding-left:calc(var(--glyph-width) + .5ch);
+   padding-right:calc(var(--glyph-width) + .5ch);
+}

@@ -1,0 +1,22 @@
+{%- comment -%}
+   Display a function definition. Params:
+   
+   include.name
+      String. Name of the function.
+   
+   include.args
+      Array of String. Arguments in the function.
+{%- endcomment -%}
+<lu-math-function-def><!--
+--><lu-math-name>{{ include.name }}</lu-math-name><!--
+--><lu-math-delim>(</lu-math-delim><!--
+--><lu-math-function-args>
+      {%- for arg in include.args -%}
+         <li>{{ arg }}</li>
+         {%- unless forloop.last -%}
+            <lu-math-raw>, </lu-math-raw>
+         {%- endunless -%}
+      {%- endfor -%}
+   </lu-math-function-args><!--
+--><lu-math-delim>)</lu-math-delim>
+</lu-math-function-def>

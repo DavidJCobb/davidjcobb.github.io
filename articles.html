@@ -1,0 +1,26 @@
+---
+layout: default
+title: Articles
+social_media:
+   title: Cobb - Articles
+   
+permalink: /articles/
+
+extra_css_files: [ "collection-index.css" ]
+---
+{%- comment -%}
+   So apparently, GitHub Pages doesn't use the Jekyll plug-in needed to apply pagination 
+   to collections. It's only usable for blog posts. Great.
+{%- endcomment -%}
+<ul id="collection-items">
+   {%- for article in site.articles %}
+   <li>
+      <a href="{{ article.url }}"><h2>{{- article.title -}}</h2></a>
+      {%- if article.social_media %}
+         {%- if article.social_media.description %}
+      <p>{{ article.social_media.description }}</p>
+         {%- endif -%}
+      {%- endif -%}
+   </li>
+   {%- endfor %}
+</ul>
