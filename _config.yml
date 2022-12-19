@@ -11,6 +11,7 @@ collections:
       layout: default
       output: true
       permalink: /:collection/:path
+      show_github_history: true
       prepend_css_files:
        - article.css
 defaults:

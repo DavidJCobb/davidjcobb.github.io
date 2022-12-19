@@ -3,16 +3,14 @@
    <head>
       <meta charset="utf-8" />
       <link rel="stylesheet" href="{{ '/assets/layout-with-sidebar.css' | relative_url }}" />
-      <link rel="stylesheet" href="{{ '/assets/layout-with-sidebar.mobile-not-firefox.css' | relative_url }}"
-         media="only screen and (any-hover: none)"
-      />
-      <link rel="stylesheet" href="{{ '/assets/layout-with-sidebar.mobile-firefox.css' | relative_url }}"
-         media="only screen and (any-hover: none) and (max-aspect-ratio:3/5)"
-      />
       {%- include html-head.html -%}
    </head>
    <body>
-      <a id="skip-to-content" href="#page-content">skip to content</a>
+      {%- assign collection_info = empty -%}
+      {%- if page.collection %}
+         {%- assign collection_info = site.collections | where: "label", page.collection | first -%}
+      {%- endif -%}
+      <a id="skip-to-content" href="#page-content">Skip to main content.</a>
       <aside id="socials">
          <header>Find me on...</header>
          <ul>
@@ -26,16 +24,10 @@
       </aside>
       <nav id="site-chrome">
          {%- if page.collection %}
-            {%- assign nav_collection = "" -%}
-            {%- for item in site.collections -%}
-               {%- if item.label == page.collection -%}
-                  {%- assign nav_collection = item -%}
-               {%- endif -%}
-            {%- endfor -%}
          <details id="site-nav">
             <summary>
-               {%- if nav_collection and nav_collection.name != "" -%}
-                  {{ nav_collection.name }}
+               {%- if collection_info and collection_info.name != "" -%}
+                  {{ collection_info.name }}
                {%- else -%}
                   More like this
                {%- endif -%}
@@ -70,7 +62,7 @@
 {% if page.table_of_contents %}
          <nav id="page-nav">
             <details open>
-               <summary>Contents</summary>
+               <summary>Table of contents</summary>
                <menu>
 {%- for item in page.table_of_contents -%}
    {%- unless item.id and item.title -%}
@@ -86,6 +78,16 @@
          <header role="banner">
             <h1 class="grand-header">{{ page.title }}</h1>
          </header>
+{%- if page.show_github_history or collection_info.show_github_history -%}
+   {%- assign source_path = page.path -%}
+   {%- if page.collection -%}
+      {%- assign source_path = page.relative_path -%}
+   {%- endif -%}
+         <nav id="page-github-history" aria-label="Document info">
+            <a href="{{ site.github.repository_url }}/commits/{{ site.github.source.branch }}/{{ source_path }}">revision history</a>
+            <a href="{{ site.github.repository_url }}/blame/{{ site.github.source.branch }}/{{ source_path }}">git blame</a>
+         </nav>
+{%- endif -%}
          <main>
 {{ content }}
          </main>

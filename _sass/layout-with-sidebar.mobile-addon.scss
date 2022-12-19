@@ -148,6 +148,15 @@ body {
       }
    }
 }
+#page-github-history {
+   font-size:1rem;
+   margin:0 0 .5em;
+
+   >a {
+      background-color:rgba(255, 255, 255, 0.8);
+      padding:.25em .75em;
+   }
+}
 
 /*
    Topbar layout:
@@ -285,20 +294,8 @@ body {
    /*
       Ensure easily legible text by outlining it in the base background color.
    */
-   $text-shadows: ();
-   @for $x from -1 through 1 {
-      @for $y from -1 through 1 {
-         @if $x != 0 or $y != 0 {
-            $text-shadows: append(
-               $text-shadows,
-               #{$x * 2}px #{$y * 2}px 1px #{$theme-topbar-back-color},
-               comma
-            );
-         }
-      }
-   }
    #site-nav>menu li {
-      text-shadow: $text-shadows, 0 0 .5em #FFFFFF40;
+      text-shadow: text-shadows-for-outline($theme-topbar-back-color), 0 0 .5em #FFFFFF40;
    }
 
    #site-chrome,

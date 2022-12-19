@@ -1,0 +1,34 @@
+.highlight .language-cpp {
+   .c1 { /* comment */
+      color:#958;
+   }
+
+   .k,   /* keyword: general */
+   .kt { /* keyword: type */
+      color:#C62;
+      font-weight:bold;
+   }
+   .mi { /* integer? */
+      color:#362;
+   }
+   .n  { /* name: general */
+   }
+   .nb { /* name: boolean */
+      color:#C62;
+      font-weight:bold;
+   }
+   .nf { /* name: function */
+      color:#321;
+      font-weight:bold;
+   }
+   
+   .o { /* operator (includes scope-resolution operator and reference type suffix) */
+      color:#446644;
+      font-weight:bold;
+   }
+   
+   .p { /* punctuation (parens, braces) */
+      color:#666;
+      font-weight:bold;
+   }
+}

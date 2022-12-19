@@ -1,0 +1,150 @@
+---
+title: Ray/disc intersections
+tags:
+ - 3D
+ - geometry
+ - intersection
+ - math
+ - raycasting
+social_media:
+   title: Cobb - Ray/disc intersections
+   description: The math behind doing raycasts for 3D discs. Includes public-domain code.
+extra_css_files:
+ - lu-math.css
+   
+---
+{%- include lu-math/defines.html -%}
+<section>
+   <p>
+      A ray/disc intersection is just the combination of two other tests. We check for an 
+      intersection between the ray and the infinite plane that contains the disc; if such 
+      an intersection exists, then we check whether the hit position lies on the disc, 
+      using a simple distance check.
+   </p>
+   <p>
+      I've already written about <a href="{% link _articles/ray-plane-intersection.html %}">ray/plane intersection tests</a>, 
+      so this article will build on those. I've also provided code at the bottom as a public domain work.
+   </p>
+</section>
+
+<section>
+   <h2>The distance check</h2>
+   <p>
+      Let's review our ray/plane check:
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>D<sub>o</sub></var></dt>
+               <dd>origin of the disc</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>D<sub>n</sub></var></dt>
+               <dd>disc surface normal</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>R<sub>o</sub></var></dt>
+               <dd>the ray's origin</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>R<sub>d</sub></var></dt>
+               <dd>the ray's direction</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>p</sub></var></dt>
+               <dd>the position at which the ray hits the infinite plane containing our disc</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>d</sub></var></dt>
+               <dd>the hit distance: the distance from the ray origin to the hit position</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-row>
+         <var>H<sub>p</sub></var>
+          = 
+         <var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+      </lu-math-row>
+      <lu-math-row>
+         <var>H<sub>d</sub></var>
+         =
+         {% include lu-math/fraction.html
+            numer="(<var>D<sub>o</sub></var> - <var>R<sub>o</sub></var>) &bullet; <var>D<sub>n</sub></var>"
+            denom="<var>R<sub>d</sub></var> &bullet; <var>D<sub>n</sub></var>"
+            
+            numer_is_expr=true
+         -%}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      We'll supplement that with a distance check:
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>D<sub>r</sub></var></dt>
+               <dd>radius of the disc</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-row>
+         ||<var>H<sub>p</sub></var> - <var>D<sub>o</sub></var>|| &leq; <var>D<sub>r</sub></var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      On its own, this is actually a check to see if the hit position lies inside of a sphere centered on <lu-math data-inline><var>D<sub>o</sub></var></lu-math> with radius <lu-math data-inline><var>D<sub>r</sub></var></lu-math>. If the hit position is inside of that sphere <em>and</em> on the infinite plane that contains our disc, then it must be on the disc.
+   </p>
+   <p>
+      Sadly, there's no way to avoid having to do the math for the hit position. Ah, well. We can at least save a square root operation (good for computers) if we compute the check like this, remembering that the dot product of a vector with itself is the vector's length squared:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>H<sub>p</sub></var> - <var>D<sub>o</sub></var>||{% include lu-math/exponent.html exponent=2 %} &leq; <var>D<sub>r</sub></var>{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+      <lu-math-row>
+         (<var>H<sub>p</sub></var> - <var>D<sub>o</sub></var>) &bullet; (<var>H<sub>p</sub></var> - <var>D<sub>o</sub></var>) &leq; <var>D<sub>r</sub></var>{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+</section>
+
+<section>
+   <h2><a name="free-code">Free code!</a></h2>
+   <p>
+      The following C++ code is licensed under CC0 (<a href="https://creativecommons.org/publicdomain/zero/1.0/legalcode">full legal text</a> / <a href="https://creativecommons.org/publicdomain/zero/1.0/">summary</a>), and so is effectively a public domain work. You can incorporate it into your programs without the need for attribution, payment, or similar. (That said, linking back here would be polite!)
+   </p>
+   <p>
+      This code makes use of the <a href="https://github.com/g-truc/glm">GLM</a> library for vector math. It also depends on my <a href="{% link _articles/ray-plane-intersection.html %}"><code>ray_plane_intersection</code></a> function.
+      </li>
+   </ul>
+{% highlight cpp %}
+// Compute the intersection of a ray and a disc. The ray direction must be normalized. 
+// Returns the hit distance, from the ray's origin.
+bool ray_disc_intersection(
+   const glm::vec3& ray_origin,
+   const glm::vec3& ray_direction, // must be normalized
+
+   const glm::vec3& disc_origin,
+   const glm::vec3& disc_normal,
+   float radius,
+
+   float& hit_distance
+) {
+   float Hd;
+   bool  plane = ray_plane_intersection(ray_origin, ray_direction, disc_origin, disc_normal, Hd);
+   if (!plane)
+      return false;
+   glm::vec3 Hp = ray_origin + ray_direction * Hd;
+   glm::vec3 Dd = Hp - disc_origin;
+   if (glm::dot(Dd, Dd) > radius * radius)
+      return false;
+   //if (Hd < 0) // redundant with checks done in ray/plane
+   //   return false;
+   hit_distance = Hd;
+   return true;
+}
+{% endhighlight %}
+</section>

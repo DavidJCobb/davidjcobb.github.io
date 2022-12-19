@@ -99,6 +99,42 @@ body {
       
       height:calc(2rem * 2 + 2.5rem * 1.2); /* half the h1.grand-header margin, times two, plus the grand-header font-size times the line height */
    }
+   
+   position:relative;
+   &::after {
+      user-select:none;
+      pointer-events:none;
+      content:"";
+      position:absolute;
+      left:0;
+      top:0;
+      right:0;
+      bottom:0;
+      z-index:-1;
+      width:calc(2rem * 2 + 2.5rem * 1.2);
+      height:calc(2rem * 2 + 2.5rem * 1.2);
+      border-radius:calc(2rem * 2 + 2.5rem * 1.2 / 2);
+      
+      box-shadow:none;
+      transition-property:box-shadow;
+      transition-duration:0.8s;
+   }
+   &:hover::after {
+      box-shadow:
+         0 0 4.00rem rgba(255,255,255,0.3),
+         0 0 2.00rem rgba(255,255,255,0.4),
+         0 0 1.25rem rgba(255,255,255,0.2),
+         0 0 4px rgba(255,255,255,0.4),
+         0 0 2px rgba(255,255,255,0.5)
+      ;
+      transition-duration:3s;
+      transition-timing-function:cubic-bezier(.08,1.92,.81,.69);
+   }
+}
+@media (prefers-reduced-motion) {
+   #logo::after {
+      display:none!important;
+   }
 }
 #content {
    display:contents;
@@ -108,6 +144,58 @@ body {
    }
    >main {
       grid-area: page;
+   }
+}
+#page-github-history {
+   grid-area: header; /* same box as the page header */
+   align-self: end;
+   margin:0 0 .5em;
+   
+   order:10; /* show in front of header */
+   
+   display:flex;
+   flex-flow:row nowrap;
+   width:min-content;
+   gap:.5rem;
+   
+   font-size:.85em;
+   
+   >a {
+      $inset: 2px;
+   
+      line-height:1.5em;
+      text-align:center;
+      text-decoration:none;
+      white-space:nowrap;
+      
+      display:block;
+      padding:$inset 1em calc(0.25em + #{$inset});
+      border-radius:1em;
+      background:rgba(255, 255, 255, 0.8);
+      
+      background: unpack-backgrounds( append( (), $theme-scanline-background-layer, comma) ), rgba(255, 255, 255, 0.65);
+      text-shadow:
+         text-shadows-for-outline(rgba(255, 255, 255, 0.5)),
+          4px 0 4px #FFF,
+         -4px 0 4px #FFF
+      ;
+      
+      &:hover {
+         background-color:rgba(255, 255, 255, 0.8) !important;
+      }
+      
+      position:relative;
+      &::after {
+         content:"";
+         pointer-events:none;
+         user-select:none;
+         
+         position:absolute;
+         inset:2px;
+         border-radius:inherit;
+         
+         border:2px solid #AAA;
+      }
    }
 }
 body>footer {
@@ -214,4 +302,8 @@ body>footer {
       position:sticky;
       top:2rem;
    }
+}
+
+@include for-smartphones-only {
+   @import "layout-with-sidebar.mobile-addon";
 }

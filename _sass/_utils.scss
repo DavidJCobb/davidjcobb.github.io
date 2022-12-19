@@ -26,6 +26,29 @@
    @return $result
 }
 
+@function remove-unit($number) {
+   @if type-of($number) == "number" and not unitless($number) {
+      @return $number / ($number * 0 + 1);
+   }
+   @return $number;
+}
+
+@function text-shadows-for-outline($color) {
+   $text-shadows: ();
+   @for $x from -1 through 1 {
+      @for $y from -1 through 1 {
+         @if $x != 0 or $y != 0 {
+            $text-shadows: append(
+               $text-shadows,
+               #{$x * 2}px #{$y * 2}px 1px #{$color},
+               comma
+            );
+         }
+      }
+   }
+   @return $text-shadows;
+}
+
 @function unpack-backgrounds($list) {
    $result: ();
    
@@ -110,13 +133,6 @@
     - device has a screen
     - device does not have a pointer that can "hover" over things
     - maximum aspect ratio ensures we only affect portrait orientation
-    
-   NOTE: thanks to Firefox bug 1747633, media queries are actually 
-   completely unreliable and broken. right now, Firefox is telling me 
-   that i have a coarse non-hover-capable device... on my desktop, 
-   with a mouse. that bug was incorrectly marked as RESOLVED INVALID 
-   by the reporter and never changed back when they were able to 
-   repro again, so it will never be seen or fixed
     
 */
 @mixin for-smartphones-only {

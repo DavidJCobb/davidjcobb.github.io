@@ -1,0 +1,250 @@
+---
+title: Ray/plane intersections
+tags:
+ - 3D
+ - geometry
+ - intersection
+ - math
+ - raycasting
+social_media:
+   title: Cobb - Ray/plane intersections
+   description: The math behind doing raycasts for 3D planes, with the mathematical derivation fully explained step, by step. Includes public-domain code.
+extra_css_files:
+ - lu-math.css
+table_of_contents:
+ - id:    defining
+   title: Defining our shapes
+ - id:    solving
+   title: Solving for the ray
+ - id:    free-code
+   title: Free code!
+   
+---
+{%- include lu-math/defines.html -%}
+<section>
+   <p>
+      Here, I'll go over how to test for the intersection between a ray and a plane. 
+      I've also provided code at the bottom as a public domain work.
+   </p>
+</section>
+
+<section>
+   <h2><a name="defining"></a>Defining our shapes</h2>
+   <p>
+      If you take the dot product of two vectors that are perpendicular, then the result is 
+      zero. This means that we can define our plane as follows:
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>P<sub>o</sub></var></dt>
+               <dd>origin of the plane</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>P<sub>n</sub></var></dt>
+               <dd>plane surface normal</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>V</var></dt>
+               <dd>any point on the plane</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-row data-equation-number="1">
+         (<var>V</var> - <var>P<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var>
+         =
+         0
+      </lu-math-row>
+   </lu-math>
+   <p>
+      The above equation imposes a simple requirement: the vector from any point on the plane 
+      to any other point on the plane must be perpendicular to the plane's normal. The "plane 
+      origin" is just a point that we already know is on the plane; it doesn't have to be at 
+      any specific part of the plane (e.g. a centerpoint), and it isn't otherwise "special."
+   </p>
+   <p>
+      Our ray, meanwhile, is most usefully defined as:
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>R<sub>o</sub></var></dt>
+               <dd>the ray's origin</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>R<sub>d</sub></var></dt>
+               <dd>the ray's direction</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>p</sub></var></dt>
+               <dd>the position at which the ray hits some surface</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>d</sub></var></dt>
+               <dd>the hit distance: the distance from the ray origin to the hit position</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-row>
+         <var>H<sub>p</sub></var><!--
+      -->&nbsp;=&nbsp;<!--
+      --><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+      </lu-math-row>
+   </lu-math>
+</section>
+
+<section>
+   <h2><a name="solving">Solving for the ray</a></h2>
+   <p>
+      We check for intersections by substituting our ray equation into our plane equation:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<mark><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - <var>P<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var>
+         =
+         0
+      </lu-math-row>
+   </lu-math>
+   <p>
+      We want to solve for <var>H<sub>d</sub></var>. Let's start by expanding that dot product operation:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - <var>P<sub>ox</sub></var>)<var>P<sub>nx</sub></var>
+          + 
+         (<var>R<sub>oy</sub></var> + <var>R<sub>dy</sub></var><var>H<sub>d</sub></var> - <var>P<sub>oy</sub></var>)<var>P<sub>ny</sub></var>
+          + 
+         (<var>R<sub>oz</sub></var> + <var>R<sub>dz</sub></var><var>H<sub>d</sub></var> - <var>P<sub>oz</sub></var>)<var>P<sub>nz</sub></var>
+         =
+         0
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>ox</sub></var><mark><var>P<sub>nx</sub></var></mark> + <var>R<sub>dx</sub></var><mark><var>P<sub>nx</sub></var></mark><var>H<sub>d</sub></var> - <var>P<sub>ox</sub></var><mark><var>P<sub>nx</sub></var></mark>)
+          + 
+         (<var>R<sub>oy</sub></var><mark><var>P<sub>ny</sub></var></mark> + <var>R<sub>dy</sub></var><mark><var>P<sub>ny</sub></var></mark><var>H<sub>d</sub></var> - <var>P<sub>oy</sub></var><mark><var>P<sub>ny</sub></var></mark>)
+          + 
+         (<var>R<sub>oz</sub></var><mark><var>P<sub>nz</sub></var></mark> + <var>R<sub>dz</sub></var><mark><var>P<sub>nz</sub></var></mark><var>H<sub>d</sub></var> - <var>P<sub>oz</sub></var><mark><var>P<sub>nz</sub></var></mark>)
+         =
+         0
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Let's group the terms that are multiplied by <var>H<sub>d</sub></var>:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>R<sub>dx</sub></var><var>P<sub>nx</sub></var> + <var>R<sub>dy</sub></var><var>P<sub>ny</sub></var> + <var>R<sub>dz</sub></var><var>P<sub>nz</sub></var>)<var>H<sub>d</sub></var>
+          + 
+         <var>R<sub>ox</sub></var><var>P<sub>nx</sub></var> - <var>P<sub>ox</sub></var><var>P<sub>nx</sub></var>
+          + 
+         <var>R<sub>oy</sub></var><var>P<sub>ny</sub></var> - <var>P<sub>oy</sub></var><var>P<sub>ny</sub></var>
+          + 
+         <var>R<sub>oz</sub></var><var>P<sub>nz</sub></var> - <var>P<sub>oz</sub></var><var>P<sub>nz</sub></var>
+         =
+         0
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Now, we can recombine some of these multiplications-and-additions back into dot products:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>R<sub>dx</sub></var><var>P<sub>nx</sub></var> + <var>R<sub>dy</sub></var><var>P<sub>ny</sub></var> + <var>R<sub>dz</sub></var><var>P<sub>nz</sub></var>)<var>H<sub>d</sub></var>
+          +
+         <mark>(<var>R<sub>o</sub></var> - <var>P<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var></mark>
+         =
+         0
+      </lu-math-row>
+      <lu-math-row>
+         (<mark><var>R<sub>d</sub></var> &bullet; <var>P<sub>n</sub></var></mark>)<var>H<sub>d</sub></var>
+          +
+         (<var>R<sub>o</sub></var> - <var>P<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var>
+         =
+         0
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Of course, we want to get <var>H<sub>d</sub></var> onto one side of the equation, by itself:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>R<sub>d</sub></var> &bullet; <var>P<sub>n</sub></var>)<var>H<sub>d</sub></var>
+         =
+         <mark>-(<var>R<sub>o</sub></var> - <var>P<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var></mark>
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>d</sub></var> &bullet; <var>P<sub>n</sub></var>)<var>H<sub>d</sub></var>
+         =
+         <mark>(<var>P<sub>o</sub></var> - <var>R<sub>o</sub></var>)</mark> &bullet; <var>P<sub>n</sub></var>
+      </lu-math-row>
+      <lu-math-row data-equation-number="2">
+         <var>H<sub>d</sub></var>
+         =
+         {% include lu-math/fraction.html
+            numer="(<var>P<sub>o</sub></var> - <var>R<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var>"
+            denom="<mark><var>R<sub>d</sub></var> &bullet; <var>P<sub>n</sub></var></mark>"
+            
+            numer_is_expr=true
+         -%}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Voila! Every ray that intersects the plane will have a solution for the above equation, which means 
+      that if the above equation is unsolveable &mdash; that is, if it would involve a division by zero &mdash; 
+      then the ray doesn't intersect the plane.
+   </p>
+   <p>
+      That said, we also need to double-check one more condition:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         <var>H<sub>d</sub></var> &geq; 0
+      </lu-math-row>
+   </lu-math>
+   <p>
+      We need to make sure that the hit distance isn't negative &mdash; that our hit position isn't <em>behind</em> 
+      our ray.
+   </p>
+</section>
+
+<section>
+   <h2><a name="free-code">Free code!</a></h2>
+   <p>
+      The following C++ code is licensed under CC0 (<a href="https://creativecommons.org/publicdomain/zero/1.0/legalcode">full legal text</a> / <a href="https://creativecommons.org/publicdomain/zero/1.0/">summary</a>), and so is effectively a public domain work. You can incorporate it into your programs without the need for attribution, payment, or similar. (That said, linking back here would be polite!)
+   </p>
+   <p>
+      This code makes use of the <a href="https://github.com/g-truc/glm">GLM</a> library for vector math.
+   </p>
+{% highlight cpp %}
+// Compute the intersection of a ray and a plane with infinite bounds. The ray direction 
+// must be normalized. Returns the hit distance, from the ray's origin; to get the hit 
+// position, multiply that by the ray's direction and then add the ray's origin.
+bool ray_plane_intersection(
+   const glm::vec3& ray_origin,
+   const glm::vec3& ray_direction, // must be normalized
+
+   const glm::vec3& plane_origin,
+   const glm::vec3& plane_normal,
+
+   float& hit_distance // undefined (may be trashed) if there's no hit
+) {
+   constexpr float EPSILON = 1e-8;
+   //
+   auto denom = glm::dot(plane_normal, ray_direction);
+   //
+   // Non-zero check (accounting for floating-point imprecision):
+   //
+   if (denom > EPSILON || denom < -EPSILON) {
+      auto hit_distance = glm::dot(plane_origin - ray_origin, plane_normal) / denom;
+      if (hit_distance >= 0) {
+         return true;
+      }
+   }
+   return false;
+}
+{% endhighlight %}
+</section>

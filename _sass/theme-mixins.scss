@@ -45,6 +45,21 @@ $theme-gradient-background-layers: apply-all-to(
    )
 ) !default;
 
+$theme-scanline-background-layer: (
+   "image": quote(linear-gradient(to bottom,
+         var(--pinstripe-color) 0%,
+         var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-a)),
+         transparent            calc(var(--pinstripe-adapt) * var(--pinstripe-x-a)),
+         transparent            calc(var(--pinstripe-adapt) * var(--pinstripe-x-b)),
+         var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-b)),
+         var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-c)),
+         transparent            calc(var(--pinstripe-adapt) * var(--pinstripe-x-c))
+      )),
+   "attach": "fixed",
+   "repeat": "repeat",
+   "size":   "10px calc((var(--pinstripe-width) + var(--pinstripe-gap)) * 2px)"
+);
+
 @mixin content-card-shadow($inset: false) {
    $-inset-str: unquote("");
    @if $inset {
@@ -98,22 +113,7 @@ $content-card-shadow-max-size:36px;
    @if $include-scanlines {
       @include scanline-bg-params;
       
-      $scanline-bg: (
-         "image": quote(linear-gradient(to bottom,
-               var(--pinstripe-color) 0%,
-               var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-a)),
-               transparent            calc(var(--pinstripe-adapt) * var(--pinstripe-x-a)),
-               transparent            calc(var(--pinstripe-adapt) * var(--pinstripe-x-b)),
-               var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-b)),
-               var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-c)),
-               transparent            calc(var(--pinstripe-adapt) * var(--pinstripe-x-c))
-            )),
-         "attach": "fixed",
-         "repeat": "repeat",
-         "size":   "10px calc((var(--pinstripe-width) + var(--pinstripe-gap)) * 2px)"
-      );
-      
-      $all-backgrounds: list-prepend($all-backgrounds, $scanline-bg);
+      $all-backgrounds: list-prepend($all-backgrounds, $theme-scanline-background-layer);
    }
    
    background: unpack-backgrounds($all-backgrounds), $theme-background-color;
