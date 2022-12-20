@@ -115,6 +115,182 @@
    @return $result
 }
 
+/*
+   Mixins
+*/
+
+/* Use inside of a table. */
+@mixin table-top-left-cell {
+   &>tr,
+   &>:is(thead, tbody)>tr {
+      &:first-child>:is(th, td):first-child {
+         @content;
+      }
+   }
+}
+@mixin table-top-right-cell {
+   >tr,
+   >:is(thead, tbody)>tr {
+      &:first-child>:is(th, td):last-child {
+         @content;
+      }
+   }
+}
+@mixin table-bottom-left-cell {
+   &>tr,
+   &>:is(thead, tbody)>tr {
+      &:last-child>:is(th, td):first-child {
+         @content;
+      }
+   }
+}
+@mixin table-bottom-right-cell {
+   >tr,
+   >:is(thead, tbody)>tr {
+      &:last-child>:is(th, td):last-child {
+         @content;
+      }
+   }
+}
+@mixin table-corner-left-cells {
+   &>tr,
+   &>:is(thead, tbody)>tr {
+      &:first-child,
+      &:last-child {
+         >:is(th, td):first-child {
+            @content;
+         }
+      }
+   }
+}
+@mixin table-corner-right-cells {
+   &>tr,
+   &>:is(thead, tbody)>tr {
+      &:first-child,
+      &:last-child {
+         >:is(th, td):last-child {
+            @content;
+         }
+      }
+   }
+}
+
+/* Use inside of a table. */
+@mixin border-collapse {
+   /*
+      The CSS spec says that border-collapse completely nullifies border-radius. Apparently, 
+      CSS 2.1 had spec'd out a reasonable behavior, but because browsers didn't bother to 
+      implement it, the CSSWG just spiked it outright "for interop:"
+      
+         https://github.com/w3c/csswg-drafts/issues/475
+         
+      So now, we need ugly hacks for rounded collapsing borders.
+   */
+   
+   border-collapse:separate;
+   border-spacing:0;
+   
+   /* TODO: Do browsers always force-wrap table content in TBODY if unwrapped? If so, we 
+            can simplify the selectors here */
+   
+   /*
+      Cheap hack to account for rowSpan: prevent it from overflowing the rounded corner 
+      (can't really make it collapse its bottom border, though):
+   */
+   clip-path:inset(0 0 0 0 round 1em);
+   /*
+      Note that we actually can't emulate border-collapse for tables with rowSpan, because 
+      if some row R begins with a rowSpan > 1 cell, rows below R can no longer rely on the 
+      :first-child pseudo-class to identify cells on the left edge of the table.  The rows 
+      below R will have their cells inset by the rowSpan'd cell in R: the first TD/TH node 
+      in these rows will actually represent the cell in the second column.
+      
+      Similar issues exist with the rightmost column.
+   */
+   
+   $-cell: ":is(td, th)";
+   $-part: ":is(thead, tbody)";
+   
+   /*
+      Forward table border-radius to cells:
+   */
+   >:is(tr, thead, tbody),
+   >#{$-part}>tr {
+      &:first-child {
+         border-top-left-radius:inherit;
+         border-top-right-radius:inherit;
+      }
+      &:last-child {
+         border-bottom-left-radius:inherit;
+         border-bottom-right-radius:inherit;
+      }
+   }
+   >tr,
+   >#{$-part}>tr {
+      /*
+         Use :where() to lower specificity.
+      */
+      @at-root :where(#{&})>#{$-cell}:first-child {
+         border-top-left-radius:inherit;
+         border-bottom-left-radius:inherit;
+      }
+      @at-root :where(#{&})>#{$-cell}:last-child {
+         border-top-right-radius:inherit;
+         border-bottom-right-radius:inherit;
+      }
+   }
+   
+   /*
+      Collapse borders between the table and the cells, preferring the table:
+   */
+   >tr,
+   >:is(thead, tbody)>tr {
+      >:is(td, th) {
+         &:first-child {
+            border-left-width:0!important;
+         }
+         &:last-child {
+            border-right-width:0!important;
+         }
+      }
+   }
+   
+   $-h-border-tc1: ">tr:whichever-child>#{$-cell}";
+   $-h-border-tc2: ">#{$-part}:whichever-child#{$-h-border-tc1}";
+
+   #{selector-replace($-h-border-tc1, ":whichever-child", ":first-child")},
+   #{selector-replace($-h-border-tc2, ":whichever-child", ":first-child")} {
+      border-top-width:0!important;
+   }
+   
+   #{selector-replace($-h-border-tc1, ":whichever-child", ":last-child")},
+   #{selector-replace($-h-border-tc2, ":whichever-child", ":last-child")} {
+      border-bottom-width:0!important;
+   }
+   
+   /* needed to account for rowSpan */
+   :is(td, th).force-is-bottom-row {
+      border-bottom-width:0!important;
+   }
+   
+   /*
+      Collapse borders between cells:
+   */
+   >tr,
+   >#{$-part}>tr {
+      >#{$-cell}+#{$-cell} {
+         border-left-width:0!important;
+      }
+   }
+   >tr+tr,
+   >#{$-part}>tr+tr,
+   >#{$-part}+#{$-part}>tr {
+      >#{$-cell} {
+         border-top-width:0!important;
+      }
+   }
+}
+
 @mixin for-firefox-only {
    @-moz-document url-prefix() {
       @content;

@@ -1,0 +1,632 @@
+---
+title: CSS can't cope with <code>rowSpan</code>
+tags:
+ - css
+ - web frontend
+social_media:
+   description: Rounded corners on tables will break if your tables might contain cells that span multiple rows.
+table_of_contents:
+ - id:    intro-border-collapse
+   title: An introduction to <code>border-collapse</code>
+ - id:    border-radius
+   title: Let's round off those corners
+ - id:    emulation
+   title: Emulating collapsed borders
+ - id:    forwarding-radius
+   title: Forwarding <code>border-radius</code> to cells
+ - id:    possible-fix
+   title: What could fix this?
+collection_item_css_files:
+ - sample-tables.css
+   
+---
+<div hidden id="figure-aria-note">
+   [There is a visual figure here for sighted users, showing them what the text has already described.]
+</div>
+<div hidden id="figure-aria-note-brief">
+   [Figure for sighted users here.]
+</div>
+
+<section>
+   <p>
+      The CSS spec states that <code>border-collapse</code> completely nullifies <code>border-radius</code>. I contend that this is a fundamentally mistaken decision, and there is no straightforward and reliable workaround. If the spec does not change, then table border styling will remain kneecapped.
+   </p>
+</section>
+
+<section>
+   <h2><a name="intro-border-collapse"></a>An introduction to <code>border-collapse</code></h2>
+   <p>
+      In HTML, by default, tables have separated borders. If you have a four-by-four table &mdash; four cells wide; four cells high &mdash; and you put a border on each cell, the resulting table will look like four outlined boxes, slightly separated from one another.
+   </p>
+   <figure class="card-cutout" aria-labelledby="figure-aria-note">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles sample-table borders-per-cell">
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      If you add a border to the table as a whole, and use the <code>outset</code> style for the table and the <code>inset</code> style for the cells, then you get the typical look for tables in the 1990s.
+   </p>
+   <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles sample-table vintage">
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      Let's deconstruct this effect, if only so that blind readers using text-to-speech browsers can follow along. The <code>inset</code> and <code>outset</code> effects produce a basic shadow effect that creates the illusion of depth. Sighted users will look at a table like this and see a table with white borders between the cells, with these borders seeming to be very slightly raised off of the page &mdash; a cheap, basic 3D effect. Another way to think of it is as if the table as a whole is raised slightly off the page, and the cells in the table are then sunken back onto the page.
+   </p>
+   <p>
+      That's what's happening visually: the cells share white shadowed borders that "collapse" together rather than reamining separate. What's happening on a technical level, of course, is the exact opposite. The table and its cells have separate (i.e. non-collapsing) borders that are colored in different shades of grey: these produce a shadow effect. The space <em>between</em> these borders, where the page background shows through, is what we visually perceive as the white border that is casting and receiving these shadows.
+   </p>
+   <p>
+      The default table styles, then, lend themselves very well to this sort of table border, which to my recollection was all the rage in the '90s. We use technically-separate borders to fake a depth effect on visually-collapsing borders. What happens, then, if we want a collapsing border without this 3D effect? For that, we use CSS's <code>border-collapse</code> property. If we give our table cells a simple one-pixel border, then applying <code>border-collapse: collapse</code> to the table will produce a result wherein the cells are separated by a single line: each cell shares a border with the cells adjacent to it.
+   </p>
+   <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles sample-table collapsed">
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      As a nice bonus, we can even use different border styles on two adjacent cells, and the browser will merge them intelligently. For example, suppose we have a table with just two cells, one above the other. Both of these cells have single-pixel black borders, except that the lower cell has a three-pixel red top border. When two cells need to share a border, but they want different colors or styles for that border, <a href="https://w3c.github.io/csswg-drafts/css2/#border-conflict-resolution">the CSS spec defines an algorithm</a> by which browsers will try to identify which of the cells' style is more prominent, and this is the border that is kept. In our example, we see a red border between the two cells: the upper cell's thick red top border takes priority over the lower cell's thin black bottom border.
+   </p>
+   <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles sample-table mismatch-example">
+           <tr>
+              <td style="border:1px solid black">X</td>
+           </tr>
+           <tr>
+              <td style="border:1px solid black; border-top:3px solid red;">Y</td>
+           </tr>
+         </table>
+      </div>
+   </figure>
+   <p>
+      So collapsing borders are pretty neat!
+   </p>
+</section>
+
+<section>
+   <h2><a name="border-radius"></a>Let's round off those corners</h2>
+   <p>
+      In CSS, we can give any element rounded corners by applying the <code>border-radius</code> property to it. Naturally, this extends to tables. We can take a table with separated borders and give it a border radius, and it'll just work... sort of. If we apply <code>border-radius</code> to the table, and give the cells their own border, then the cells' borders will remain square and protrude out of the rounded table. Our cells don't have a background color, so the result is that you see the table's rounded border <em>beneath</em> the cell, overlapping the cell's content.
+   </p>
+   <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles sample-table vintage rounded-naive">
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      So that sucks. And sadly, not only are collapsing borders no better in this regard; they're actually worse: setting <code>border-collapse: collapse</code> will forcibly disable <code>border-radius</code> on the entire table and all of its cells!
+   </p>
+   <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles sample-table rounded-naive collapsed">
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+</section>
+
+<section>
+   <h2><a name="emulation"></a>Emulating collapsed borders</h2>
+   <p>
+      The only way to have both collapsing borders and a rounded table is to emulate it ourselves. This means manually forcing cells' border widths to zero based on what they're adjacent to. Let's start with a basic example: another four-by-four table, with single-pixel black borders. Let's suppose we use the following CSS to collapse the borders:
+   </p>
+{% highlight css %}
+table {
+   border-collapse: separate;
+   border-spacing:  0;
+}
+:is(td, th) {
+   border: 1px solid #000;
+}
+:is(td, th) + :is(td, th) {
+   border-left-width:0!important;
+}
+tr + tr > :is(td, th) {
+   border-top-width:0!important;
+}
+{% endhighlight %}
+   <p>
+      Given any table cell <var>C</var>: if <var>C</var> has a cell on its left, then <var>C</var>'s left border width will be forced to zero; and if <var>C</var> has a cell above it, then <var>C</var>'s top border width will be forced to zero. This means that visually, it will share its top and left borders with adjacent cells.
+   </p>
+   <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-1">
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      For a basic table, with just ordinary rows (<code>TR</code>) and cells (<code>TD</code>), the result works pretty well. Browsers automatically wrap our table content in a <code>tbody</code> if we don't do so ourselves, so we have to account for that when writing our styles &mdash; we can't select <code>TR</code> elements as if they're direct children of the table.
+   </p>
+   <p>
+      While we're on that subject, what happens if we add a <code>thead</code> to the table?
+   </p>
+   <figure class="card-cutout multi-figure" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-1">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-1 problem-1-obvious">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      Ah, that doesn't work so well. We're using sibling selectors on the table rows, but since we're using "official" table section elements &mdash; <code>thead</code> and <code>tbody</code> &mdash; the rows in each of those aren't siblings. As a result, the bottom border on the header row fails to collapse with the top border on the first body row. (For sighted users, I've shown two tables; the one on the right thickens the affected borders, and gives them bright contrasting colors. This same convention will be used a few more times.)
+   </p>
+   <p>
+      We need a new approach:
+   </p>
+{% highlight css %}
+table {
+   border-collapse: separate;
+   border-spacing:  0;
+}
+
+:is(td, th) {
+   border: 1px solid #000;
+}
+
+:is(td, th) + :is(td, th) {
+   border-left-width:0!important;
+}
+
+:is(
+   tr + tr,
+   :is(tbody, thead) + :is(tbody, thead) > tr:first-child
+) > :is(th, td) {
+   border-top-width:0!important;
+}
+{% endhighlight %}
+   <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-2">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      Ah, that works better. Those borders collapse properly now. As a benefit, with the way we wrote the styles, if we divide a table into <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/tbody#multiple_bodies">multiple body sections</a> for some reason, things will still work.
+   </p>
+   <p>
+      What if we want a different color for the table as a whole, versus its cells, though? Let's set the cell color to a dark grey, and give the table a <code>1px solid black</code> border.
+   </p>
+   <figure class="card-cutout multi-figure" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-3">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-3 problem-2-obvious">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      Hm, that doesn't really work. The cell borders don't collapse into the table borders. Handling this is going to get pretty ugly...
+   </p>
+{% highlight css %}
+table {
+   border-collapse: separate;
+   border-spacing:  0;
+   
+   border: 1px solid #000;
+}
+
+:is(td, th) {
+   border: 1px solid #999;
+}
+
+/*
+   Collapse adjacent cells' borders together:
+*/
+:is(td, th) + :is(td, th) {
+   border-left-width:0!important;
+}
+:is(
+   tr + tr,
+   :is(tbody, thead) + :is(tbody, thead) > tr:first-child
+) > :is(th, td) {
+   border-top-width:0!important;
+}
+
+/*
+   Collapse cells' borders into the table border:
+*/
+:is(tbody, thead):first-child > tr:first-child > :is(th, td) {
+   border-top-width:0!important;
+}
+:is(tbody, thead):last-child > tr:last-child > :is(th, td) {
+   border-bottom-width:0!important;
+}
+:is(th, td):first-child {
+   border-left-width:0!important;
+}
+:is(th, td):last-child {
+   border-right-width:0!important;
+}
+{% endhighlight %}
+   <p>
+      Let's take a look:
+   </p>
+   <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-4">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      Ah yes, that seems to work perfectly. Black borders around the table; grey borders between cells; but the grey borders don't double up with the black borders, nor with each other. I think we've solved this problem quite nicely: we've found a way to emulate the effects of <code>border-collapse: collapse</code> entirely by hand, with no downsides whatsoever. That's splendid.
+   </p>
+   <p>
+      Oh, uh, just one more thing. What happens if one of our cells uses <code>rowSpan</code> and extends down to the bottom of the table?
+   </p>
+   <figure class="card-cutout multi-figure" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-4">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            <tr>
+               <td rowSpan="4"> S </td>
+               <td> X </td>
+               <td> X </td>
+               <td> X </td>
+            </tr>
+            {%- for i in (1..3) -%}
+            <tr>
+               {%- for j in (1..3) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-4 problem-3-obvious">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            <tr>
+               <td rowSpan="4"> S </td>
+               <td> X </td>
+               <td> X </td>
+               <td> X </td>
+            </tr>
+            {%- for i in (1..3) -%}
+            <tr>
+               {%- for j in (1..3) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      Ah, right. The bottom border of the row-spanned cell won't collapse with the bottom border of the table, so the two borders double up. The row-spanned cell stretches into the bottom row, but the element <em>itself</em> is located in one of the rows above that.
+   </p>
+   <p>
+      CSS has no way to know that this cell is part of the bottom row of the table. There's no way to discern that from the element hierarchy alone, because CSS selectors can only go forwards and inwards, not backwards or outwards. We have combinators for the next sibling (<code>+</code>), all next siblings (<code>~</code>), for child elements (<code>&gt;</code>), and for descendants (whitespace); but nothing for previous siblings, parents, or ancestors. What's more: even if we could navigate, within a selector, from the row-spanned cell to its parent row, and then advance over the next rows &mdash; and let's not even consider the complications involved in dealing with additional <code>thead</code> and <code>tbody</code> elements! &mdash; CSS just doesn't have the logic needed for us to extract the value of the cell's <code>rowSpan</code> attribute, and then check for <em>that</em> many (or fewer) additional rows, to know if the row-spanned cell extends to the bottom of the table.
+   </p>
+   <p>
+      And that's without even getting into combinations of multiple row-spanned cells, or the ways that col-spanned cells could displace row-spanned cells. The simple fact of the matter is that there is no pure-CSS solution to this problem. But let's move on for now, and tackle <code>border-radius</code>. Put a mental pin in this whole problem, though, because we're going to have to come back to it.
+   </p>
+</section>
+
+<section>
+   <h2><a name="forwarding-radius"></a>Forwarding <code>border-radius</code> to cells</h2>
+   <p>
+      As we explored earlier, setting a <code>border-radius</code> on a table will round off the table, but not its contained cells. This, of course, won't produce the effect that we typically want when we use that CSS property. To work around this, we need to manually forward the border radius from the table to its cells.
+   </p>
+   <p>
+      We can add a radius to the table &mdash; and its corner cells &mdash; using the following CSS. Table rows don't apply <code>border-radius</code>, so we can have them <code>inherit</code> the value from the table, and then have cells inherit just the corner radii they need.
+   </p>
+{% highlight css %}
+table {
+   border-radius: 1em;
+}
+tbody, thead, tr {
+   border-radius: inherit;
+}
+
+tr:first-child > :is(td, th):first-child {
+   border-top-left-radius: inherit;
+}
+tr:first-child > :is(td, th):last-child {
+   border-top-right-radius: inherit;
+}
+
+tr:last-child > :is(td, th):first-child {
+   border-bottom-left-radius: inherit;
+}
+tr:last-child > :is(td, th):last-child {
+   border-bottom-right-radius: inherit;
+}
+{% endhighlight %}
+   <p>
+      Let's try that on the table <em>just before</em> our row-span test: so, a table with a heading section and a body section.
+   </p>
+   <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-4 radius-try-1">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      Ah, right. The CSS we're trying here doesn't work with table sections. The header row's bottom border curves upward, and the first body row's top border would curve downward within the table were it not hidden by our attempts at emulating collapsed borders. Let's revise our radius styles a bit:
+   </p>
+{% highlight css %}
+table {
+   border-radius: 1em;
+}
+tbody, thead {
+   border-radius: inherit;
+}
+
+:is(tbody, thead):first-child>tr:first-child {
+   border-top-left-radius:  inherit;
+   border-top-right-radius: inherit;
+}
+:is(tbody, thead):last-child>tr:first-child {
+   border-bottom-left-radius:  inherit;
+   border-bottom-right-radius: inherit;
+}
+
+tr>:is(td, th):first-child {
+   border-top-left-radius:    inherit;
+   border-bottom-left-radius: inherit;
+}
+tr>:is(td, th):last-child {
+   border-top-right-radius:    inherit;
+   border-bottom-right-radius: inherit;
+}
+{% endhighlight %}
+   <p>
+      And let's see how that looks:
+   </p>
+   <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-4 radius-try-2">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            {%- for i in (1..4) -%}
+            <tr>
+               {%- for j in (1..4) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      That's a lot better. Now let's ruin everything by using <code>rowSpan</code>.
+   </p>
+   <figure class="card-cutout multi-figure" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-4 radius-try-2">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            <tr>
+               <td rowSpan="4"> S </td>
+               <td> X </td>
+               <td> X </td>
+               <td> X </td>
+            </tr>
+            {%- for i in (1..3) -%}
+            <tr>
+               {%- for j in (1..3) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-4 radius-try-2 problem-4-obvious">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            <tr>
+               <td rowSpan="4"> S </td>
+               <td> X </td>
+               <td> X </td>
+               <td> X </td>
+            </tr>
+            {%- for i in (1..3) -%}
+            <tr>
+               {%- for j in (1..3) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
+      The row-spanned cell extends into the bottom row, but the <code>TD</code> element itself is located in one of the prior rows. There is no way to tell, with CSS, that this cell is in the bottom row, and just like with <code>border-collapse</code> emulation, this is a problem for using <code>border-radius</code>. We have no pure-CSS way to tell this cell to ronud off its bottom-left corner, so the cell <em>isn't</em> rounded. The cell's bottom border protrudes out of the table's rounded bottom-left corner. What's more: if this cell had a background color, then that background color would poke out of the table and produce a rectangular corner as well.
+   </p>
+   <p>
+      There simply is no way to solve this. It's simply impossible for us to traverse the hierarchy using CSS and identify when a row-spanned cell extends into the bottom row of a table section, or of an entire table.
+   </p>
+</section>
+
+<section>
+   <h2><a name="possible-fix"></a>What could fix this?</h2>
+   <p>
+      Honestly, I think the only thing that could ever remedy this would be pseudo-classes like <code>:bottom-row-cell</code>. I'm not a browser implementer, though, so I don't know how feasible it would be to add something like this. A few possible concerns:
+   </p>
+   <ul>
+      <li>
+         Some languages display text in a different direction or even an entirely different orientation. Newer CSS APIs are named with this in mind, referring to the "block axis" and the "inline axis" rather than the "vertical" and "horizontal" axes. How do these sorts of localization concerns interact with table layouts?
+      </li>
+      <li>
+         Should a pseudo-class like this be made available to non-table elements that use CSS <code>display: table</code> and friends? Would that be feasible?
+      </li>
+   </ul>
+</section>

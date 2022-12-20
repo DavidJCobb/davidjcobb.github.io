@@ -1,0 +1,973 @@
+---
+title: Ray/cylinder intersections
+tags:
+ - 3D
+ - geometry
+ - intersection
+ - math
+ - raycasting
+social_media:
+   description: The math behind doing raycasts for 3D cylinder. Includes public-domain code.
+extra_css_files:
+ - lu-math.css
+   
+---
+<section>
+   <p>
+      There are a lot of people out on the web who are willing to share raycasting code, 
+      but not a whole lot of them bother to actually apply a permissive license to it so 
+      that people can legally use it. What's more, a lot of them don't explain how they 
+      actually derived the math involved either.
+   </p>
+   <p>
+      Here, I'm going to walk through how to put together a ray/cylinder intersection test. 
+      I've also provided code at the bottom as a public domain work.
+   </p>
+</section>
+
+<section>
+   <h2><a name="parametric"></a>Parametric surface of a cylinder</h2>
+   <p>
+      The parametric equations (that is, equations with parameters) for a cylinder are as follows:
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>C<sub>h</sub></var></dt>
+               <dd>height of the cylinder</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>C<sub>r</sub></var></dt>
+               <dd>radius of the cylinder</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>o</sub></var></dt>
+               <dd>height offset on the range [0, <var>C<sub>h</sub></var>], where 0 is aligned with an endcap</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>&theta;</var></dt>
+               <dd>any angle, basically</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-aligned data-equation-number="1">
+         {%- assign common_args = "<var>H<sub>o</sub></var>, <var>&theta;</var>" | split: ", " -%}
+         <lu-math-row>
+            <lu-math-part>
+               {%- include lu-math/function-def.html
+                  name="f<sub><var>x</var></sub>"
+                  args=common_args
+               %}
+               =
+            </lu-math-part>
+            <lu-math-part>
+               <var>C<sub>r</sub></var> &times; cos(<var>&theta;</var>)<!--
+         --></lu-math-part>
+         </lu-math-row>
+         <lu-math-row>
+            <lu-math-part>
+               {%- include lu-math/function-def.html
+                  name="f<sub><var>y</var></sub>"
+                  args=common_args
+               %}
+               =
+            </lu-math-part>
+            <lu-math-part>
+               <var>C<sub>r</sub></var> &times; sin(<var>&theta;</var>)<!--
+         --></lu-math-part>
+         </lu-math-row>
+         <lu-math-row>
+            <lu-math-part>
+               {%- include lu-math/function-def.html
+                  name="f<sub><var>z</var></sub>"
+                  args=common_args
+               %}
+               =
+            </lu-math-part>
+            <lu-math-part><!--
+            --><var>H<sub>o</sub></var><!--
+         --></lu-math-part>
+         </lu-math-row>
+      </lu-math-aligned>
+   </lu-math>
+   <p>
+      Technically, these equations describe an infinite cylinder &mdash; one with no endcaps, which extends forever in both directions. However, we can still use them to put together the tests for a finite clinder with endcaps.
+   </p>
+   <p>
+      You may notice that these are very similar to the parametric equations <a href="{% link _articles/ray-cone-intersection.html %}">for a cone</a>. Mathematically speaking, a cylinder is basically a cone with infinite height, and geometrically speaking, a cylinder is just a cone that never tapers. Moreover, if we ignore the Z-component, then we're literally just writing the equation for a 2D circle.
+   </p>
+</section>
+
+<section>
+   <h2><a name="implicit">Implicit surface of a cone</a></h2>
+   <p>
+      We have a <dfn>parametric surface</dfn> &mdash; that is, three parametric equations which define all points on the surface of the cylinder. In order to solve for any given part of the equation, however, we need an <dfn>implicit surface</dfn>: a surface defined by a single equation, wherein <lu-math data-inline><var>x</var></lu-math>, <lu-math data-inline><var>y</var></lu-math>, and <lu-math data-inline><var>z</var></lu-math> are on one side, and 0 is on the other side.
+   </p>
+   <p>
+      The above equations basically define a 2D circle anchored at <lu-math data-inline>(0, 0)</lu-math> on the XY-plane, and then extend it infinitely along the Z-axis. The circle's radius is <lu-math data-inline><var>C<sub>r</sub></var></lu-math>. This means that we can represent the X and Y equations in terms of any arbitrary 2D vector <lu-math data-inline><var>P<sub>2D</sub></var></lu-math>:
+   </p>
+   <lu-math data-equation-number="2">
+      ||<var>P<sub>2D</sub></var>||<!--
+   -->&nbsp;=&nbsp;<!--
+   --><var>C<sub>r</sub></var>
+   </lu-math>
+   <p>
+      If we project a 3D vector <lu-math data-inline><var>P</var></lu-math> onto the Z-axis, then we'll have just its Z-component. Remove that component, and we can then fit it into the equation above.
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>P</var></dt>
+               <dd>any point on the curved surface of the infinite cylinder</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>C<sub>a</sub></var></dt>
+               <dd>axis of the cylinder; in this case, (0, 0, 1)</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>P<sub>s</sub></var></dt>
+               <dd><var>P</var> projected onto <var>C<sub>a</sub></var></dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-row>
+         <var>P<sub>s</sub></var>
+          = 
+         (<var>P</var> &bullet; <var>C<sub>a</sub></var>)
+          &times;
+         <var>C<sub>a</sub></var>
+      </lu-math-row>
+      <lu-math-row data-equation-number="3">
+         ||<var>P</var> - <var>P<sub>s</sub></var>||
+          =&nbsp;
+         <var>C<sub>r</sub></var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      If we so desire, we can now subtract <var>C<sub>r</sub></var> from both sides of the equation in order to have one side contain only zero. As such, this is now an implicit surface, which defines a cylinder that has one endcap centered on <lu-math data-inline>(0, 0, 0)</lu-math>.
+   </p>
+</section>
+
+<section>
+   <h2><a name="transformed">Handling a translated and rotated cylinder</a></h2>
+   <p>
+      In general, we'll want to run raycasts against a bounded cylinder &mdash; one with endcaps, rather than one that extends infinitely along its axis. There's no equation that can represent a bounded cylinder directly. However, we can still represent an infinite cylinder in terms of where the endcaps <em>would</em> be, and then use some distance checks later to enforce bounds.
+   </p>
+   <p>
+      Let's take the implicit surface of an infinite cylinder, and represent it in terms of the endcaps.
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>C<sub>b</sub></var></dt>
+               <dd>centerpoint of the cylinder's bottom endcap</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>C<sub>t</sub></var></dt>
+               <dd>centerpoint of the cylinder's top endcap</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>C<sub>s</sub></var></dt>
+               <dd>"spine" of the cylinder: a vector from the top to the bottom, equal to <var>C<sub>t</sub></var> - <var>C<sub>b</sub></var></dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>C<sub>a</sub></var></dt>
+               <dd>axis of the cylinder: normalized spine</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>p</sub></var></dt>
+               <dd>hit position: a point that we presume is on the cylinder's curved surface</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>s</sub></var></dt>
+               <dd>hit spine position: the hit position projected onto <var>C<sub>s</sub></var>; this position = ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var></dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>o</sub></var></dt>
+               <dd>the height offset from our cylinder equations; this is the distance from <var>H<sub>s</sub></var> to <var>C<sub>b</sub></var> i.e. ||<var>H<sub>s</sub></var> - <var>C<sub>b</sub></var>||.</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+   </lu-math>
+   <p>
+      <lu-math data-inline><var>H<sub>p</sub></var></lu-math> fills the role of <lu-math data-inline><var>P</var></lu-math> in Equation 3, and <lu-math data-inline><var>H<sub>s</sub></var></lu-math> fills the role of <lu-math data-inline><var>P<sub>p</sub></var></lu-math>. <lu-math data-inline><var>H<sub>s</sub></var></lu-math> is the hit position projected onto the cylinder's axis &mdash; its "spine." If we view the cylinder from its endcap, then <lu-math data-inline><var>H<sub>s</sub></var></lu-math> will be at the center of a circle; if <lu-math data-inline><var>H<sub>p</sub></var></lu-math> is indeed on the cylinder's curved surface, then the distance from it to <lu-math data-inline><var>H<sub>s</sub></var></lu-math> will equal tthe cylinder's radius:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>||
+          =&nbsp;
+         <var>C<sub>r</sub></var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Let's expand <lu-math data-inline><var>H<sub>s</sub></var></lu-math>:
+   </p>
+   <lu-math>
+      <lu-math-row data-equation-number="4">
+         ||<var>H<sub>p</sub></var> - ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>||
+          =&nbsp;
+         <var>C<sub>r</sub></var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      I think this is as far as we can go without substituting the ray equation in.
+   </p>
+</section>
+
+<section>
+   <h2><a name="solving">Solving for the ray</a></h2>
+   <p>
+      A ray is commonly defined in terms of a starting point, or <dfn>origin</dfn>, and a normalized direction vector. We can therefore define the hit position in terms of the same.
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given:</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>R<sub>o</sub></var></dt>
+               <dd>the ray's origin</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>R<sub>d</sub></var></dt>
+               <dd>the ray's direction</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>p</sub></var></dt>
+               <dd>the position at which the ray hits some surface</dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>H<sub>d</sub></var></dt>
+               <dd>the hit distance: the distance from the ray origin to the hit position</dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-row>
+         <var>H<sub>p</sub></var><!--
+      -->&nbsp;=&nbsp;<!--
+      --><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      We can substitute this equation into our cone equation above, and then attempt to solve for the hit distance <lu-math data-inline><var>H<sub>d</sub></var></lu-math>:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - ((<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>||
+          = 
+         <var>C<sub>r</sub></var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      The dot product of a vector with itself is equal to the length squared. If we square both sides, then we can convert the lefthand side to a dot product:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - ((<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+          = 
+         <var>C<sub>r</sub></var>{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+      <lu-math-row data-equation-number="5">
+         (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - ((<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>)
+          &bullet;
+         (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - ((<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>)
+          = 
+         <var>C<sub>r</sub></var>{% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Unfortunately, I can't think of any elegant tricks here, so let's brute-force it by expanding all of the dot products in full. This is gonna be rough. Just to keep things <em>relatively</em> manageable, let's just focus on one axis at a time, for now. We'll use the X-axis.
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - ((<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>)
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
+         ((<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - <var>C<sub>bx</sub></var>)<var>C<sub>ax</sub></var>)<var>C<sub>ax</sub></var> + 
+         <var>C<sub>bx</sub></var>)
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
+         ((<mark><var>C<sub>ax</sub></var></mark><var>R<sub>ox</sub></var> + <mark><var>C<sub>ax</sub></var></mark><var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - <mark><var>C<sub>ax</sub></var></mark><var>C<sub>bx</sub></var>)<var>C<sub>ax</sub></var>) + 
+         <var>C<sub>bx</sub></var>)
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
+         (<!--
+         --><var>C<sub>ax</sub></var><mark>{% include lu-math/exponent.html exponent=2 %}</mark><var>R<sub>ox</sub></var> + 
+            <var>C<sub>ax</sub></var><mark>{% include lu-math/exponent.html exponent=2 %}</mark><var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
+            <var>C<sub>ax</sub></var><mark>{% include lu-math/exponent.html exponent=2 %}</mark><var>C<sub>bx</sub></var><!--
+      -->) + 
+         <var>C<sub>bx</sub></var>)
+      </lu-math-row>
+      <lu-math-row>
+         <var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
+         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>ox</sub></var> - 
+         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>dx</sub></var><var>H<sub>d</sub></var> + 
+         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>C<sub>bx</sub></var> + 
+         <var>C<sub>bx</sub></var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Now, remember: this is the X-component of a vector, and we're going to be taking the dot product of that vector with itself. That means that we'll be squaring all of its components, and <em>then</em> adding them together.
+   </p>
+   <aside>
+      <p>
+         We wouldn't want to forget to do that. Imagine if we forgot, and did a ton of work to simplify the expression, only to plug it back into the original equation and <em>immediately</em> see that we need to dot product it and do a ton more of the same work. Wouldn't that... Wouldn't that just be...
+      </p>
+   </aside>
+   <p>
+      Anyway.
+   </p>
+   <lu-math>
+      <lu-math-row data-equation-number="6">
+         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
+         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>ox</sub></var> - 
+         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>dx</sub></var><var>H<sub>d</sub></var> + 
+         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>C<sub>bx</sub></var> + 
+         <var>C<sub>bx</sub></var>){% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      We need to expand the squaring, but I'm not altogether sure how to do that. A quick search on squaring a polynomial, however, turns up the Wikipedia article for <a href="https://en.wikipedia.org/wiki/Multinomial_theorem">the multinomial theorem</a>, which tells us how to expand any expression of the form <lu-math data-inline>(<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + ... + <var>x<sub>m</sub></var>){% include lu-math/exponent.html exponent="<var>n</var>" %}</lu-math>. Great! Let's look at the equation&mdash;
+   </p>
+   <lu-math>
+      <lu-math-row>
+         <lu-math-part>
+            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + ... + <var>x<sub>m</sub></var>){% include lu-math/exponent.html exponent="<var>n</var>" %}<nobr>
+             =</nobr> 
+         </lu-math-part>
+         <lu-math-part>
+            <lu-math-sequence data-operation="+-">
+               <lu-math-seq-info>
+                  <lu-math-raw>&Sigma;</lu-math-raw>
+                  <lu-math-condition>
+                     <lu-math-raw> for all </lu-math-raw>
+                     <var>k<sub>1</sub></var> + <var>k<sub>2</sub></var> + ... + <var>k<sub>m</sub></var> = <var>n</var>; 
+                     <var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>m</sub></var> &geq; 0
+                     <lu-math-raw> do: </lu-math-raw>
+                  </lu-math-condition>
+               </lu-math-seq-info>
+               <lu-math-seq-body><!--
+               --><lu-math-raw>(</lu-math-raw><!--
+                        
+               --><lu-math-binomial-coefficient>
+                     <lu-math-raw>(</lu-math-raw>
+                     <li><var>n</var></li>
+                     <lu-math-raw> choose (</lu-math-raw>
+                     <li><var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>m</sub></var></li>
+                     <lu-math-raw>))</lu-math-raw>
+                  </lu-math-binomial-coefficient><!--
+               --><lu-math-raw> &times; </lu-math-raw><!--
+               --><lu-math-sequence data-operation="*">
+                     <lu-math-seq-info>
+                        <lu-math-raw>&Pi;</lu-math-raw>
+                        <lu-math-seq-bounds>
+                           <lu-math-raw> from </lu-math-raw>
+                           <lu-math-bound-lower><var>t</var> = 1</lu-math-bound-lower>
+                           <lu-math-raw> through </lu-math-raw>
+                           <lu-math-bound-upper><var>m</var></lu-math-bound-upper>
+                           <lu-math-raw> do: </lu-math-raw>
+                        </lu-math-seq-bounds>
+                     </lu-math-seq-info>
+                     <lu-math-seq-body><!--
+                     --><lu-math-raw>(</lu-math-raw><!--
+                        
+                     --><var>x<sub>t</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>t</sub></var>" %}<!--
+                        
+                     --><lu-math-raw>)</lu-math-raw><!--
+                  --></lu-math-seq-body>
+                  </lu-math-sequence><!--
+                        
+               --><lu-math-raw>)</lu-math-raw><!--
+            --></lu-math-seq-body>
+            </lu-math-sequence>
+         
+         </lu-math-part>
+         <lu-math-raw-endcap> </lu-math-raw-endcap>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Oh. Uh...
+   </p>
+   <p>
+      Well, to start with, those values below the summation symbol (&Sigma;) represent conditions. We have <lu-math data-inline><var>m</var></lu-math> variables named <lu-math data-inline><var>k<sub>something</sub></var></lu-math>, named <lu-math data-inline><var>k<sub>1</sub></var></lu-math> through <lu-math data-inline><var>k<sub>m</sub></var></lu-math>, and we have two conditions that apply to the lot of them. We are going to take <em>every possible combination of values</em> that meets these conditions, feed those values into the summation "body," and then compute the results and sum them all.
+   </p>
+   <p>
+      The first condition is that the values must all add up to <lu-math data-inline><var>n</var></lu-math>, and the second condition is that they must all be greater than or equal to zero. This in turn implies that no one single value can be greater than <lu-math data-inline><var>n</var></lu-math>, as otherwise we'd need at least one of the others to be negative in order for this to work.
+   </p>
+   <p>
+      <span class="different-wording-for-the-blind">
+         <span class="sighted" aria-hidden="true">See the large parentheses, with the two rows and no symbol dividing them?</span>
+         <span class="blind">Hear that one bit with the word "choose?" </span>
+      </span>
+      That's the notation for <dfn>binomial coefficients</dfn>. If we call the top number <lu-math data-inline><var>n</var></lu-math> and the bottom number <lu-math data-inline><var>k</var></lu-math>, then given the expression <lu-math data-inline>(1 + <var>x</var>){% include lu-math/exponent.html exponent="<var>k</var>" %}</lu-math>, we can compute the coefficient of <lu-math data-inline><var>x</var>{% include lu-math/exponent.html exponent="<var>k</var>" %}</lu-math> as follows:
+   </p>
+   <lu-math>
+      <lu-math-row><!--
+      --><lu-math-fraction><!--
+         --><lu-math-numer><var>n</var>!</lu-math-numer><!--
+         --><lu-math-raw> &divide; (</lu-math-raw><!--
+         --><lu-math-denom><!--
+            --><var>k</var>!(<var>n</var> - <var>k</var>)!<!--
+         --></lu-math-deom><!--
+         --><lu-math-raw>)</lu-math-raw><!--
+      --></lu-math-fraction>
+         <lu-math-raw-endcap> </lu-math-raw-endcap>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Wikipedia offers one example: <lu-math data-inline>(1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}</lu-math> is:
+   </p>
+   <lu-math>
+      <lu-math-aligned data-right>
+         <lu-math-row>
+            <lu-math-part>
+               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
+                = 
+            </lu-math-part><!--
+         --><lu-math-binomial-coefficient>
+               <lu-math-raw>(</lu-math-raw>
+               <li>4</li>
+               <lu-math-raw> choose </lu-math-raw>
+               <li>0</li>
+               <lu-math-raw>)</lu-math-raw>
+            </lu-math-binomial-coefficient><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=0 %}
+                + 
+            </lu-math-part><!--
+         --><lu-math-binomial-coefficient>
+               <lu-math-raw>(</lu-math-raw>
+               <li>4</li>
+               <lu-math-raw> choose </lu-math-raw>
+               <li>1</li>
+               <lu-math-raw>)</lu-math-raw>
+            </lu-math-binomial-coefficient><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=1 %}
+                + 
+            </lu-math-part><!--
+         --><lu-math-binomial-coefficient>
+               <lu-math-raw>(</lu-math-raw>
+               <li>4</li>
+               <lu-math-raw> choose </lu-math-raw>
+               <li>2</li>
+               <lu-math-raw>)</lu-math-raw>
+            </lu-math-binomial-coefficient><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=2 %}
+                + 
+            </lu-math-part><!--
+         --><lu-math-binomial-coefficient>
+               <lu-math-raw>(</lu-math-raw>
+               <li>4</li>
+               <lu-math-raw> choose </lu-math-raw>
+               <li>3</li>
+               <lu-math-raw>)</lu-math-raw>
+            </lu-math-binomial-coefficient><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=3 %}
+                + 
+            </lu-math-part><!--
+         --><lu-math-binomial-coefficient>
+               <lu-math-raw>(</lu-math-raw>
+               <li>4</li>
+               <lu-math-raw> choose </lu-math-raw>
+               <li>4</li>
+               <lu-math-raw>)</lu-math-raw>
+            </lu-math-binomial-coefficient><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
+            </lu-math-part>
+         </lu-math-row>
+         <lu-math-row>
+            <lu-math-spacing>
+               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
+            </lu-math-spacing><!--
+         --><lu-math-part>&nbsp;=&nbsp;</lu-math-part><!--
+         --><lu-math-fraction class="big-parens"><!--
+            --><lu-math-numer>4!</lu-math-numer><!--
+            --><lu-math-raw> &divide; (</lu-math-raw><!--
+            --><lu-math-denom><!--
+               -->0!(4 - 0)!<!--
+            --></lu-math-deom><!--
+            --><lu-math-raw>)</lu-math-raw><!--
+         --></lu-math-fraction><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=0 %}
+                + 
+            </lu-math-part><!--
+         --><lu-math-fraction class="big-parens"><!--
+            --><lu-math-numer>4!</lu-math-numer><!--
+            --><lu-math-raw> &divide; (</lu-math-raw><!--
+            --><lu-math-denom><!--
+               -->1!(4 - 1)!<!--
+            --></lu-math-deom><!--
+            --><lu-math-raw>)</lu-math-raw><!--
+         --></lu-math-fraction><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=1 %}
+                + 
+            </lu-math-part><!--
+         --><lu-math-fraction class="big-parens"><!--
+            --><lu-math-numer>4!</lu-math-numer><!--
+            --><lu-math-raw> &divide; (</lu-math-raw><!--
+            --><lu-math-denom><!--
+               -->2!(4 - 2)!<!--
+            --></lu-math-deom><!--
+            --><lu-math-raw>)</lu-math-raw><!--
+         --></lu-math-fraction><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=2 %}
+                + 
+            </lu-math-part><!--
+         --><lu-math-fraction class="big-parens"><!--
+            --><lu-math-numer>4!</lu-math-numer><!--
+            --><lu-math-raw> &divide; (</lu-math-raw><!--
+            --><lu-math-denom><!--
+               -->3!(4 - 3)!<!--
+            --></lu-math-deom><!--
+            --><lu-math-raw>)</lu-math-raw><!--
+         --></lu-math-fraction><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=3 %}
+                + 
+            </lu-math-part><!--
+         --><lu-math-fraction class="big-parens"><!--
+            --><lu-math-numer>4!</lu-math-numer><!--
+            --><lu-math-raw> &divide; (</lu-math-raw><!--
+            --><lu-math-denom><!--
+               -->4!(4 - 4)!<!--
+            --></lu-math-deom><!--
+            --><lu-math-raw>)</lu-math-raw><!--
+         --></lu-math-fraction><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
+            </lu-math-part>
+         </lu-math-row>
+         <lu-math-row>
+            <lu-math-spacing>
+               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
+            </lu-math-spacing><!--
+         --><lu-math-part>&nbsp;=&nbsp;</lu-math-part><!--
+         --><lu-math-fraction class="big-parens"><!--
+            --><lu-math-numer>24</lu-math-numer><!--
+            --><lu-math-raw> &divide; (</lu-math-raw><!--
+            --><lu-math-denom><!--
+               -->24<!--
+            --></lu-math-deom><!--
+            --><lu-math-raw>)</lu-math-raw><!--
+         --></lu-math-fraction><!--
+         --><lu-math-part>
+                &times; 1
+                + 
+            </lu-math-part><!--
+         --><lu-math-fraction class="big-parens"><!--
+            --><lu-math-numer>24</lu-math-numer><!--
+            --><lu-math-raw> &divide; (</lu-math-raw><!--
+            --><lu-math-denom><!--
+               -->6<!--
+            --></lu-math-deom><!--
+            --><lu-math-raw>)</lu-math-raw><!--
+         --></lu-math-fraction><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=1 %}
+                + 
+            </lu-math-part><!--
+         --><lu-math-fraction class="big-parens"><!--
+            --><lu-math-numer>24</lu-math-numer><!--
+            --><lu-math-raw> &divide; (</lu-math-raw><!--
+            --><lu-math-denom><!--
+               -->2 &times; 2<!--
+            --></lu-math-deom><!--
+            --><lu-math-raw>)</lu-math-raw><!--
+         --></lu-math-fraction><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=2 %}
+                + 
+            </lu-math-part><!--
+         --><lu-math-fraction class="big-parens"><!--
+            --><lu-math-numer>24</lu-math-numer><!--
+            --><lu-math-raw> &divide; (</lu-math-raw><!--
+            --><lu-math-denom><!--
+               -->6<!--
+            --></lu-math-deom><!--
+            --><lu-math-raw>)</lu-math-raw><!--
+         --></lu-math-fraction><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=3 %}
+                + 
+            </lu-math-part><!--
+         --><lu-math-fraction class="big-parens"><!--
+            --><lu-math-numer>24</lu-math-numer><!--
+            --><lu-math-raw> &divide; (</lu-math-raw><!--
+            --><lu-math-denom><!--
+               -->24<!--
+            --></lu-math-deom><!--
+            --><lu-math-raw>)</lu-math-raw><!--
+         --></lu-math-fraction><!--
+         --><lu-math-part>
+               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
+            </lu-math-part>
+         </lu-math-row>
+         <lu-math-row>
+            <lu-math-spacing>
+               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
+            </lu-math-spacing><!--
+         --><lu-math-part>&nbsp;=&nbsp;</lu-math-part>
+            <lu-math-part>
+               1
+                + 
+               4<var>x</var>{% include lu-math/exponent.html exponent=1 %}
+                + 
+               6<var>x</var>{% include lu-math/exponent.html exponent=2 %}
+                + 
+               4<var>x</var>{% include lu-math/exponent.html exponent=3 %}
+                + 
+               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
+            </lu-math-part>
+         </lu-math-row>
+      </lu-math-aligned>
+   </lu-math>
+   <p>
+      Apparently, that generalizes to larger "multinomials;" if your multinomial has <lu-math data-inline><var>r</var></lu-math> terms in it, then you'd do:
+   </p>
+   <lu-math>
+      <lu-math-row><!--
+      --><lu-math-part>
+            <lu-math-raw-endcap> </lu-math-raw-endcap>
+            <lu-math-binomial-coefficient>
+               <lu-math-raw>(</lu-math-raw>
+               <li><var>n</var></li>
+               <lu-math-raw> and (</lu-math-raw>
+               <li><var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>r</sub></var></li>
+               <lu-math-raw>)</lu-math-raw>
+            </lu-math-binomial-coefficient>
+         </lu-math-part>
+          = <!--
+      --><lu-math-fraction><!--
+         --><lu-math-numer><var>n</var>!</lu-math-numer><!--
+         --><lu-math-raw> &divide; (</lu-math-raw><!--
+         --><lu-math-denom><!--
+            --><var>k<sub>1</sub></var>!<var>k<sub>2</sub></var>!...<var>k<sub>r</sub></var>!<!--
+         --></lu-math-deom><!--
+         --><lu-math-raw>)</lu-math-raw><!--
+      --></lu-math-fraction>
+         <lu-math-raw-endcap> </lu-math-raw-endcap>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Given a multinomial with <lu-math data-inline><var>r</var></lu-math> terms, the variable <lu-math data-inline><var>k<sub>i</sub></var></lu-math> is defined below &mdash; and as a reminder, this is summation, not a single variable:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         <lu-math-part>
+            <lu-math-sequence data-operation="+-">
+               <lu-math-seq-info>
+                  <lu-math-raw>&Sigma;</lu-math-raw>
+                  <lu-math-seq-bounds>
+                     <lu-math-raw> from </lu-math-raw>
+                     <lu-math-bound-lower><var>i</var> = 1</lu-math-bound-lower>
+                     <lu-math-raw> through </lu-math-raw>
+                     <lu-math-bound-upper><var>r</var></lu-math-bound-upper>
+                     <lu-math-raw> do: </lu-math-raw>
+                  </lu-math-seq-bounds>
+               </lu-math-seq-info>
+               <lu-math-seq-body><!--
+               --><lu-math-raw>(</lu-math-raw><!--
+                  
+               --><var>k<sub>i</sub></var><!--
+                  
+               --><lu-math-raw>)</lu-math-raw><!--
+            --></lu-math-seq-body>
+            </lu-math-sequence>
+         </lu-math-part>
+         <lu-math-part>
+             = 
+            <var>n</var>
+         </lu-math-part>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      This is all getting pretty out-there, so let's come back to Earth by actually using this. We have a multinomial that we want to square, so <lu-math data-inline><var>n</var></lu-math> is 2. Our multinomial has six terms, so <lu-math data-inline><var>m</var></lu-math> is 6.
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
+         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>ox</sub></var> - 
+         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>dx</sub></var><var>H<sub>d</sub></var> + 
+         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>C<sub>bx</sub></var> + 
+         <var>C<sub>bx</sub></var>){% include lu-math/exponent.html exponent=2 %}
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-part>
+            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + <var>x<sub>3</sub></var> + <var>x<sub>4</sub></var> + <var>x<sub>5</sub></var> + <var>x<sub>6</sub></var>){% include lu-math/exponent.html exponent=2 %}<nobr>
+             =</nobr> 
+         </lu-math-part>
+         <lu-math-part>
+            <lu-math-sequence data-operation="+-">
+               <lu-math-seq-info>
+                  <lu-math-raw>&Sigma;</lu-math-raw>
+                  <lu-math-condition>
+                     <lu-math-raw> for all </lu-math-raw>
+                     <var>k<sub>1</sub></var> + <var>k<sub>2</sub></var> + ... + <var>k<sub>6</sub></var> = 2; 
+                     <var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>6</sub></var> &geq; 0
+                     <lu-math-raw> do: </lu-math-raw>
+                  </lu-math-condition>
+               </lu-math-seq-info>
+               <lu-math-seq-body><!--
+               --><lu-math-raw>(</lu-math-raw><!--
+                        
+               --><lu-math-binomial-coefficient>
+                     <lu-math-raw>(</lu-math-raw>
+                     <li>2</li>
+                     <lu-math-raw> and (</lu-math-raw>
+                     <li><var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>6</sub></var></li>
+                     <lu-math-raw>)</lu-math-raw>
+                  </lu-math-binomial-coefficient><!--
+               --><lu-math-raw> &times; </lu-math-raw><!--
+               --><lu-math-sequence data-operation="*">
+                     <lu-math-seq-info>
+                        <lu-math-raw>&Pi;</lu-math-raw>
+                        <lu-math-seq-bounds>
+                           <lu-math-raw> from </lu-math-raw>
+                           <lu-math-bound-lower><var>t</var> = 1</lu-math-bound-lower>
+                           <lu-math-raw> through </lu-math-raw>
+                           <lu-math-bound-upper>6</lu-math-bound-upper>
+                           <lu-math-raw> do: </lu-math-raw>
+                        </lu-math-seq-bounds>
+                     </lu-math-seq-info>
+                     <lu-math-seq-body><!--
+                     --><lu-math-raw>(</lu-math-raw><!--
+                        
+                     --><var>x<sub>t</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>t</sub></var>" %}<!--
+                        
+                     --><lu-math-raw>)</lu-math-raw><!--
+                  --></lu-math-seq-body>
+                  </lu-math-sequence><!--
+                        
+               --><lu-math-raw>)</lu-math-raw><!--
+            --></lu-math-seq-body>
+            </lu-math-sequence>
+         
+         </lu-math-part>
+         <lu-math-raw-endcap> </lu-math-raw-endcap>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-part>
+            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + <var>x<sub>3</sub></var> + <var>x<sub>4</sub></var> + <var>x<sub>5</sub></var> + <var>x<sub>6</sub></var>){% include lu-math/exponent.html exponent=2 %}<nobr>
+             =</nobr> 
+         </lu-math-part>
+         <lu-math-part>
+            <lu-math-sequence data-operation="+-">
+               <lu-math-seq-info>
+                  <lu-math-raw>&Sigma;</lu-math-raw>
+                  <lu-math-condition>
+                     <lu-math-raw> for all </lu-math-raw>
+                     <var>k<sub>1</sub></var> + <var>k<sub>2</sub></var> + ... + <var>k<sub>6</sub></var> = 2; 
+                     <var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>6</sub></var> &geq; 0
+                     <lu-math-raw> do: </lu-math-raw>
+                  </lu-math-condition>
+               </lu-math-seq-info>
+               <lu-math-seq-body><!--
+               --><lu-math-raw>(</lu-math-raw><!--
+                        
+               --><lu-math-fraction><!--
+                  --><lu-math-numer>2!</lu-math-numer><!--
+                  --><lu-math-raw> &divide; (</lu-math-raw><!--
+                  --><lu-math-denom><!--
+                     --><var>k<sub>1</sub></var>!<var>k<sub>2</sub></var>!...<var>k<sub>6</sub></var>!<!--
+                  --></lu-math-deom><!--
+                  --><lu-math-raw>)</lu-math-raw><!--
+               --></lu-math-fraction><!--
+               --><lu-math-raw> &times; </lu-math-raw><!--
+               --><lu-math-sequence data-operation="*">
+                     <lu-math-seq-info>
+                        <lu-math-raw>&Pi;</lu-math-raw>
+                        <lu-math-seq-bounds>
+                           <lu-math-raw> from </lu-math-raw>
+                           <lu-math-bound-lower><var>t</var> = 1</lu-math-bound-lower>
+                           <lu-math-raw> through </lu-math-raw>
+                           <lu-math-bound-upper>6</lu-math-bound-upper>
+                           <lu-math-raw> do: </lu-math-raw>
+                        </lu-math-seq-bounds>
+                     </lu-math-seq-info>
+                     <lu-math-seq-body><!--
+                     --><lu-math-raw>(</lu-math-raw><!--
+                        
+                     --><var>x<sub>t</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>t</sub></var>" %}<!--
+                        
+                     --><lu-math-raw>)</lu-math-raw><!--
+                  --></lu-math-seq-body>
+                  </lu-math-sequence><!--
+                        
+               --><lu-math-raw>)</lu-math-raw><!--
+            --></lu-math-seq-body>
+            </lu-math-sequence>
+         
+         </lu-math-part>
+         <lu-math-raw-endcap> </lu-math-raw-endcap>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Let's compute the values of all possible combinations of <lu-math data-inline><var>k<sub>i</sub></var></lu-math> for our 6-term monomial. We know that there must be six of these values, they must sum to 2, and none of them can be negative.
+   </p>
+   <table class="fade-zeroes">
+      <thead>
+         <tr>
+            <th>
+               Form
+            </th>
+            {%- for i in (1..6) -%}
+               <th>
+                  <lu-math data-inline><var>k<sub>{{ i }}</sub></var></lu-math>
+               </th>
+            {%- endfor -%}
+            <th>
+               Expression
+            </th>
+            <th>
+               Sum
+            </th>
+         </tr>
+      </thead>
+      <tbody>
+         {%- assign count = 6 -%}
+         {%- for i in (1..count) -%}
+         <tr>
+            {%- if forloop.first -%}
+            <th rowSpan="{{ count }}">
+               2 + 0
+            </th>
+            {%- endif -%}
+            {%- assign items = "" -%}
+            {%- for j in (1..count) -%}
+               {%- unless forloop.first -%}
+                  {%- assign items = items | append: "," -%}
+               {%- endunless -%}
+               {%- if j != i -%}
+                  {%- assign items = items | append: "0" -%}
+               {%- else -%}
+                  {%- assign items = items | append: "2" -%}
+               {%- endif -%}
+            {%- endfor -%}
+            {%- comment -%}
+               Split and print:
+            {%- endcomment -%}
+            {%- assign items = items | split: "," -%}
+            {%- for item in items -%}
+               <td data-type="number" data-value="{{ item }}">{{ item }}</td>
+            {%- endfor -%}
+            <td>
+               {%- for item in items -%}
+                  {%- unless forloop.first %} + {% endunless -%}
+                  {{ item }}
+               {%- endfor -%}
+            </td>
+            <td data-type="number">
+               {%- assign sum = 0 -%}
+               {%- for item in items -%}
+                  {%- assign sum = sum | plus: item -%}
+               {%- endfor -%}
+               {{ sum }}
+            </td>
+         </tr>
+         {%- endfor -%}
+         {%- assign rowspan = 0 -%}
+         {%- for i in (1..count) -%}
+            {%- unless forloop.last -%}
+               {%- assign rowspan = rowspan | plus: i -%}
+            {%- endunless -%}
+         {%- endfor -%}
+         {%- for i in (1..count) -%}
+            {%- for j in (i..count) -%}
+               {%- unless i == j -%}
+         <tr>
+                  {%- if rowspan > 0 -%}
+            <th rowSpan="{{ rowspan }}" class="force-is-bottom-row">
+               1 + 1
+            </th>
+                     {%- assign rowspan = 0 -%}
+                  {%- endif -%}
+                  {%- assign items = "" -%}
+                  {%- for k in (1..count) -%}
+                     {%- unless forloop.first -%}
+                        {%- assign items = items | append: "," -%}
+                     {%- endunless -%}
+                     {%- if k != i and k != j -%}
+                        {%- assign items = items | append: "0" -%}
+                     {%- else -%}
+                        {%- assign items = items | append: "1" -%}
+                     {%- endif -%}
+                  {%- endfor -%}
+                  {%- comment -%}
+                     Split and print:
+                  {%- endcomment -%}
+                  {%- assign items = items | split: "," -%}
+                  {%- for item in items -%}
+                     <td data-type="number" data-value="{{ item }}">{{ item }}</td>
+                  {%- endfor -%}
+                  <td>
+                     {%- for item in items -%}
+                        {%- unless forloop.first %} + {% endunless -%}
+                        {{ item }}
+                     {%- endfor -%}
+                  </td>
+                  <td data-type="number">
+                     {%- assign sum = 0 -%}
+                     {%- for item in items -%}
+                        {%- assign sum = sum | plus: item -%}
+                     {%- endfor -%}
+                     {{ sum }}
+                  </td>
+         </tr>
+               {%- endunless -%}
+            {%- endfor -%}
+         {%- endfor -%}
+      </tbody>
+   </table>
+   
+   <!-- CONTINUE FROM HERE -->
+   <!--
+      We want to get all the values of K and substitute them into the summation expression above.
+      
+      Each table row represents one valid set of values for the six K variables. We'd run the 
+      multiplication expression with each set of these, and then sum the results of each.
+      
+      That seems a bit cumbersome, except that every row is mostly zeroes. We can simply skip any 
+      terms that would be multiplied by zero. What's more: whenever we have a construct like this:
+      
+         2 0 0 0 0 0
+         0 2 0 0 0 0 
+         0 0 2 0 0 0
+         0 0 0 2 0 0
+         0 0 0 0 2 0
+         0 0 0 0 0 2
+      
+      The first row would look like this:
+      
+         a^2 + b^0 + c^0 + d^0 + e^0 + f^0
+       = a^2 + 1 + 1 + 1 + 1 + 1 + 1
+       = a^2 + 5
+       
+      Most of the other rows can probably be insta-reduced in a similar way.
+      
+      Anyway, don't lose sight of our ultimate goal: we want to figure out how to expand an 
+      expression of the form:
+      
+         (a + b + c + d + e + f)^2
+         
+      And once we have it expanded -- once we can expand Equation 6, which uses just the X-axis -- 
+      we can then duplicate the expression for the Y- and Z-axes. We can then rearrange everything 
+      to group terms by H-sub-d, and then reassemble everything back from scalars into vectors. 
+      Then, we'll have a vector-based equation that we can more easily solve for H-sub-d.
+   -->
+   
+</section>

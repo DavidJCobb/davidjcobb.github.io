@@ -55,6 +55,22 @@ section>aside {
 .card-cutout {
    @include content-card-cutout;
 }
+figure.card-cutout>.wrap {
+   @include content-card;
+   width:min-content;
+   margin:0 auto;
+}
+
+figure.multi-figure {
+   display:flex;
+   flex-flow:row nowrap;
+   justify-content:center;
+   gap:4rem;
+   
+   >.wrap {
+      margin:0;
+   }
+}
 
 figure.mathematical-graph {
    margin:1em 0;

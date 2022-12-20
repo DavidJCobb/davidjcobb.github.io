@@ -12,8 +12,33 @@ extra_css_files: [ "collection-index.css" ]
    So apparently, GitHub Pages doesn't use the Jekyll plug-in needed to apply pagination 
    to collections. It's only usable for blog posts. Great.
 {%- endcomment -%}
+{%- assign collection = "" -%}
+{%- for item in site.collections -%}
+   {%- if item.label == "articles" -%}
+      {%- assign collection = item -%}
+   {%- endif -%}
+{%- endfor -%}
 <ul id="collection-items">
    {%- for article in site.articles %}
+      {%- comment -%}
+      
+         When iterating over the contents of a collection using Liquid, the collection's 
+         folder hierarchy gets flattened. Jekyll doesn't actually generate pages or 
+         working permalinks for nested files (thank goodness), but anything with front 
+         matter will be visible when iterating. This includes SCSS files meant to be used 
+         as assets for an article.
+         
+         We need to filter out any entries here that are nested in a subfolder, then.
+         
+      {%- endcomment -%}
+      {%- assign test = article.relative_path -%}
+      {%- assign test = test | remove_first: collection.relative_directory -%}
+      {%- assign char = test | slice: 0 -%}
+      {%- if char == '/' or char == '\' -%}
+         {%- assign len  = test | size | minus: 1 -%}
+         {%- assign test = test | slice: 1, len -%}
+      {%- endif -%}
+      {%- unless test contains "/" or test contains "\" -%}
    <li>
       <a href="{{ article.url }}"><h2>{{- article.title -}}</h2></a>
       {%- if article.social_media %}
@@ -22,5 +47,6 @@ extra_css_files: [ "collection-index.css" ]
          {%- endif -%}
       {%- endif -%}
    </li>
+      {%- endunless -%}
    {%- endfor %}
 </ul>

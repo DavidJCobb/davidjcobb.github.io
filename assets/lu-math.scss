@@ -64,6 +64,14 @@ lu-math-raw{
    }
 }
 
+lu-math-spacing {
+   display:inline-block;
+   visibility:hidden;
+   vertical-align:middle;
+   user-select:none;
+   pointer-events:none;
+}
+
 lu-math var {
    &>sub {
       &::before,
@@ -389,7 +397,9 @@ lu-math-sqrt {
    padding-right:.5ch;
 }
 
-lu-math-big-parens {
+lu-math-big-parens,
+lu-math-binomial-coefficient,
+lu-math *.big-parens {
    --glyph-width:1ch;
    
    display:inline-block;
@@ -406,4 +416,139 @@ lu-math-big-parens {
 
    padding-left:calc(var(--glyph-width) + .5ch);
    padding-right:calc(var(--glyph-width) + .5ch);
+}
+lu-math-fraction.big-parens {
+   display:inline-flex;
+   padding-left:calc(var(--glyph-width) + .2ch);
+   padding-right:calc(var(--glyph-width) + .2ch);
+   margin:0 .3ch;
+}
+
+/* correct usage is as follows:
+  
+    - first element is a lu-math-raw with text content "("
+    - next element is an LI with the top-row content
+    - next element is a lu-math-raw with text content " choose "
+    - next element is an LI with the bottom-row content
+    - next element is a lu-math-raw with the text content ")"
+    
+   if the top element is an expression, add a "(" to the first lu-math-raw and 
+   prepend a ")" to the middle lu-math-raw.
+   
+   if the bottom element is an expression, add a ")" to the last lu-math-raw and 
+   append a "(" to the middle lu-math-raw.
+*/
+lu-math-binomial-coefficient {
+   display:inline-grid;
+   grid-template-areas: "a" "b";
+   vertical-align:middle;
+   margin:0 .3ch;
+   
+   >li {
+      list-style:none;
+      padding:0 0;
+      margin:0;
+   }
+}
+
+/* this element can be used to show summation or product notation. correct usage is 
+   as follows:
+   
+    - outermost element is lu-math-sequence, with a data-operation attribute which 
+      specifies the operations being used.
+      
+       - for summation, use "+-"
+       - for multiplication, use "*"
+       
+    - first child is a lu-seq-info element.
+    
+       - first child is a lu-math-raw element whose text content is the appropriate 
+         symbol for the sequence ("&Sigma;" for summation; "&Pi;" for multiplication; 
+         these entity names are case-sensitive and lowercase will get you the wrong 
+         symbols).
+         
+       - for fixed bounds, use a child element named lu-math-seq-bounds.
+       
+          - first child should be a lu-math-raw with text content " for all ", with 
+            spaces.
+            
+          - next, write out the conditions right there.
+          
+          - finally, a lu-math-raw with text content " do: " or " define: "
+       
+       - for a condition, use a child element named lu-math-condition.
+       
+          - first child should bea  lu-math-raw with text content " from ".
+          - next, a lu-math-bound-lower element containing the lower bound.
+          - next, a lu-math-raw with text content " through ".
+          - next, a lu-math-bound-upper element containing the upper bound.
+          - finally, a lu-math-raw with text content " do: " or " define: "
+    
+    - last child is a lu-seq-body element.
+    
+       - first child should be a lu-math-raw with text content "(".
+       - last child should be a lu-math-raw with text content ")".
+       
+       - use HTML comments to ensure no whitespace between the element start/end and 
+         the raw parens, nor between those parens and your content.
+         
+       - if needed, use the "big-parens" class on this element.
+    
+    - use HTML comments to ensure no whitespace child nodes.
+
+*/
+lu-math-sequence {
+   display:inline-block;
+   vertical-align:middle;
+   
+   >lu-math-seq-info {
+      display:inline-grid;
+      grid-template: "upper  _1  "
+                     "symbol body" 1fr
+                     "lower  _2  ";
+      >lu-math-seq-bounds {
+         display: contents;
+         
+         >lu-math-bound-upper {
+            grid-area: upper;
+            font-size: smaller;
+         }
+         >lu-math-bound-lower {
+            grid-area: lower;
+            font-size: smaller;
+         }
+      }
+      
+      /*
+         ensure the upper grid area (which is optional) is not empty; required for 
+         consistent alignments
+      */
+      &::after {
+         content:"\00A0";
+         grid-area: upper;
+         pointer-events:none;
+      }
+      
+      &::before {
+         font-size:2em;
+         grid-area: symbol;
+      }
+      >lu-math-condition {
+         grid-area: lower;
+         font-size: smaller;
+      }
+   }
+   >:is(lu-math-seq-info, lu-math-seq-body) {
+      vertical-align:middle;
+   }
+   >lu-math-seq-body {
+      display:inline-block;
+   }
+   
+   &[data-operation="+-"]>lu-math-seq-info::before {
+      content:"\3A3";
+   }
+   &[data-operation="*"]>lu-math-seq-info::before {
+      content:"\3A0";
+   }
 }

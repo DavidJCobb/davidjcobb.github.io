@@ -18,12 +18,70 @@
       <link rel="stylesheet" href="{{ current_path | relative_url }}" />
          {%- endfor -%}
       {%- endif %}
+      {%- if page.collection_item_css_files -%}
+         {%- assign path = page.relative_path -%}
+         {%- assign path = path | replace_first: nav_collection.relative_directory, "" -%}
+         {%- assign temp = path | slice: 0 -%}
+         {%- if temp == "/" -%}
+            {%- assign temp = path | size | minus: 1 -%}
+            {%- assign path = path | slice: 1, temp -%}
+         {%- endif -%}
+         {%- assign path = path | split: "/" -%}
+         
+         {%- assign pEnd = path | last -%}
+         {%- assign pEnd = pEnd | split: "." -%}
+         {%- if pEnd.size <= 1 -%}
+            {%- assign pEnd = pEnd[0] -%}
+         {%- else -%}
+            {%- assign temp = "" -%}
+            {%- for item in pEnd -%}
+               {%- unless forloop.last -%}
+                  {%- unless forloop.first -%}
+                     {%- assign temp = temp | append: "." -%}
+                  {%- endunless -%}
+                  {%- assign temp = temp | append: item -%}
+               {%- endunless -%}
+            {%- endfor -%}
+            {%- assign pEnd = temp -%}
+         {%- endif -%}
+         {%- assign temp = "" -%}
+         {%- for item in path -%}
+            {%- unless forloop.last -%}
+               {%- unless forloop.first -%}
+                  {%- assign temp = temp | append: "/" -%}
+               {%- endunless -%}
+               {%- assign temp = temp | append: item -%}
+            {%- endunless -%}
+         {%- endfor -%}
+         {%- if temp != "" -%}
+            {%- assign temp = temp | append: "/" -%}
+         {%- endif -%}
+         {%- assign temp = temp | append: pEnd -%}
+         {%- assign path = temp -%}
+         
+         {%- assign stem = nav_collection.permalink -%}
+         {%- assign stem = stem | replace: ":collection", nav_collection.label -%}
+         {%- assign stem = stem | replace: ":path",       path -%}
+         
+         {%- for filename in page.collection_item_css_files -%}
+            {%- assign current_path = page.name -%}
+            {%- assign current_path = current_path | split: "." -%}
+            {%- if current_path.size == 1 -%}
+               {%- assign current_path = current_path[0] -%}
+            {%- else -%}
+               {%- assign temp = current_path.size | minus: 1 -%}
+               {%- assign current_path = current_path | slice: 0, temp -%}
+            {%- endif -%}
+            {%- capture current_path %}{{ stem }}/{{ filename }}{% endcapture -%}
+      <link rel="stylesheet" href="{{ current_path | relative_url }}" />
+         {%- endfor -%}
+      {%- endif %}
       <meta name="viewport" content="width=1000, user-scalable=yes" />
       <title>
          {%- if page.title == "Cobb" -%}
             {{ page.title }}
          {%- else -%}
-            {{ page.title }} | Cobb
+            {{ page.title | strip_html }} | Cobb
          {%- endif -%}
       </title>
       <link rel="icon" href="{{ '/assets/favicon64.ico'  | relative_url }}" type="image/x-icon" sizes="64" />
@@ -35,6 +93,8 @@
       <meta property="og:locale" content="{{ site.lang | default: 'en-US' | replace: '-', '_' }}" />
          {%- if page.social_media.title %}
       <meta property="og:title" content="{{ page.social_media.title }}" />
+         {%- else -%}
+      <meta property="og:title" content="Cobb - {{ page.title | strip_html }}" />
          {%- endif -%}
          {%- if page.social_media.description %}
       <meta property="og:image" content="{{ page.social_media.description }}" />

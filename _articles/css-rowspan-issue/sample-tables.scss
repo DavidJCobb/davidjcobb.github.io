@@ -1,0 +1,252 @@
+---
+---
+
+.sample-table {
+   &.borders-per-cell td,
+   &.collapsed td {
+      border:1px solid #000;
+   }
+   
+   &.collapsed {
+      border-collapse: collapse;
+   }
+   
+   &.vintage {
+      border:1px outset #000;
+      
+      td {
+         border:1px inset #000;
+      }
+   }
+   
+   &.mismatch-example {
+      border-collapse: collapse;
+      
+      td {
+         border:1px solid #000;
+      }
+      tr+tr>td {
+         border-top:3px solid red;
+      }
+   }
+   
+   &.rounded-naive {
+      border-radius:2em;
+      
+      &.collapsed>tr:first-child>td:first-child {
+         border-top-left-radius:2em;
+      }
+      &.collapsed>tr:last-child>td:first-child {
+         border-bottom-left-radius:2em;
+      }
+      &.collapsed>tr:first-child>td:last-child {
+         border-top-right-radius:2em;
+      }
+      &.collapsed>tr:last-child>td:last-child {
+         border-bottom-right-radius:2em;
+      }
+   }
+}
+
+table.collapse-try-1,
+table.collapse-try-2,
+table.collapse-try-3 {
+   border-collapse: separate;
+   border-spacing: 0;
+   
+   :is(td, th) {
+      border:1px solid #000;
+   }
+   
+   :is(td, th)+:is(td, th) {
+      border-left-width:0!important;
+   }
+   tr+tr>:is(td, th) {
+      border-top-width:0!important;
+   }
+}
+
+table.collapse-try-2,
+table.collapse-try-3 {
+   border-collapse: separate;
+   border-spacing:  0;
+
+   :is(td, th) {
+      border: 1px solid #000;
+   }
+
+   :is(td, th) + :is(td, th) {
+      border-left-width:0!important;
+   }
+
+   :is(
+      tr + tr,
+      :is(tbody, thead) + :is(tbody, thead) > tr:first-child
+   ) > :is(th, td) {
+      border-top-width:0!important;
+   }
+}
+
+table.collapse-try-3 {
+   border: 1px solid #000;
+
+   :is(td, th) {
+      border: 1px solid #999;
+   }
+}
+
+table.collapse-try-4 {
+   border-collapse: separate;
+   border-spacing: 0;
+   border:1px solid #000;
+   
+   :is(td, th) {
+      border: 1px solid #999;
+   }
+
+   /*
+      Collapse adjacent cells' borders together:
+   */
+   :is(td, th) + :is(td, th) {
+      border-left-width:0!important;
+   }
+   :is(
+      tr + tr,
+      :is(tbody, thead) + :is(tbody, thead) > tr:first-child
+   ) > :is(th, td) {
+      border-top-width:0!important;
+   }
+
+   /*
+      Collapse cells' borders into the table border:
+   */
+   :is(tbody, thead) {
+      &:first-child>tr:first-child>:is(th, td) {
+         border-top-width:0!important;
+      }
+      &:last-child>tr:last-child>:is(th, td) {
+         border-bottom-width:0!important;
+      }
+   }
+   :is(th, td) {
+      &:first-child {
+         border-left-width:0!important;
+      }
+      &:last-child {
+         border-right-width:0!important;
+      }
+   }
+}
+
+table.radius-try-1 {
+   border-radius: 1em;
+   tbody, thead, tr {
+      border-radius: inherit;
+   }
+
+   tr:first-child > :is(td, th):first-child {
+      border-top-left-radius: inherit;
+   }
+   tr:first-child > :is(td, th):last-child {
+      border-top-right-radius: inherit;
+   }
+
+   tr:last-child > :is(td, th):first-child {
+      border-bottom-left-radius: inherit;
+   }
+   tr:last-child > :is(td, th):last-child {
+      border-bottom-right-radius: inherit;
+   }
+}
+
+table.radius-try-2 {
+   border-radius: 1em;
+   tbody, thead {
+      border-radius: inherit;
+   }
+   
+   :is(tbody, thead):first-child>tr:first-child {
+      border-top-left-radius:  inherit;
+      border-top-right-radius: inherit;
+   }
+   :is(tbody, thead):last-child>tr:last-child {
+      border-bottom-left-radius:  inherit;
+      border-bottom-right-radius: inherit;
+   }
+
+   tr>:is(td, th):first-child {
+      border-top-left-radius:    inherit;
+      border-bottom-left-radius: inherit;
+   }
+   tr>:is(td, th):last-child {
+      border-top-right-radius:    inherit;
+      border-bottom-right-radius: inherit;
+   }
+}
+
+/* a11y */
+$problem-color-1: #FF0000;
+$problem-color-2: #00FFFF;
+$problem-thickness: 3px;
+
+html table.problem-1-obvious thead>tr>* {
+   border-bottom-color:$problem-color-1!important;
+   border-bottom-width:$problem-thickness!important;
+}
+html table.problem-1-obvious tbody>tr:first-child>* {
+   border-top-color:$problem-color-2!important;
+   border-top-width:$problem-thickness!important;
+}
+
+html table.problem-2-obvious {
+   border-color:$problem-color-1!important;
+   border-width:$problem-thickness!important;
+}
+html table.problem-2-obvious {
+   :is(td, th) {
+      &:first-child {
+         border-left-color:$problem-color-2!important;
+         border-left-width:$problem-thickness!important;
+      }
+      &:last-child {
+         border-right-color:$problem-color-2!important;
+         border-right-width:$problem-thickness!important;
+      }
+   }
+   :is(tbody, thead):first-child>tr:first-child>:is(td, th) {
+      border-top-color:$problem-color-2!important;
+      border-top-width:$problem-thickness!important;
+   }
+   :is(tbody, thead):last-child>tr:last-child>:is(td, th) {
+      border-bottom-color:$problem-color-2!important;
+      border-bottom-width:$problem-thickness!important;
+   }
+}
+
+html table.problem-3-obvious {
+   border-bottom-color:$problem-color-1!important;
+   border-bottom-width:$problem-thickness!important;
+   
+   td[rowSpan] {
+      border-bottom-color:$problem-color-2!important;
+      border-bottom-width:$problem-thickness!important;
+   }
+}
+
+html table.problem-4-obvious {
+   border-bottom-color:$problem-color-1!important;
+   border-bottom-width:$problem-thickness!important;
+   
+   td, th {
+      padding:0 .2ch;
+      text-align:center;
+   }
+   :is(td, th):first-child {
+      padding:0 .2ch 0 .4ch;
+   }
+   
+   td[rowSpan] {
+      border-bottom-color:$problem-color-2!important;
+      border-bottom-width:$problem-thickness!important;
+   }
+}
