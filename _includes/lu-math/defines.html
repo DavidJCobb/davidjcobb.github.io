@@ -1,1 +1,8 @@
 {%- capture lu_math_raw_endcap -%}<lu-math-raw-endcap> </lu-math-raw-endcap>{%- endcapture -%}
+{%- capture lu_math_sq -%}{% include lu-math/exponent.html exponent=2 %}{%- endcapture -%}
+{%- assign lu_math_exps = "" | split: "," -%}
+{%- for i in (0..5) -%}
+   {%- capture temp -%}{% include lu-math/exponent.html exponent=i %}{%- endcapture -%}
+   {%- assign temp = temp | NEVEROCCURRINGSTRING | split: "NEVEROCCURRINGSTRING" | slice: 0, 1 -%}
+   {%- assign lu_math_exps = lu_math_exps | concat: temp -%}
+{%- endfor -%}

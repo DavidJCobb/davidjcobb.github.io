@@ -1,7 +1,7 @@
 <lu-math-exp><span aria-hidden="true"><lu-math-raw>^</lu-math-raw>{{ include.exponent }}</span>
-   {%- if include.exponent == 2 -%}
+   {%- if include.exponent == 2 or include.exponent == "2" -%}
       <lu-math-raw data-screen-reader-only>&nbsp;squared&nbsp;</lu-math-raw>
-   {%- elsif include.exponent == 3 -%}
+   {%- elsif include.exponent == 3 or include.exponent == "3" -%}
       <lu-math-raw data-screen-reader-only>&nbsp;cubed&nbsp;</lu-math-raw>
    {%- elsif include.exponent == {{ include.exponent | ceil }} -%}
       <lu-math-raw data-screen-reader-only>&nbsp;to the {{ include.exponent }}th power&nbsp;</lu-math-raw>

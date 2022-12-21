@@ -144,19 +144,21 @@ table:not(.no-default-styles) {
    
    th, td {
       border:1px solid #DDD;
-      padding:.25em .5em;
+      padding:.25em .75em;
    }
    th {
       border:1px solid #666;
       background:#FF7400;
       font-weight: bold;
    }
+   /* rowSpan breaks these
    :is(td, th):first-child {
       padding-left:.75em;
    }
    :is(td, th):last-child {
       padding-right:.75em;
    }
+   */
    
    td[data-type=number] {
       text-align:right;
@@ -168,7 +170,8 @@ table:not(.no-default-styles) {
       color:#ECE7E0;
    }
    
-   &.fade-zeroes td[data-type="number"][data-value="0"] {
+   &.fade-zeroes td[data-type="number"][data-value="0"],
+   td.deemphasize {
       color:#666;
    }
 }

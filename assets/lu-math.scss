@@ -73,6 +73,8 @@ lu-math-spacing {
 }
 
 lu-math var {
+   white-space:nowrap;
+   
    &>sub {
       &::before,
       &::after {
@@ -126,13 +128,7 @@ lu-math-raw-endcap {
 /* centering, with left-alignment of centered blocks */
 :is(lu-math-aligned, lu-math-givens) {
    display:grid;
-   grid-template-columns:1fr max-content 1fr;
-}
-
-
-:is(lu-math-aligned, lu-math-givens) {
-   display:grid;
-   grid-template-columns:1fr max-content 1fr;
+   grid-template-columns:1fr fit-content(100%) 1fr;
    
    &>* {
       grid-column: 2;
@@ -146,7 +142,21 @@ lu-math-raw-endcap {
 lu-math-row {
    display:block;
    margin:0.5em 0;
+   orphans: 0; /* do not split equations across pages */
 }
+lu-math[data-enormous-rows] lu-math-row+lu-math-row {
+   border-top:1px solid #000;
+   padding-top:0.8em;
+}
+   lu-math-row-chunk {  
+      display:block;
+      text-align:left;
+   }
+   lu-math-row-chunk:not(:first-child) {
+      padding-left:10em;
+      text-indent:-5em;
+   }
+
 
 /* use lu-math-aligned and lu-math-row to have groups of equations left-align */
 lu-math-aligned>lu-math-row{text-align:left}
@@ -154,8 +164,8 @@ lu-math-aligned>lu-math-row{text-align:left}
 /* equation numbers */
 :is(lu-math, lu-math-row, lu-math-aligned)[data-equation-number] {
    position:relative;
-   padding-inline-start:3em;
-   padding-inline-end:3em;
+   padding-inline-start:5em;
+   padding-inline-end:5em;
    
    &::after {
       position:absolute;
@@ -164,10 +174,6 @@ lu-math-aligned>lu-math-row{text-align:left}
       transform:translate(0, -50%);
       content:"(" attr(data-equation-number) ")";
    }
-}
-
-lu-math-row {
-   orphans: 0; /* do not split equations across pages */
 }
 
 /* generic "horizontal part," to allow parts of an equation with differing heights to vertically center */
@@ -523,7 +529,7 @@ lu-math-sequence {
          ensure the upper grid area (which is optional) is not empty; required for 
          consistent alignments
       */
-      &::after {
+      &:not([data-no-params])::after {
          content:"\00A0";
          grid-area: upper;
          pointer-events:none;

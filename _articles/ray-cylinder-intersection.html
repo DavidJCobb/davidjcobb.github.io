@@ -12,6 +12,7 @@ extra_css_files:
  - lu-math.css
    
 ---
+{%- include lu-math/defines.html -%}
 <section>
    <p>
       There are a lot of people out on the web who are willing to share raycasting code, 
@@ -268,706 +269,1695 @@ extra_css_files:
    </p>
    <lu-math>
       <lu-math-row>
-         ||<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - ((<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>||{% include lu-math/exponent.html exponent=2 %}
+         ||<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - ((<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>||{{ lu_math_sq }}
           = 
-         <var>C<sub>r</sub></var>{% include lu-math/exponent.html exponent=2 %}
+         <var>C<sub>r</sub></var>{{ lu_math_sq }}
       </lu-math-row>
       <lu-math-row data-equation-number="5">
          (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - ((<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>)
           &bullet;
          (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - ((<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>)
           = 
-         <var>C<sub>r</sub></var>{% include lu-math/exponent.html exponent=2 %}
+         <var>C<sub>r</sub></var>{{ lu_math_sq }}
       </lu-math-row>
    </lu-math>
    <p>
-      Unfortunately, I can't think of any elegant tricks here, so let's brute-force it by expanding all of the dot products in full. This is gonna be rough. Just to keep things <em>relatively</em> manageable, let's just focus on one axis at a time, for now. We'll use the X-axis.
+      We want to get <lu-math data-inline><var>H<sub>d</sub></var></lu-math> outside of that inner expression. If we expand that inner dot product, then we can rearrange it &mdash; separate <lu-math data-inline><var>H<sub>d</sub></var></lu-math> out, and then recombine the rest back into dot product operations.
    </p>
    <lu-math>
       <lu-math-row>
          (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - ((<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>)
       </lu-math-row>
       <lu-math-row>
-         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
-         ((<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - <var>C<sub>bx</sub></var>)<var>C<sub>ax</sub></var>)<var>C<sub>ax</sub></var> + 
-         <var>C<sub>bx</sub></var>)
+         (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - (<!--
+         --><mark class="mark-1"><var>C<sub>ax</sub></var><var>R<sub>ox</sub></var> + <var>C<sub>ax</sub></var><var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - <var>C<sub>ax</sub></var><var>C<sub>bx</sub></var></mark>
+          + <mark class="mark-2"><var>C<sub>ay</sub></var><var>R<sub>oy</sub></var> + <var>C<sub>ay</sub></var><var>R<sub>dy</sub></var><var>H<sub>d</sub></var> - <var>C<sub>ay</sub></var><var>C<sub>by</sub></var></mark>
+          + <mark class="mark-3"><var>C<sub>az</sub></var><var>R<sub>oz</sub></var> + <var>C<sub>az</sub></var><var>R<sub>dz</sub></var><var>H<sub>d</sub></var> - <var>C<sub>az</sub></var><var>C<sub>bz</sub></var></mark><!--
+      -->)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>)
       </lu-math-row>
       <lu-math-row>
-         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
-         ((<mark><var>C<sub>ax</sub></var></mark><var>R<sub>ox</sub></var> + <mark><var>C<sub>ax</sub></var></mark><var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - <mark><var>C<sub>ax</sub></var></mark><var>C<sub>bx</sub></var>)<var>C<sub>ax</sub></var>) + 
-         <var>C<sub>bx</sub></var>)
+         (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - (<!--
+         --><mark>(<!--
+            --><var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+             + <var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+             + <var>C<sub>az</sub></var><var>R<sub>dz</sub></var><!--
+         -->)<var>H<sub>d</sub></var></mark>
+          + <var>C<sub>ax</sub></var><var>R<sub>ox</sub></var>
+          + <var>C<sub>ay</sub></var><var>R<sub>oy</sub></var>
+          + <var>C<sub>az</sub></var><var>R<sub>oz</sub></var>
+          - <var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          - <var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+          - <var>C<sub>az</sub></var><var>C<sub>bz</sub></var><!--
+      -->)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>)
       </lu-math-row>
       <lu-math-row>
-         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
-         (<!--
-         --><var>C<sub>ax</sub></var><mark>{% include lu-math/exponent.html exponent=2 %}</mark><var>R<sub>ox</sub></var> + 
-            <var>C<sub>ax</sub></var><mark>{% include lu-math/exponent.html exponent=2 %}</mark><var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
-            <var>C<sub>ax</sub></var><mark>{% include lu-math/exponent.html exponent=2 %}</mark><var>C<sub>bx</sub></var><!--
-      -->) + 
-         <var>C<sub>bx</sub></var>)
+         (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - (<!--
+         --><mark class="mark-1">(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)</mark><var>H<sub>d</sub></var>
+          + <mark class="mark-2">(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)</mark>
+          - <mark class="mark-3">(</mark><!--
+            --><var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+               <mark class="mark-3">+</mark>
+               <var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+               <mark class="mark-3">+</mark>
+               <var>C<sub>az</sub></var><var>C<sub>bz</sub></var><!--
+         --><mark class="mark-3">)</mark><!--
+      -->)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>)
       </lu-math-row>
       <lu-math-row>
-         <var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
-         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>ox</sub></var> - 
-         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>dx</sub></var><var>H<sub>d</sub></var> + 
-         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>C<sub>bx</sub></var> + 
-         <var>C<sub>bx</sub></var>
+         (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - (<!--
+         -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
+          + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+          - (<mark class="mark-3"><var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var></mark>)<!--
+      -->)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>)
+      </lu-math-row>
+      <lu-math-row>
+         (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<mark class="mark-1"><var>C<sub>a</sub></var></mark><var>H<sub>d</sub></var>
+          <mark class="mark-2">-</mark> (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<mark class="mark-1"><var>C<sub>a</sub></var></mark>
+          <mark class="mark-2">+</mark> (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<mark class="mark-1"><var>C<sub>a</sub></var></mark><!--
+      --> + <var>C<sub>b</sub></var>)
       </lu-math-row>
    </lu-math>
    <p>
-      Now, remember: this is the X-component of a vector, and we're going to be taking the dot product of that vector with itself. That means that we'll be squaring all of its components, and <em>then</em> adding them together.
+      Now let's group the terms by <lu-math data-inline><var>H<sub>d</sub></var></lu-math>:
    </p>
-   <aside>
-      <p>
-         We wouldn't want to forget to do that. Imagine if we forgot, and did a ton of work to simplify the expression, only to plug it back into the original equation and <em>immediately</em> see that we need to dot product it and do a ton more of the same work. Wouldn't that... Wouldn't that just be...
-      </p>
-   </aside>
+   <lu-math>
+      <lu-math-row>
+         (<!--
+      --><mark>(<!--
+         --><var>R<sub>d</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>a</sub></var><!--
+      -->)</mark><var>H<sub>d</sub></var>
+          + <var>R<sub>o</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>a</sub></var>
+          + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>a</sub></var><!--
+      --> + <var>C<sub>b</sub></var><!--
+      -->)
+      </lu-math-row>
+   </lu-math>
    <p>
-      Anyway.
+      Let's substitute that back into Equation 5:
    </p>
    <lu-math>
       <lu-math-row data-equation-number="6">
-         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
-         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>ox</sub></var> - 
-         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>dx</sub></var><var>H<sub>d</sub></var> + 
-         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>C<sub>bx</sub></var> + 
-         <var>C<sub>bx</sub></var>){% include lu-math/exponent.html exponent=2 %}
+         (<!--
+         -->(<!--
+            --><var>R<sub>d</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>a</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+             + <var>R<sub>o</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>a</sub></var>
+             + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>a</sub></var><!--
+         --> + <var>C<sub>b</sub></var><!--
+      -->)
+          &bullet;
+         (<!--
+         -->(<!--
+            --><var>R<sub>d</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>a</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+             + <var>R<sub>o</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>a</sub></var>
+             + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>a</sub></var><!--
+         --> + <var>C<sub>b</sub></var><!--
+      -->)
+          = 
+         <var>C<sub>r</sub></var>{{ lu_math_sq }}
       </lu-math-row>
    </lu-math>
    <p>
-      We need to expand the squaring, but I'm not altogether sure how to do that. A quick search on squaring a polynomial, however, turns up the Wikipedia article for <a href="https://en.wikipedia.org/wiki/Multinomial_theorem">the multinomial theorem</a>, which tells us how to expand any expression of the form <lu-math data-inline>(<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + ... + <var>x<sub>m</sub></var>){% include lu-math/exponent.html exponent="<var>n</var>" %}</lu-math>. Great! Let's look at the equation&mdash;
+      Now, we're gonna have to expand the dot product in full. That said, we don't have to expand any of the inner, nested, dot products.
    </p>
    <lu-math>
       <lu-math-row>
-         <lu-math-part>
-            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + ... + <var>x<sub>m</sub></var>){% include lu-math/exponent.html exponent="<var>n</var>" %}<nobr>
-             =</nobr> 
-         </lu-math-part>
-         <lu-math-part>
-            <lu-math-sequence data-operation="+-">
-               <lu-math-seq-info>
-                  <lu-math-raw>&Sigma;</lu-math-raw>
-                  <lu-math-condition>
-                     <lu-math-raw> for all </lu-math-raw>
-                     <var>k<sub>1</sub></var> + <var>k<sub>2</sub></var> + ... + <var>k<sub>m</sub></var> = <var>n</var>; 
-                     <var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>m</sub></var> &geq; 0
-                     <lu-math-raw> do: </lu-math-raw>
-                  </lu-math-condition>
-               </lu-math-seq-info>
-               <lu-math-seq-body><!--
-               --><lu-math-raw>(</lu-math-raw><!--
-                        
-               --><lu-math-binomial-coefficient>
-                     <lu-math-raw>(</lu-math-raw>
-                     <li><var>n</var></li>
-                     <lu-math-raw> choose (</lu-math-raw>
-                     <li><var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>m</sub></var></li>
-                     <lu-math-raw>))</lu-math-raw>
-                  </lu-math-binomial-coefficient><!--
-               --><lu-math-raw> &times; </lu-math-raw><!--
-               --><lu-math-sequence data-operation="*">
-                     <lu-math-seq-info>
-                        <lu-math-raw>&Pi;</lu-math-raw>
-                        <lu-math-seq-bounds>
-                           <lu-math-raw> from </lu-math-raw>
-                           <lu-math-bound-lower><var>t</var> = 1</lu-math-bound-lower>
-                           <lu-math-raw> through </lu-math-raw>
-                           <lu-math-bound-upper><var>m</var></lu-math-bound-upper>
-                           <lu-math-raw> do: </lu-math-raw>
-                        </lu-math-seq-bounds>
-                     </lu-math-seq-info>
-                     <lu-math-seq-body><!--
-                     --><lu-math-raw>(</lu-math-raw><!--
-                        
-                     --><var>x<sub>t</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>t</sub></var>" %}<!--
-                        
-                     --><lu-math-raw>)</lu-math-raw><!--
-                  --></lu-math-seq-body>
-                  </lu-math-sequence><!--
-                        
-               --><lu-math-raw>)</lu-math-raw><!--
-            --></lu-math-seq-body>
-            </lu-math-sequence>
+         <mark class="mark-1">(<!--
+         -->(<!--
+            --><var>R<sub>dx</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+             + <var>R<sub>ox</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>
+             + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><!--
+         --> + <var>C<sub>bx</sub></var><!--
+      -->)
+         &times;
+         (<!--
+         -->(<!--
+            --><var>R<sub>dx</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+             + <var>R<sub>ox</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>
+             + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><!--
+         --> + <var>C<sub>bx</sub></var><!--
+      -->)</mark>
+         +
+         <mark class="mark-2">(<!--
+         -->(<!--
+            --><var>R<sub>dy</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+             + <var>R<sub>oy</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>
+             + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var><!--
+         --> + <var>C<sub>by</sub></var><!--
+      -->)
+         &times;
+         (<!--
+         -->(<!--
+            --><var>R<sub>dy</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+             + <var>R<sub>oy</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>
+             + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var><!--
+         --> + <var>C<sub>by</sub></var><!--
+      -->)</mark>
+         +
+         <mark class="mark-3">(<!--
+         -->(<!--
+            --><var>R<sub>dz</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+             + <var>R<sub>oz</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>
+             + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var><!--
+         --> + <var>C<sub>bz</sub></var><!--
+      -->)
+         &times;
+         (<!--
+         -->(<!--
+            --><var>R<sub>dz</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+             + <var>R<sub>oz</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>
+             + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var><!--
+         --> + <var>C<sub>bz</sub></var><!--
+      -->)</mark>
+          = 
+         <var>C<sub>r</sub></var>{{ lu_math_sq }}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Each axis is a six-term multinomial multiplied by itself. That is, it takes the following form:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>a</var> + <var>b</var> + <var>c</var> + <var>d</var> + <var>e</var> + <var>f</var>){{lu_math_sq}}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      During an earlier, failed, attempt at working on this whole thing, I figured out how to expand any multinomial raised to any exponent. I wrote about it <a href="{% link _articles/multinomial-theorem.html %}">in another article</a>, but the short version is that we want this:
+   </p>
+   <lu-math data-enormous-rows>
+      <lu-math-row>
+         <var>a</var>{{ lu_math_sq }} + 
+         <var>b</var>{{ lu_math_sq }} + 
+         <var>c</var>{{ lu_math_sq }} + 
+         <var>d</var>{{ lu_math_sq }} + 
+         <var>e</var>{{ lu_math_sq }} + 
+         <var>f</var>{{ lu_math_sq }} +
+         2<var>a</var><var>b</var> +
+         2<var>a</var><var>c</var> +
+         2<var>a</var><var>d</var> +
+         2<var>a</var><var>e</var> +
+         2<var>a</var><var>f</var> +
+         2<var>b</var><var>c</var> +
+         2<var>b</var><var>d</var> +
+         2<var>b</var><var>e</var> +
+         2<var>b</var><var>f</var> +
+         2<var>c</var><var>d</var> +
+         2<var>c</var><var>e</var> +
+         2<var>c</var><var>f</var> +
+         2<var>d</var><var>e</var> +
+         2<var>d</var><var>f</var> +
+         2<var>e</var><var>f</var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Let's expand just the x-axis this way, to keep things at least slightly manageable:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<!--
+         -->(<!--
+            --><mark class="mark-1"><var>R<sub>dx</sub></var></mark>
+             <mark class="mark-2">- (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><!--
+         -->)<var>H<sub>d</sub></var></mark>
+             + <mark class="mark-3"><var>R<sub>ox</sub></var></mark>
+             <mark class="mark-4">- (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var></mark>
+             + <mark class="mark-5">(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var></mark>
+             + <mark class="mark-6"><var>C<sub>bx</sub></var></mark><!--
+      -->)
+         &times;
+         (<!--
+         -->(<!--
+            --><var>R<sub>dx</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+             + <var>R<sub>ox</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>
+             + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><!--
+         --> + <var>C<sub>bx</sub></var><!--
+      -->)
+      </lu-math-row>
+      {%- comment -%}
+         B and D are negative.
+      {%- endcomment -%}
+      {%- capture a_pos -%}<mark class="mark-1"><var>R<sub>dx</sub></var></mark>{%- endcapture -%}
+      {%- capture b_pos -%}<mark class="mark-2">((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>)<var>H<sub>d</sub></var>)</mark>{%- endcapture -%}
+      {%- capture c_pos -%}<mark class="mark-3"><var>R<sub>ox</sub></var></mark>{%- endcapture -%}
+      {%- capture d_pos -%}<mark class="mark-4">((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>)</mark>{%- endcapture -%}
+      {%- capture e_pos -%}<mark class="mark-5">((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>)</mark>{%- endcapture -%}
+      {%- capture f_pos -%}<mark class="mark-6"><var>C<sub>bx</sub></var></mark>{%- endcapture -%}
+      <lu-math-row>
+         {{a_pos}}{{ lu_math_sq }}
+          + {{b_pos}}{{ lu_math_sq }} 
+          + {{c_pos}}{{ lu_math_sq }} 
+          + {{d_pos}}{{ lu_math_sq }} 
+          + {{e_pos}}{{ lu_math_sq }} 
+          + {{f_pos}}{{ lu_math_sq }}
+          - 2{{a_pos}}{{b_pos}}
+          + 2{{a_pos}}{{c_pos}}
+          - 2{{a_pos}}{{d_pos}}
+          + 2{{a_pos}}{{e_pos}}
+          + 2{{a_pos}}{{f_pos}}
+          - 2{{b_pos}}{{c_pos}}
+          + 2{{b_pos}}{{d_pos}}
+          - 2{{b_pos}}{{e_pos}}
+          - 2{{b_pos}}{{f_pos}}
+          + 2{{c_pos}}{{d_pos}}
+          + 2{{c_pos}}{{e_pos}}
+          + 2{{c_pos}}{{f_pos}}
+          - 2{{d_pos}}{{e_pos}}
+          - 2{{d_pos}}{{f_pos}}
+          + 2{{e_pos}}{{f_pos}}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Let's group the terms by <lu-math data-inline><var>H<sub>d</sub></var></lu-math>:
+   </p>
+   <lu-math data-enormous-rows>
+      <lu-math-row>
+         <var>R<sub>dx</sub></var>{{ lu_math_sq }}
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>)<var>H<sub>d</sub></var>){{ lu_math_sq }} 
+          + <var>R<sub>ox</sub></var>{{ lu_math_sq }} 
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }} 
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }} 
+          + <var>C<sub>bx</sub></var>{{ lu_math_sq }}
+          - 2<var>R<sub>dx</sub></var>((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>)<var>H<sub>d</sub></var>)
+          + 2<var>R<sub>dx</sub></var><var>R<sub>ox</sub></var>
+          - 2<var>R<sub>dx</sub></var>((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>)
+          + 2<var>R<sub>dx</sub></var>((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>)
+          + 2<var>R<sub>dx</sub></var><var>C<sub>bx</sub></var>
+          - 2((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>)<var>H<sub>d</sub></var>)<var>R<sub>ox</sub></var>
+          + 2((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>)<var>H<sub>d</sub></var>)((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>)
+          - 2((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>)<var>H<sub>d</sub></var>)((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>)
+          - 2((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>)<var>H<sub>d</sub></var>)<var>C<sub>bx</sub></var>
+          + 2<var>R<sub>ox</sub></var>((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>)
+          + 2<var>R<sub>ox</sub></var>((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>)
+          + 2<var>R<sub>ox</sub></var><var>C<sub>bx</sub></var>
+          - 2((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>)((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>)
+          - 2((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>)<var>C<sub>bx</sub></var>
+          + 2((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>)<var>C<sub>bx</sub></var>
+      </lu-math-row>
+      <lu-math-row>
+         (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}<var>H<sub>d</sub></var>{{lu_math_sq}}
          
-         </lu-math-part>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var><var>H<sub>d</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var><var>H<sub>d</sub></var>
+          
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>H<sub>d</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>H<sub>d</sub></var>
+          
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var><var>H<sub>d</sub></var>
+          
+          + 2<var>R<sub>dx</sub></var><var>R<sub>ox</sub></var>
+          - 2<var>R<sub>dx</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>
+          + 2<var>R<sub>dx</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>
+          + 2<var>R<sub>ox</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>
+          + 2<var>R<sub>ox</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          
+          + 2<var>R<sub>dx</sub></var><var>C<sub>bx</sub></var>
+          + 2<var>R<sub>ox</sub></var><var>C<sub>bx</sub></var>
+          
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }} 
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }} 
+          
+          + <var>R<sub>dx</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>ox</sub></var>{{ lu_math_sq }} 
+          + <var>C<sub>bx</sub></var>{{ lu_math_sq }}
+      </lu-math-row>
+      <lu-math-row>
+         (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}<var>H<sub>d</sub></var>{{lu_math_sq}}
+         + <mark>2(<!--
+         -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var><!--
+         -->)</mark><var>H<sub>d</sub></var>
+          
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>{{lu_math_sq}}
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          
+          + 2<var>R<sub>dx</sub></var><var>R<sub>ox</sub></var>
+          + 2<var>R<sub>dx</sub></var><var>C<sub>bx</sub></var>
+          + 2<var>R<sub>ox</sub></var><var>C<sub>bx</sub></var>
+          
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }} 
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }} 
+          
+          + <var>R<sub>dx</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>ox</sub></var>{{ lu_math_sq }} 
+          + <var>C<sub>bx</sub></var>{{ lu_math_sq }}
       </lu-math-row>
    </lu-math>
    <p>
-      Oh. Uh...
-   </p>
-   <p>
-      Well, to start with, those values below the summation symbol (&Sigma;) represent conditions. We have <lu-math data-inline><var>m</var></lu-math> variables named <lu-math data-inline><var>k<sub>something</sub></var></lu-math>, named <lu-math data-inline><var>k<sub>1</sub></var></lu-math> through <lu-math data-inline><var>k<sub>m</sub></var></lu-math>, and we have two conditions that apply to the lot of them. We are going to take <em>every possible combination of values</em> that meets these conditions, feed those values into the summation "body," and then compute the results and sum them all.
-   </p>
-   <p>
-      The first condition is that the values must all add up to <lu-math data-inline><var>n</var></lu-math>, and the second condition is that they must all be greater than or equal to zero. This in turn implies that no one single value can be greater than <lu-math data-inline><var>n</var></lu-math>, as otherwise we'd need at least one of the others to be negative in order for this to work.
-   </p>
-   <p>
-      <span class="different-wording-for-the-blind">
-         <span class="sighted" aria-hidden="true">See the large parentheses, with the two rows and no symbol dividing them?</span>
-         <span class="blind">Hear that one bit with the word "choose?" </span>
-      </span>
-      That's the notation for <dfn>binomial coefficients</dfn>. If we call the top number <lu-math data-inline><var>n</var></lu-math> and the bottom number <lu-math data-inline><var>k</var></lu-math>, then given the expression <lu-math data-inline>(1 + <var>x</var>){% include lu-math/exponent.html exponent="<var>k</var>" %}</lu-math>, we can compute the coefficient of <lu-math data-inline><var>x</var>{% include lu-math/exponent.html exponent="<var>k</var>" %}</lu-math> as follows:
+      Let's add the other axes back in:
    </p>
    <lu-math>
-      <lu-math-row><!--
-      --><lu-math-fraction><!--
-         --><lu-math-numer><var>n</var>!</lu-math-numer><!--
-         --><lu-math-raw> &divide; (</lu-math-raw><!--
-         --><lu-math-denom><!--
-            --><var>k</var>!(<var>n</var> - <var>k</var>)!<!--
-         --></lu-math-deom><!--
-         --><lu-math-raw>)</lu-math-raw><!--
-      --></lu-math-fraction>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
+      <lu-math-row>
+         <mark class="mark-1">(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}<var>H<sub>d</sub></var>{{lu_math_sq}}
+         + 2(<!--
+         -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+          
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>{{lu_math_sq}}
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          
+          + 2<var>R<sub>dx</sub></var><var>R<sub>ox</sub></var>
+          + 2<var>R<sub>dx</sub></var><var>C<sub>bx</sub></var>
+          + 2<var>R<sub>ox</sub></var><var>C<sub>bx</sub></var>
+          
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }} 
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }} 
+          
+          + <var>R<sub>dx</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>ox</sub></var>{{ lu_math_sq }} 
+          + <var>C<sub>bx</sub></var>{{ lu_math_sq }}</mark>
+         
+          +
+          
+         <mark class="mark-2">(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }}<var>H<sub>d</sub></var>{{lu_math_sq}}
+         + 2(<!--
+         -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+          
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>{{lu_math_sq}}
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+          
+          + 2<var>R<sub>dy</sub></var><var>R<sub>oy</sub></var>
+          + 2<var>R<sub>dy</sub></var><var>C<sub>by</sub></var>
+          + 2<var>R<sub>oy</sub></var><var>C<sub>by</sub></var>
+          
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }} 
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }} 
+          
+          + <var>R<sub>dy</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>oy</sub></var>{{ lu_math_sq }} 
+          + <var>C<sub>by</sub></var>{{ lu_math_sq }}</mark>
+         
+          +
+          
+         <mark class="mark-3">(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }}<var>H<sub>d</sub></var>{{lu_math_sq}}
+         + 2(<!--
+         -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+          
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>{{lu_math_sq}}
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+          
+          + 2<var>R<sub>dz</sub></var><var>R<sub>oz</sub></var>
+          + 2<var>R<sub>dz</sub></var><var>C<sub>bz</sub></var>
+          + 2<var>R<sub>oz</sub></var><var>C<sub>bz</sub></var>
+          
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }} 
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }} 
+          
+          + <var>R<sub>dz</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>oz</sub></var>{{ lu_math_sq }} 
+          + <var>C<sub>bz</sub></var>{{ lu_math_sq }}</mark>
       </lu-math-row>
    </lu-math>
    <p>
-      Wikipedia offers one example: <lu-math data-inline>(1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}</lu-math> is:
+      Let's group by <lu-math data-inline><var>H<sub>d</sub></var></lu-math> again, and then move common terms from different axes right next to each other.
+   </p>
+   <lu-math data-enormous-rows>
+      <lu-math-row>
+         <mark>(
+            ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }}
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }}
+         )</mark><var>H<sub>d</sub></var>{{lu_math_sq}}
+         +
+         <mark>(
+            2(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var><!--
+         -->)
+            +
+            2(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var><!--
+         -->)
+            +
+            2(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var><!--
+         -->)
+         )</mark><var>H<sub>d</sub></var>
+      
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>{{lu_math_sq}}
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          
+          + 2<var>R<sub>dx</sub></var><var>R<sub>ox</sub></var>
+          + 2<var>R<sub>dx</sub></var><var>C<sub>bx</sub></var>
+          + 2<var>R<sub>ox</sub></var><var>C<sub>bx</sub></var>
+          
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }} 
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }} 
+          
+          + <var>R<sub>dx</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>ox</sub></var>{{ lu_math_sq }} 
+          + <var>C<sub>bx</sub></var>{{ lu_math_sq }}
+         
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>{{lu_math_sq}}
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+          
+          + 2<var>R<sub>dy</sub></var><var>R<sub>oy</sub></var>
+          + 2<var>R<sub>dy</sub></var><var>C<sub>by</sub></var>
+          + 2<var>R<sub>oy</sub></var><var>C<sub>by</sub></var>
+          
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }} 
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }} 
+          
+          + <var>R<sub>dy</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>oy</sub></var>{{ lu_math_sq }} 
+          + <var>C<sub>by</sub></var>{{ lu_math_sq }}
+         
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>{{lu_math_sq}}
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+          
+          + 2<var>R<sub>dz</sub></var><var>R<sub>oz</sub></var>
+          + 2<var>R<sub>dz</sub></var><var>C<sub>bz</sub></var>
+          + 2<var>R<sub>oz</sub></var><var>C<sub>bz</sub></var>
+          
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }} 
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }} 
+          
+          + <var>R<sub>dz</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>oz</sub></var>{{ lu_math_sq }} 
+          + <var>C<sub>bz</sub></var>{{ lu_math_sq }}
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<!--
+            -->((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }}
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }}<!--
+         -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            +
+            (<!--
+            -->2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var><!--
+            -->)<!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>{{lu_math_sq}}
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>{{lu_math_sq}}
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>{{lu_math_sq}}
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+          - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + 2<var>R<sub>dx</sub></var><var>R<sub>ox</sub></var>
+          + 2<var>R<sub>dy</sub></var><var>R<sub>oy</sub></var>
+          + 2<var>R<sub>dz</sub></var><var>R<sub>oz</sub></var>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + 2<var>R<sub>dx</sub></var><var>C<sub>bx</sub></var>
+          + 2<var>R<sub>dy</sub></var><var>C<sub>by</sub></var>
+          + 2<var>R<sub>dz</sub></var><var>C<sub>bz</sub></var>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + 2<var>R<sub>ox</sub></var><var>C<sub>bx</sub></var>
+          + 2<var>R<sub>oy</sub></var><var>C<sub>by</sub></var>
+          + 2<var>R<sub>oz</sub></var><var>C<sub>bz</sub></var>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }}
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }}
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }}
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }}
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + <var>R<sub>dx</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>dy</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>dz</sub></var>{{ lu_math_sq }}
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + <var>R<sub>ox</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>oy</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>oz</sub></var>{{ lu_math_sq }}
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + <var>C<sub>bx</sub></var>{{ lu_math_sq }}
+          + <var>C<sub>by</sub></var>{{ lu_math_sq }}
+          + <var>C<sub>bz</sub></var>{{ lu_math_sq }}
+         </lu-math-row-chunk>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Now, it's trivial to merge components back into their original vectors.
+   </p>
+   <lu-math data-enormous-rows>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<!--
+            -->((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }}
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }}<!--
+         -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            +
+            (<!--
+            -->2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var><!--
+            -->)<!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         
+         <lu-math-row-chunk>
+            -
+            <mark class="mark-1">
+               2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            </mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            +
+            <mark class="mark-2">
+               2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            </mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            +
+            <mark class="mark-3">
+               2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            </mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            +
+            <mark class="mark-4">
+               2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            </mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            -
+            <mark class="mark-5">
+               2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            </mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            -
+            <mark class="mark-6">
+               2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            +
+            <mark class="mark-1">
+               2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            +
+            <mark class="mark-2">
+               2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            </mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            +
+            <mark class="mark-3">
+               2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            +
+            <mark class="mark-4">
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }}
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }}
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }}
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }}
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + <var>R<sub>dx</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>dy</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>dz</sub></var>{{ lu_math_sq }}
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + <var>R<sub>ox</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>oy</sub></var>{{ lu_math_sq }}
+          + <var>R<sub>oz</sub></var>{{ lu_math_sq }}
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + <var>C<sub>bx</sub></var>{{ lu_math_sq }}
+          + <var>C<sub>by</sub></var>{{ lu_math_sq }}
+          + <var>C<sub>bz</sub></var>{{ lu_math_sq }}
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<!--
+            -->((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }}
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }}<!--
+         -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            +
+            (<!--
+            -->2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var><!--
+            -->)<!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         
+         <lu-math-row-chunk>
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>)<mark class="mark-1">((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>)</mark>
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>)<mark class="mark-1">((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>)</mark>
+          + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>)<mark class="mark-1">((<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>)</mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>)<mark class="mark-1">((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>)</mark>
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>)<mark class="mark-1">((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>)</mark>
+          + ((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>)<mark class="mark-1">((<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>)</mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            + <mark class="mark-2">(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)</mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            + <mark class="mark-2">(<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)</mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            + <mark class="mark-2">(<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark>
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<!--
+            -->((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }}
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }}<!--
+         -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            +
+            (<!--
+            -->2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var><!--
+            -->)<!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         
+         <lu-math-row-chunk>
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>{{lu_math_sq}}
+          + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>{{lu_math_sq}}
+          + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>{{lu_math_sq}}
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>{{lu_math_sq}}
+          + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>{{lu_math_sq}}
+          + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>{{lu_math_sq}}
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<!--
+            -->((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>){{ lu_math_sq }}
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>){{ lu_math_sq }}
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>){{ lu_math_sq }}<!--
+         -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            +
+            (<!--
+            -->2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var><!--
+            -->)<!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         
+         <lu-math-row-chunk>
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<mark>(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)</mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+          + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<mark>(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)</mark>
+         </lu-math-row-chunk>
+          
+         <lu-math-row-chunk>
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<!--
+            -->((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>)<mark>((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>)</mark>
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>)<mark>((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>)</mark>
+             + ((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>)<mark>((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>)</mark><!--
+         -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            +
+            (<!--
+            -->2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var><!--
+            -->)<!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         
+         <lu-math-row-chunk>
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)
+            + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>{{lu_math_sq}}
+             + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>{{lu_math_sq}}
+             +((<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>{{lu_math_sq}}<!--
+         -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            +
+            (<!--
+            -->2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ax</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>ay</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var><!--
+            -->)
+               +
+               2(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>C<sub>az</sub></var>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var><!--
+            -->)<!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         
+         <lu-math-row-chunk>
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)
+            + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<mark>(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark><var>H<sub>d</sub></var>{{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            +
+            <mark>2</mark>(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><mark>{{lu_math_sq}}</mark>
+             - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><mark>{{lu_math_sq}}</mark>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var>
+               +
+               (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><mark>{{lu_math_sq}}</mark>
+             - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><mark>{{lu_math_sq}}</mark>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var>
+               +
+               (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><mark>{{lu_math_sq}}</mark>
+             - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><mark>{{lu_math_sq}}</mark>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         
+         <lu-math-row-chunk>
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)
+            + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Let's rearrange some terms, and then keep going.
+   </p>
+   <lu-math data-enormous-rows>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
+            +
+            2(
+            <lu-math-row-chunk>
+               (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>{{lu_math_sq}}
+               + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>{{lu_math_sq}}
+               + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>{{lu_math_sq}}
+            </lu-math-row-chunk>
+            <lu-math-row-chunk>
+               - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var>{{lu_math_sq}}
+               - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var>{{lu_math_sq}}
+               - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var>{{lu_math_sq}}
+            </lu-math-row-chunk>
+            <lu-math-row-chunk>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>C<sub>bx</sub></var>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>C<sub>by</sub></var>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>C<sub>bz</sub></var>
+            </lu-math-row-chunk>
+            <lu-math-row-chunk>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>dx</sub></var>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>dy</sub></var>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>dz</sub></var>
+            </lu-math-row-chunk>
+            <lu-math-row-chunk>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ax</sub></var><var>R<sub>ox</sub></var>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>ay</sub></var><var>R<sub>oy</sub></var>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>C<sub>az</sub></var><var>R<sub>oz</sub></var>
+            </lu-math-row-chunk>
+         
+            )<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)
+            + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
+            +
+            2(
+            <lu-math-row-chunk>
+               (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<mark class="mark-1">(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark>
+            </lu-math-row-chunk>
+            <lu-math-row-chunk>
+               - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<mark class="mark-2">(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark>
+            </lu-math-row-chunk>
+            <lu-math-row-chunk>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<mark class="mark-3">(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark>
+            </lu-math-row-chunk>
+            <lu-math-row-chunk>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<mark class="mark-4">(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)</mark>
+            </lu-math-row-chunk>
+            <lu-math-row-chunk>
+               - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<mark class="mark-5">(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)</mark>
+            </lu-math-row-chunk>
+         
+            )<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)
+            + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>ax</sub></var> &bullet; <var>C<sub>ax</sub></var>)
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      We've combined everything back into vectors. Now, let's rearrange things a bit, to clean this behemoth of an expression up.
    </p>
    <lu-math>
-      <lu-math-aligned data-right>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
+            +
+            2(
+            <lu-math-row-chunk>
+               <mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+               -->(<!--
+                  --><var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>
+                   - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
+               -->)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+            -->)</mark>
+            </lu-math-row-chunk>
+         
+            )<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<mark>{{lu_math_sq}}</mark>(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<mark>{{lu_math_sq}}</mark>(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<mark>{{lu_math_sq}}</mark>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<mark>{{lu_math_sq}}</mark>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + <mark>2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+         -->)</mark>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      The vector <lu-math data-inline><var>C<sub>a</sub></var></lu-math> is a normalized axis vector, so its length is 1. This means that the dot product of this vector with itself &mdash; its length squared &mdash; is also 1, so we can prune it out of the multiplications.
+   </p>
+   <lu-math data-enormous-rows>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
+            +
+            2(
+            <lu-math-row-chunk>
+               (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+               -->(<!--
+                  --><var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>
+                   - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
+               -->)
+                - (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+            -->)
+            </lu-math-row-chunk>
+         
+            )<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+            + (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+         -->)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<mark>{{lu_math_sq}}</mark><var>H<sub>d</sub></var>{{lu_math_sq}}
+            +
+            2(
+            <lu-math-row-chunk>
+               (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+               -->-<mark>2</mark>(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<!--
+            -->)
+            </lu-math-row-chunk>
+         
+            )<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + <mark>3</mark>(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+            + <mark>3</mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+         -->)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+            <mark>-</mark>
+            2(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+               -->2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                <mark>+</mark> (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<!--
+            -->)<!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 3(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+            + 3(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+         -->)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+            -
+            2(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+               -->2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<!--
+            -->)<!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 3(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+            + 3(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+         -->)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+            -
+            2(<!--
+            -->2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)</mark>
+             + (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)</mark><!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 3(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+            + 3(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+         -->)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-row-chunk>
+            (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+            -
+            (<!--
+            --><mark>4</mark>(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+             + <mark>2</mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<!--
+         -->)<var>H<sub>d</sub></var>
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 3(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+            + 3(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+            -->(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+             - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+         -->)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            - 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+         <lu-math-row-chunk>
+            + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+            + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         </lu-math-row-chunk>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Let's plug this back into the complete equation:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+         -
+         (<!--
+         -->4(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<!--
+      -->)<var>H<sub>d</sub></var>
+         + 3(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+         + 3(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+         + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+         -->(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+      -->)
+         - 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+         + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         = 
+         <var>C<sub>r</sub></var>{{ lu_math_sq }}
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Let's move the radius onto the lefthand side.
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+         -
+         (<!--
+         -->4(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>){{lu_math_sq}}<!--
+      -->)<var>H<sub>d</sub></var>
+         + 3(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+         + 3(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+         + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+         -->(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+      -->)
+         - 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+         + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)<mark> - <var>C<sub>r</sub></var>{{ lu_math_sq }}</mark>
+         = 
+         0
+      </lu-math-row>
+   </lu-math>
+   <p>
+      And as with <a href="{% link _articles/ray-cone-intersection.html %}">ray/cone intersections</a>, we've found ourselves facing a quadratic equation.
+   </p>
+   <lu-math>
+      <lu-math-row>
+         <mark class="mark-1">(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>){{lu_math_sq}}</mark><var>H<sub>d</sub></var>{{lu_math_sq}}
+         <mark class="mark-2">-
+         (<!--
+         -->4(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+          + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>){{lu_math_sq}}<!--
+      -->)</mark><var>H<sub>d</sub></var>
+         + <mark class="mark-3">3(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+         + 3(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+         + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+         -->(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+          - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+      -->)
+         - 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+         + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+         + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+         - <var>C<sub>r</sub></var>{{ lu_math_sq }}</mark>
+         = 
+         0
+      </lu-math-row>
+      <lu-math-aligned>
          <lu-math-row>
-            <lu-math-part>
-               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
-                = 
-            </lu-math-part><!--
-         --><lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li>4</li>
-               <lu-math-raw> choose </lu-math-raw>
-               <li>0</li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=0 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li>4</li>
-               <lu-math-raw> choose </lu-math-raw>
-               <li>1</li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=1 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li>4</li>
-               <lu-math-raw> choose </lu-math-raw>
-               <li>2</li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=2 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li>4</li>
-               <lu-math-raw> choose </lu-math-raw>
-               <li>3</li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=3 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li>4</li>
-               <lu-math-raw> choose </lu-math-raw>
-               <li>4</li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
-            </lu-math-part>
+            <var>a</var> = (<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>){{lu_math_sq}}
          </lu-math-row>
          <lu-math-row>
-            <lu-math-spacing>
-               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
-            </lu-math-spacing><!--
-         --><lu-math-part>&nbsp;=&nbsp;</lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>4!</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->0!(4 - 0)!<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=0 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>4!</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->1!(4 - 1)!<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=1 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>4!</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->2!(4 - 2)!<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=2 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>4!</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->3!(4 - 3)!<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=3 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>4!</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->4!(4 - 4)!<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
-            </lu-math-part>
+            <var>b</var> = -4(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)
+             - 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>){{lu_math_sq}}
          </lu-math-row>
          <lu-math-row>
-            <lu-math-spacing>
-               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
-            </lu-math-spacing><!--
-         --><lu-math-part>&nbsp;=&nbsp;</lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>24</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->24<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-                &times; 1
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>24</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->6<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=1 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>24</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->2 &times; 2<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=2 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>24</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->6<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=3 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>24</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->24<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
-            </lu-math-part>
-         </lu-math-row>
-         <lu-math-row>
-            <lu-math-spacing>
-               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
-            </lu-math-spacing><!--
-         --><lu-math-part>&nbsp;=&nbsp;</lu-math-part>
-            <lu-math-part>
-               1
-                + 
-               4<var>x</var>{% include lu-math/exponent.html exponent=1 %}
-                + 
-               6<var>x</var>{% include lu-math/exponent.html exponent=2 %}
-                + 
-               4<var>x</var>{% include lu-math/exponent.html exponent=3 %}
-                + 
-               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
-            </lu-math-part>
+            <var>c</var> = 3(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+               + 3(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+               + 2(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                - (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)<!--
+            -->)
+               - 2(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)
+               + 2(<var>R<sub>d</sub></var> &bullet; <var>R<sub>o</sub></var>)
+               + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)
+               + 2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+               + (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+               + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+               + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+               - <var>C<sub>r</sub></var>{{ lu_math_sq }}</mark>
          </lu-math-row>
       </lu-math-aligned>
    </lu-math>
+   
+   
    <p>
-      Apparently, that generalizes to larger "multinomials;" if your multinomial has <lu-math data-inline><var>r</var></lu-math> terms in it, then you'd do:
+      I'm... not fully confident in this. It needs testing, and I feel like there are better solutions that I'm missing. Somehow this is more complex than the cone solution despite dealing with what is, conceptually, a simpler shape.
    </p>
-   <lu-math>
-      <lu-math-row><!--
-      --><lu-math-part>
-            <lu-math-raw-endcap> </lu-math-raw-endcap>
-            <lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li><var>n</var></li>
-               <lu-math-raw> and (</lu-math-raw>
-               <li><var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>r</sub></var></li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient>
-         </lu-math-part>
-          = <!--
-      --><lu-math-fraction><!--
-         --><lu-math-numer><var>n</var>!</lu-math-numer><!--
-         --><lu-math-raw> &divide; (</lu-math-raw><!--
-         --><lu-math-denom><!--
-            --><var>k<sub>1</sub></var>!<var>k<sub>2</sub></var>!...<var>k<sub>r</sub></var>!<!--
-         --></lu-math-deom><!--
-         --><lu-math-raw>)</lu-math-raw><!--
-      --></lu-math-fraction>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-      </lu-math-row>
-   </lu-math>
-   <p>
-      Given a multinomial with <lu-math data-inline><var>r</var></lu-math> terms, the variable <lu-math data-inline><var>k<sub>i</sub></var></lu-math> is defined below &mdash; and as a reminder, this is summation, not a single variable:
-   </p>
-   <lu-math>
-      <lu-math-row>
-         <lu-math-part>
-            <lu-math-sequence data-operation="+-">
-               <lu-math-seq-info>
-                  <lu-math-raw>&Sigma;</lu-math-raw>
-                  <lu-math-seq-bounds>
-                     <lu-math-raw> from </lu-math-raw>
-                     <lu-math-bound-lower><var>i</var> = 1</lu-math-bound-lower>
-                     <lu-math-raw> through </lu-math-raw>
-                     <lu-math-bound-upper><var>r</var></lu-math-bound-upper>
-                     <lu-math-raw> do: </lu-math-raw>
-                  </lu-math-seq-bounds>
-               </lu-math-seq-info>
-               <lu-math-seq-body><!--
-               --><lu-math-raw>(</lu-math-raw><!--
-                  
-               --><var>k<sub>i</sub></var><!--
-                  
-               --><lu-math-raw>)</lu-math-raw><!--
-            --></lu-math-seq-body>
-            </lu-math-sequence>
-         </lu-math-part>
-         <lu-math-part>
-             = 
-            <var>n</var>
-         </lu-math-part>
-      </lu-math-row>
-   </lu-math>
-   <p>
-      This is all getting pretty out-there, so let's come back to Earth by actually using this. We have a multinomial that we want to square, so <lu-math data-inline><var>n</var></lu-math> is 2. Our multinomial has six terms, so <lu-math data-inline><var>m</var></lu-math> is 6.
-   </p>
-   <lu-math>
-      <lu-math-row>
-         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - 
-         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>ox</sub></var> - 
-         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>R<sub>dx</sub></var><var>H<sub>d</sub></var> + 
-         <var>C<sub>ax</sub></var>{% include lu-math/exponent.html exponent=2 %}<var>C<sub>bx</sub></var> + 
-         <var>C<sub>bx</sub></var>){% include lu-math/exponent.html exponent=2 %}
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + <var>x<sub>3</sub></var> + <var>x<sub>4</sub></var> + <var>x<sub>5</sub></var> + <var>x<sub>6</sub></var>){% include lu-math/exponent.html exponent=2 %}<nobr>
-             =</nobr> 
-         </lu-math-part>
-         <lu-math-part>
-            <lu-math-sequence data-operation="+-">
-               <lu-math-seq-info>
-                  <lu-math-raw>&Sigma;</lu-math-raw>
-                  <lu-math-condition>
-                     <lu-math-raw> for all </lu-math-raw>
-                     <var>k<sub>1</sub></var> + <var>k<sub>2</sub></var> + ... + <var>k<sub>6</sub></var> = 2; 
-                     <var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>6</sub></var> &geq; 0
-                     <lu-math-raw> do: </lu-math-raw>
-                  </lu-math-condition>
-               </lu-math-seq-info>
-               <lu-math-seq-body><!--
-               --><lu-math-raw>(</lu-math-raw><!--
-                        
-               --><lu-math-binomial-coefficient>
-                     <lu-math-raw>(</lu-math-raw>
-                     <li>2</li>
-                     <lu-math-raw> and (</lu-math-raw>
-                     <li><var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>6</sub></var></li>
-                     <lu-math-raw>)</lu-math-raw>
-                  </lu-math-binomial-coefficient><!--
-               --><lu-math-raw> &times; </lu-math-raw><!--
-               --><lu-math-sequence data-operation="*">
-                     <lu-math-seq-info>
-                        <lu-math-raw>&Pi;</lu-math-raw>
-                        <lu-math-seq-bounds>
-                           <lu-math-raw> from </lu-math-raw>
-                           <lu-math-bound-lower><var>t</var> = 1</lu-math-bound-lower>
-                           <lu-math-raw> through </lu-math-raw>
-                           <lu-math-bound-upper>6</lu-math-bound-upper>
-                           <lu-math-raw> do: </lu-math-raw>
-                        </lu-math-seq-bounds>
-                     </lu-math-seq-info>
-                     <lu-math-seq-body><!--
-                     --><lu-math-raw>(</lu-math-raw><!--
-                        
-                     --><var>x<sub>t</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>t</sub></var>" %}<!--
-                        
-                     --><lu-math-raw>)</lu-math-raw><!--
-                  --></lu-math-seq-body>
-                  </lu-math-sequence><!--
-                        
-               --><lu-math-raw>)</lu-math-raw><!--
-            --></lu-math-seq-body>
-            </lu-math-sequence>
-         
-         </lu-math-part>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + <var>x<sub>3</sub></var> + <var>x<sub>4</sub></var> + <var>x<sub>5</sub></var> + <var>x<sub>6</sub></var>){% include lu-math/exponent.html exponent=2 %}<nobr>
-             =</nobr> 
-         </lu-math-part>
-         <lu-math-part>
-            <lu-math-sequence data-operation="+-">
-               <lu-math-seq-info>
-                  <lu-math-raw>&Sigma;</lu-math-raw>
-                  <lu-math-condition>
-                     <lu-math-raw> for all </lu-math-raw>
-                     <var>k<sub>1</sub></var> + <var>k<sub>2</sub></var> + ... + <var>k<sub>6</sub></var> = 2; 
-                     <var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>6</sub></var> &geq; 0
-                     <lu-math-raw> do: </lu-math-raw>
-                  </lu-math-condition>
-               </lu-math-seq-info>
-               <lu-math-seq-body><!--
-               --><lu-math-raw>(</lu-math-raw><!--
-                        
-               --><lu-math-fraction><!--
-                  --><lu-math-numer>2!</lu-math-numer><!--
-                  --><lu-math-raw> &divide; (</lu-math-raw><!--
-                  --><lu-math-denom><!--
-                     --><var>k<sub>1</sub></var>!<var>k<sub>2</sub></var>!...<var>k<sub>6</sub></var>!<!--
-                  --></lu-math-deom><!--
-                  --><lu-math-raw>)</lu-math-raw><!--
-               --></lu-math-fraction><!--
-               --><lu-math-raw> &times; </lu-math-raw><!--
-               --><lu-math-sequence data-operation="*">
-                     <lu-math-seq-info>
-                        <lu-math-raw>&Pi;</lu-math-raw>
-                        <lu-math-seq-bounds>
-                           <lu-math-raw> from </lu-math-raw>
-                           <lu-math-bound-lower><var>t</var> = 1</lu-math-bound-lower>
-                           <lu-math-raw> through </lu-math-raw>
-                           <lu-math-bound-upper>6</lu-math-bound-upper>
-                           <lu-math-raw> do: </lu-math-raw>
-                        </lu-math-seq-bounds>
-                     </lu-math-seq-info>
-                     <lu-math-seq-body><!--
-                     --><lu-math-raw>(</lu-math-raw><!--
-                        
-                     --><var>x<sub>t</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>t</sub></var>" %}<!--
-                        
-                     --><lu-math-raw>)</lu-math-raw><!--
-                  --></lu-math-seq-body>
-                  </lu-math-sequence><!--
-                        
-               --><lu-math-raw>)</lu-math-raw><!--
-            --></lu-math-seq-body>
-            </lu-math-sequence>
-         
-         </lu-math-part>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-      </lu-math-row>
-   </lu-math>
-   <p>
-      Let's compute the values of all possible combinations of <lu-math data-inline><var>k<sub>i</sub></var></lu-math> for our 6-term monomial. We know that there must be six of these values, they must sum to 2, and none of them can be negative.
-   </p>
-   <table class="fade-zeroes">
-      <thead>
-         <tr>
-            <th>
-               Form
-            </th>
-            {%- for i in (1..6) -%}
-               <th>
-                  <lu-math data-inline><var>k<sub>{{ i }}</sub></var></lu-math>
-               </th>
-            {%- endfor -%}
-            <th>
-               Expression
-            </th>
-            <th>
-               Sum
-            </th>
-         </tr>
-      </thead>
-      <tbody>
-         {%- assign count = 6 -%}
-         {%- for i in (1..count) -%}
-         <tr>
-            {%- if forloop.first -%}
-            <th rowSpan="{{ count }}">
-               2 + 0
-            </th>
-            {%- endif -%}
-            {%- assign items = "" -%}
-            {%- for j in (1..count) -%}
-               {%- unless forloop.first -%}
-                  {%- assign items = items | append: "," -%}
-               {%- endunless -%}
-               {%- if j != i -%}
-                  {%- assign items = items | append: "0" -%}
-               {%- else -%}
-                  {%- assign items = items | append: "2" -%}
-               {%- endif -%}
-            {%- endfor -%}
-            {%- comment -%}
-               Split and print:
-            {%- endcomment -%}
-            {%- assign items = items | split: "," -%}
-            {%- for item in items -%}
-               <td data-type="number" data-value="{{ item }}">{{ item }}</td>
-            {%- endfor -%}
-            <td>
-               {%- for item in items -%}
-                  {%- unless forloop.first %} + {% endunless -%}
-                  {{ item }}
-               {%- endfor -%}
-            </td>
-            <td data-type="number">
-               {%- assign sum = 0 -%}
-               {%- for item in items -%}
-                  {%- assign sum = sum | plus: item -%}
-               {%- endfor -%}
-               {{ sum }}
-            </td>
-         </tr>
-         {%- endfor -%}
-         {%- assign rowspan = 0 -%}
-         {%- for i in (1..count) -%}
-            {%- unless forloop.last -%}
-               {%- assign rowspan = rowspan | plus: i -%}
-            {%- endunless -%}
-         {%- endfor -%}
-         {%- for i in (1..count) -%}
-            {%- for j in (i..count) -%}
-               {%- unless i == j -%}
-         <tr>
-                  {%- if rowspan > 0 -%}
-            <th rowSpan="{{ rowspan }}" class="force-is-bottom-row">
-               1 + 1
-            </th>
-                     {%- assign rowspan = 0 -%}
-                  {%- endif -%}
-                  {%- assign items = "" -%}
-                  {%- for k in (1..count) -%}
-                     {%- unless forloop.first -%}
-                        {%- assign items = items | append: "," -%}
-                     {%- endunless -%}
-                     {%- if k != i and k != j -%}
-                        {%- assign items = items | append: "0" -%}
-                     {%- else -%}
-                        {%- assign items = items | append: "1" -%}
-                     {%- endif -%}
-                  {%- endfor -%}
-                  {%- comment -%}
-                     Split and print:
-                  {%- endcomment -%}
-                  {%- assign items = items | split: "," -%}
-                  {%- for item in items -%}
-                     <td data-type="number" data-value="{{ item }}">{{ item }}</td>
-                  {%- endfor -%}
-                  <td>
-                     {%- for item in items -%}
-                        {%- unless forloop.first %} + {% endunless -%}
-                        {{ item }}
-                     {%- endfor -%}
-                  </td>
-                  <td data-type="number">
-                     {%- assign sum = 0 -%}
-                     {%- for item in items -%}
-                        {%- assign sum = sum | plus: item -%}
-                     {%- endfor -%}
-                     {{ sum }}
-                  </td>
-         </tr>
-               {%- endunless -%}
-            {%- endfor -%}
-         {%- endfor -%}
-      </tbody>
-   </table>
+   
    
    <!-- CONTINUE FROM HERE -->
-   <!--
-      We want to get all the values of K and substitute them into the summation expression above.
-      
-      Each table row represents one valid set of values for the six K variables. We'd run the 
-      multiplication expression with each set of these, and then sum the results of each.
-      
-      That seems a bit cumbersome, except that every row is mostly zeroes. We can simply skip any 
-      terms that would be multiplied by zero. What's more: whenever we have a construct like this:
-      
-         2 0 0 0 0 0
-         0 2 0 0 0 0 
-         0 0 2 0 0 0
-         0 0 0 2 0 0
-         0 0 0 0 2 0
-         0 0 0 0 0 2
-      
-      The first row would look like this:
-      
-         a^2 + b^0 + c^0 + d^0 + e^0 + f^0
-       = a^2 + 1 + 1 + 1 + 1 + 1 + 1
-       = a^2 + 5
-       
-      Most of the other rows can probably be insta-reduced in a similar way.
-      
-      Anyway, don't lose sight of our ultimate goal: we want to figure out how to expand an 
-      expression of the form:
-      
-         (a + b + c + d + e + f)^2
-         
-      And once we have it expanded -- once we can expand Equation 6, which uses just the X-axis -- 
-      we can then duplicate the expression for the Y- and Z-axes. We can then rearrange everything 
-      to group terms by H-sub-d, and then reassemble everything back from scalars into vectors. 
-      Then, we'll have a vector-based equation that we can more easily solve for H-sub-d.
-   -->
    
 </section>

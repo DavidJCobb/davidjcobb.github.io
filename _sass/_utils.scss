@@ -119,7 +119,6 @@
    Mixins
 */
 
-/* Use inside of a table. */
 @mixin table-top-left-cell {
    &>tr,
    &>:is(thead, tbody)>tr {
@@ -194,11 +193,6 @@
             can simplify the selectors here */
    
    /*
-      Cheap hack to account for rowSpan: prevent it from overflowing the rounded corner 
-      (can't really make it collapse its bottom border, though):
-   */
-   clip-path:inset(0 0 0 0 round 1em);
-   /*
       Note that we actually can't emulate border-collapse for tables with rowSpan, because 
       if some row R begins with a rowSpan > 1 cell, rows below R can no longer rely on the 
       :first-child pseudo-class to identify cells on the left edge of the table.  The rows 
@@ -206,6 +200,11 @@
       in these rows will actually represent the cell in the second column.
       
       Similar issues exist with the rightmost column.
+      
+      It's tempting to use clip-path to at least prevent row-spanning cells' corners and 
+      backgrounds from poking out of the table, but doing that can cause browsers to clip 
+      out the table's borders due to subpixel rounding errors at certain X-positions and 
+      widths on-screen.
    */
    
    $-cell: ":is(td, th)";

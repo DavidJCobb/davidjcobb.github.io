@@ -33,7 +33,27 @@
                {%- endif -%}
             </summary>
             <menu>
-               {%- for article in site[page.collection] limit:5 %}
+               {%- assign count_written = 0 -%}
+               {%- for article in site[page.collection] %}
+                  {%- comment -%}
+                  
+                     When iterating over the contents of a collection using Liquid, the collection's 
+                     folder hierarchy gets flattened. Jekyll doesn't actually generate pages or 
+                     working permalinks for nested files (thank goodness), but anything with front 
+                     matter will be visible when iterating. This includes SCSS files meant to be used 
+                     as assets for an article.
+                     
+                     We need to filter out any entries here that are nested in a subfolder, then.
+                     
+                  {%- endcomment -%}
+                  {%- assign test = article.relative_path -%}
+                  {%- assign test = test | remove_first: collection_info.relative_directory -%}
+                  {%- assign char = test | slice: 0 -%}
+                  {%- if char == '/' or char == '\' -%}
+                     {%- assign len  = test | size | minus: 1 -%}
+                     {%- assign test = test | slice: 1, len -%}
+                  {%- endif -%}
+                  {%- unless test contains "/" or test contains "\" -%}
                <li>
                   {%- if article.id == page.id -%}
                   <a class="you-are-here">
@@ -43,6 +63,11 @@
                      {{- article.title -}}
                   </a>
                </li>
+                     {%- assign count_written = count_written | plus: 1 -%}
+                     {%- if count_written >= 5 -%}
+                        {% break %}
+                     {%- endif -%}
+                  {%- endunless -%}
                {%- endfor %}
                <li class="view-all">
                   <a href="{{ page.collection | prepend: '/' | append: '/' | absolute_url }}">View all</a>
