@@ -1,6 +1,26 @@
 ---
 ---
 
+$lu-math-line-height: 1.2em !default;
+
+$lu-math-font-face: "Times New Roman";
+/*
+   For your chosen font, extract these properties from the font headers and OpenType OS2 
+   info. This site works: https://fontdrop.info/
+*/
+$lu-math-font-face-units-per-em:       2048; /* unitsPerEm */
+$lu-math-font-face-os2-typo-ascender:  1420; /* sTypoAscender */
+$lu-math-font-face-os2-typo-descender: -442; /* sTypoDescender */
+
+$lu-math-font-top-to-bottom-height:
+   ($lu-math-font-face-os2-typo-ascender - $lu-math-font-face-os2-typo-descender)
+   /
+   $lu-math-font-face-units-per-em
+   *
+   1em;
+$lu-math-font-leading:    $lu-math-line-height - $lu-math-font-top-to-bottom-height;
+$lu-math-line-box-height: $lu-math-line-height + $lu-math-font-leading;
+
 /* when paired with invisible-readable, makes text non-selectable 
    and effectively only accessible to screen readers */
 @mixin unselectable-not-in-flow {
@@ -46,7 +66,7 @@ lu-math{
    text-align:center;
    
    font-family:Times New Roman,serif;
-   line-height:1.2em;
+   line-height:$lu-math-line-height;
    hyphens: none;
    
    &[data-inline] {
@@ -145,7 +165,7 @@ lu-math-row {
    orphans: 0; /* do not split equations across pages */
 }
 lu-math[data-enormous-rows] lu-math-row+lu-math-row {
-   border-top:1px solid #000;
+   border-top:1px dotted #000;
    padding-top:0.8em;
 }
    lu-math-row-chunk {  
@@ -173,6 +193,48 @@ lu-math-aligned>lu-math-row{text-align:left}
       top:50%;
       transform:translate(0, -50%);
       content:"(" attr(data-equation-number) ")";
+   }
+}
+
+lu-math-multiline {
+   $v-offset: ($lu-math-line-height - 1em) * 0.5 * 3;
+   
+   display: grid;
+   grid-template:
+      "lead nulT nulT" max-content
+      "lead body tail" #{$lu-math-line-box-height} /* last line of lead aligns with first line of body */
+      "nulL body tail" max-content
+      "nulL body tail" min-content
+      "nulB nulB tail" minmax(0, auto) /
+      fit-content(100%) fit-content(100%) fit-content(100%);
+   align-items: baseline;
+   justify-content:center;
+   
+   >lu-math-leading {
+      grid-area:  lead;
+      text-align: right;
+      padding-right:.5em;
+   }
+   >lu-math-body {
+      grid-area: body;
+      
+      display:grid;
+      grid-template-columns: min-content 1fr;
+      align-items:baseline;
+      
+      >lu-math-sep {
+         grid-column:1;
+         padding:0 .5em 0 0;
+      }
+      >lu-math-line {
+         grid-column:2;
+      }
+   }
+   >lu-math-trailing {
+      grid-area:  tail;
+      text-align: left;
+      padding-left:.5em;
+      align-self:end;
    }
 }
 
@@ -268,33 +330,38 @@ lu-math-function-args>li {
        - place a lu-math-raw element after it with the text content ")"
        - add a " (" to the end of the lu-math-raw element between the numerator 
          and denominator
+   
+   if the fraction is directly adjacent to another element, then use HTML comments 
+   to ensure no HTML whitespace.
 */
 lu-math-fraction {
-   display:inline-flex;
+   display:inline-grid;
    vertical-align:middle;
+   grid-template:
+      "numer" 1fr
+      "denom" 1fr / fit-content(100%);
+   
    flex-flow:column nowrap;
    
-   &>:is(lu-math-numer, lu-math-denom) {
+   >:is(lu-math-numer, lu-math-denom) {
       text-align:center;
       padding:.1em .5ch;
    }
    
-   &>lu-math-numer {
+   >lu-math-numer {
       order:0;
+      grid-area: numer;
    }
-   &>lu-math-denom,
-   &>lu-math-denom~* {
+   >lu-math-denom,
+   >lu-math-denom~* {
       order:2;
    }
    
-   &::after {
-      order:1;
-      content:" ";
-      height:1px!important;
-      background:#000;
+   >lu-math-denom {
+      grid-area: denom;
+      border-top:1px solid #000; /* dividing line: */
    }
 }
-lu-math-fraction+var{margin-left:.25ch;}
 
 /* this element allows you to display exponents, with appropriate copy-and-paste 
    and screen reader behavior. here is a usage example; brace yourself:
@@ -428,6 +495,11 @@ lu-math-fraction.big-parens {
    padding-left:calc(var(--glyph-width) + .2ch);
    padding-right:calc(var(--glyph-width) + .2ch);
    margin:0 .3ch;
+}
+
+mark>lu-math-big-parens {
+   /* TODO: only works if MARK has no background-image; find better solution */
+   background-color:inherit;
 }
 
 /* correct usage is as follows:
