@@ -184,6 +184,13 @@ table.radius-try-2 {
    }
 }
 
+table.dark-1 {
+   :is(td, th) {
+      background:#444;
+      color:#FFF;
+   }
+}
+
 /* a11y */
 $problem-color-1: #FF0000;
 $problem-color-2: #00FFFF;
@@ -238,15 +245,32 @@ html table.problem-4-obvious {
    border-bottom-width:$problem-thickness!important;
    
    td, th {
-      padding:0 .2ch;
+      padding:initial .2ch;
       text-align:center;
    }
    :is(td, th):first-child {
-      padding:0 .2ch 0 .4ch;
+      padding:initial .2ch initial .4ch;
    }
    
    td[rowSpan] {
       border-bottom-color:$problem-color-2!important;
       border-bottom-width:$problem-thickness!important;
+   }
+}
+
+html table.problem-5-obvious {
+   background:#00FFFF;
+
+   td, th {
+      padding:initial .2ch;
+      text-align:center;
+   }
+   :is(td, th):first-child {
+      padding:initial .2ch initial .4ch;
+   }
+   
+   >*:last-child>tr:last-child>td:first-child {
+      background:#FF0000;
+      color:black;
    }
 }

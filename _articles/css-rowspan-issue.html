@@ -612,6 +612,59 @@ tr>:is(td, th):last-child {
       The row-spanned cell extends into the bottom row, but the <code>TD</code> element itself is located in one of the prior rows. There is no way to tell, with CSS, that this cell is in the bottom row, and just like with <code>border-collapse</code> emulation, this is a problem for using <code>border-radius</code>. We have no pure-CSS way to tell this cell to ronud off its bottom-left corner, so the cell <em>isn't</em> rounded. The cell's bottom border protrudes out of the table's rounded bottom-left corner. What's more: if this cell had a background color, then that background color would poke out of the table and produce a rectangular corner as well.
    </p>
    <p>
+      There's one more problem that shows up if we put background colors on our cells. Our row-spanned cell stretches downward, displacing cells in lower rows to the right. However, as far as the DOM is concerned, those cells are the leftmost cells in their row. This means that if a row-spanned cell stretches to the bottom row of the table, the table's <code>border-bottom-left-radius</code> will be inherited by the <em>next-</em>leftmost cell in the bottom row. This isn't visible with the styles above, since our <code>border-collapse</code> emulation hides that cell's left and bottom borders; however, if we give our table cells a background color, the problem becomes apparent immediately.
+   </p>
+   <figure class="card-cutout multi-figure" aria-labelledby="figure-aria-note-brief">
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-4 radius-try-2 dark-1">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            <tr>
+               <td rowSpan="4"> S </td>
+               <td> X </td>
+               <td> X </td>
+               <td> X </td>
+            </tr>
+            {%- for i in (1..3) -%}
+            <tr>
+               {%- for j in (1..3) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+      <div class="wrap">
+         <table aria-hidden="true" class="no-default-styles collapse-try-4 radius-try-2 dark-1 problem-5-obvious">
+            <thead>
+               <tr>
+                  {%- for i in (1..4) -%}
+                  <th> H </th>
+                  {%- endfor -%}
+               </tr>
+            </thead>
+            <tr>
+               <td rowSpan="4"> S </td>
+               <td> X </td>
+               <td> X </td>
+               <td> X </td>
+            </tr>
+            {%- for i in (1..3) -%}
+            <tr>
+               {%- for j in (1..3) -%}
+               <td> X </td>
+               {%- endfor -%}
+            </tr>
+            {%- endfor -%}
+         </table>
+      </div>
+   </figure>
+   <p>
       There simply is no way to solve this. It's simply impossible for us to traverse the hierarchy using CSS and identify when a row-spanned cell extends into the bottom row of a table section, or of an entire table.
    </p>
 </section>
@@ -629,4 +682,7 @@ tr>:is(td, th):last-child {
          Should a pseudo-class like this be made available to non-table elements that use CSS <code>display: table</code> and friends? Would that be feasible?
       </li>
    </ul>
+   <p>
+      In the meantime, workarounds that aren't pure-CSS exist. Row-spanned cells that stretch to the bottom row can be given a CSS class name which indicates that they belong to the bottom row; the leftmost cells that they displace, in lower rows, can be given a CSS class name which indicates that they do <em>not</em> belong to the leftmost column. However, the styles needed for <code>border-collapse</code> emulation and <code>border-radius</code> forwarding will need to be made more complex in order to allow for this.
+   </p>
 </section>
