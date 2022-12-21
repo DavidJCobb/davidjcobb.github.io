@@ -620,11 +620,11 @@ end</code></pre>
             
             {%- for item in current_set -%}
                {%- if forloop.first and form != last_form -%}
-            <th rowSpan="{{ form_rowspan }}">
+            <th {% if i > count %}class="force-is-bottom-row"{% endif %} rowSpan="{{ form_rowspan }}">
                {{ form }}
             </th>
                {%- endif -%}
-            <td data-type="number" data-value="{{ item }}">{{ item }}</td>
+            <td data-type="number" data-value="{{ item }}" class="force-is-not-leftmost">{{ item }}</td>
             {%- endfor -%}
             <td>
                {%- for item in current_set -%}
@@ -691,11 +691,15 @@ end</code></pre>
             
             {%- for item in current_set -%}
                {%- if forloop.first and form != last_form -%}
-            <th rowSpan="{{ form_rowspan }}">
+            <th {% if i > count %}class="force-is-bottom-row"{% endif %} rowSpan="{{ form_rowspan }}">
                {{ form }}
             </th>
                {%- endif -%}
-            <td {% if item == "0" -%} class="deemphasize" {%- endif -%}>
+               {%- assign td-classes = "force-is-not-leftmost" -%}
+               {%- if item == "0" -%}
+                  {%- assign td-classes = td-classes | append: " deemphasize" -%}
+               {%- endif -%}
+            <td class="{{ td-classes }}">
                <var>{{ vars[forloop.index0] }}</var>{%- include lu-math/exponent.html exponent=item %}
             </td>
             {%- endfor -%}
@@ -738,11 +742,15 @@ end</code></pre>
             
             {%- for item in current_set -%}
                {%- if forloop.first and form != last_form -%}
-            <th rowSpan="{{ form_rowspan }}">
+            <th {% if i > count %}class="force-is-bottom-row"{% endif %} rowSpan="{{ form_rowspan }}">
                {{ form }}
             </th>
                {%- endif -%}
-            <td {% if item == "0" -%} class="deemphasize" {%- endif -%}>
+               {%- assign td-classes = "force-is-not-leftmost" -%}
+               {%- if item == "0" -%}
+                  {%- assign td-classes = td-classes | append: " deemphasize" -%}
+               {%- endif -%}
+            <td class="{{ td-classes }}">
                {%- if item == "0" -%}
                   1
                {%- else -%}
@@ -793,11 +801,15 @@ end</code></pre>
             
             {%- for item in current_set -%}
                {%- if forloop.first and form != last_form -%}
-            <th rowSpan="{{ form_rowspan }}">
+            <th {% if i > count %}class="force-is-bottom-row"{% endif %} rowSpan="{{ form_rowspan }}">
                {{ form }}
             </th>
                {%- endif -%}
-            <td {% if item == "0" -%} class="deemphasize" {%- endif -%}>
+               {%- assign td-classes = "force-is-not-leftmost" -%}
+               {%- if item == "0" -%}
+                  {%- assign td-classes = td-classes | append: " deemphasize" -%}
+               {%- endif -%}
+            <td class="{{ td-classes }}">
                {%- if item == "0" -%}
                   1
                {%- else -%}
@@ -911,11 +923,11 @@ end</code></pre>
             
             <tr>
                {%- if form != last_form -%}
-               <th rowSpan="{{ form_rowspan }}">
+               <th {% if i > count %}class="force-is-bottom-row"{% endif %} rowSpan="{{ form_rowspan }}">
                   {{ form }}
                </th>
                {%- endif -%}
-               <td>
+               <td class="force-is-not-leftmost">
                   {%- for item in current_set -%}
                      {%- unless forloop.first %} &times; {% endunless -%}
                      {%- if item != "0" -%}

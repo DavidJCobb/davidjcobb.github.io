@@ -175,23 +175,54 @@
 }
 
 /* Use inside of a table. */
-@mixin border-collapse {
+@mixin border-collapse(
+   $radius: "unspecified",
+   $separate-cells-from-tables: true,
+   $override-cell-table-border: false
+) {
    /*
       The CSS spec says that border-collapse completely nullifies border-radius. Apparently, 
-      CSS 2.1 had spec'd out a reasonable behavior, but because browsers didn't bother to 
+      CSS 2.1 had spec'd  out a  reasonable behavior, but because browsers  didn't bother to 
       implement it, the CSSWG just spiked it outright "for interop:"
       
          https://github.com/w3c/csswg-drafts/issues/475
          
       So now, we need ugly hacks for rounded collapsing borders.
+      
+      As long as we're doing this, we may as well offer a few additional bells and whistles. 
+      You can optionally  decide to have cell  borders collapse against  each other, but not 
+      against the  table. If you also  override the color of shared cell/table  borders, and 
+      add  a padding and background color on  the table, then this has the effect of  giving 
+      the table an outlined border, similar to the 1990s table-outset/cell-inset look.
    */
    
    border-collapse:separate;
    border-spacing:0;
    
-   /* TODO: Do browsers always force-wrap table content in TBODY if unwrapped? If so, we 
-            can simplify the selectors here */
+   @if $radius != "unspecified" {
+      border-radius: $radius;
+   }
    
+   >:is(thead, tbody, tfoot),
+   >:is(thead, tbody, tfoot)>tr {
+      @if $radius != "unspecified" and $separate-cells-from-tables == false {
+         /*
+            Account for gaps between cell radius and table radius. NOTE: This only even 
+            works on Firefox on desktop; Chrome has a more pronounced gap. This will also 
+            be dependent on the table border thickness.
+         */
+         border-radius: calc(#{$radius} - 2px);
+      } @else {
+         border-radius: inherit;
+      }
+   }
+   
+   /*
+      NOTE: TR elements placed directly in a TABLE will be wrapped in a TBODY element, per 
+            the HTML spec:
+            
+            https://html.spec.whatwg.org/multipage/syntax.html#element-restrictions
+   */
    /*
       Note that we actually can't emulate border-collapse for tables with rowSpan, because 
       if some row R begins with a rowSpan > 1 cell, rows below R can no longer rely on the 
@@ -207,85 +238,90 @@
       widths on-screen.
    */
    
-   $-cell: ":is(td, th)";
-   $-part: ":is(thead, tbody)";
+   >:is(thead, tbody, tfoot) {
    
-   /*
-      Forward table border-radius to cells:
-   */
-   >:is(tr, thead, tbody),
-   >#{$-part}>tr {
-      &:first-child {
-         border-top-left-radius:inherit;
-         border-top-right-radius:inherit;
-      }
-      &:last-child {
-         border-bottom-left-radius:inherit;
-         border-bottom-right-radius:inherit;
-      }
-   }
-   >tr,
-   >#{$-part}>tr {
-      /*
-         Use :where() to lower specificity.
-      */
-      @at-root :where(#{&})>#{$-cell}:first-child {
-         border-top-left-radius:inherit;
-         border-bottom-left-radius:inherit;
-      }
-      @at-root :where(#{&})>#{$-cell}:last-child {
-         border-top-right-radius:inherit;
-         border-bottom-right-radius:inherit;
-      }
-   }
-   
-   /*
-      Collapse borders between the table and the cells, preferring the table:
-   */
-   >tr,
-   >:is(thead, tbody)>tr {
-      >:is(td, th) {
-         &:first-child {
-            border-left-width:0!important;
-         }
-         &:last-child {
-            border-right-width:0!important;
+      /* collapse cell/cell borders, preferring leading cell's bottom border */
+      &>tr+tr,
+      &+:is(thead, tbody, tfoot)>tr {
+         >:is(td, th) {
+            border-top-width:0!important;
          }
       }
-   }
-   
-   $-h-border-tc1: ">tr:whichever-child>#{$-cell}";
-   $-h-border-tc2: ">#{$-part}:whichever-child#{$-h-border-tc1}";
-
-   #{selector-replace($-h-border-tc1, ":whichever-child", ":first-child")},
-   #{selector-replace($-h-border-tc2, ":whichever-child", ":first-child")} {
-      border-top-width:0!important;
-   }
-   
-   #{selector-replace($-h-border-tc1, ":whichever-child", ":last-child")},
-   #{selector-replace($-h-border-tc2, ":whichever-child", ":last-child")} {
-      border-bottom-width:0!important;
-   }
-   
-   /* needed to account for rowSpan */
-   :is(td, th).force-is-bottom-row {
-      border-bottom-width:0!important;
-   }
-   
-   /*
-      Collapse borders between cells:
-   */
-   >tr,
-   >#{$-part}>tr {
-      >#{$-cell}+#{$-cell} {
-         border-left-width:0!important;
+      
+      >tr {
+         >:is(td, th) {
+            /* collapse cell/cell borders, preferring leading cell's right border */
+            &+:is(th, td),
+            &.force-is-not-leftmost {
+               border-left-width:0!important;
+            }
+         
+            @if $separate-cells-from-tables {
+               /* collapse table/cell borders, preferring table */
+               &:first-child:not(.force-is-not-leftmost) {
+                  border-left-width:0!important;
+               }
+               &:last-child {
+                  border-right-width:0!important;
+               }
+            } @else if $override-cell-table-border != false {
+               &:first-child:not(.force-is-not-leftmost) {
+                  border-left:$override-cell-table-border!important;
+               }
+               &:last-child {
+                  border-right:$override-cell-table-border!important;
+               }
+            }
+         }
+         
+         /* needed to cope with rowSpan */
+         >:is(th, td).force-is-bottom-row {
+            @if $separate-cells-from-tables {
+               border-bottom-width:0!important; /* collapse table/cell borders, preferring table */
+            } @else if $override-cell-table-border != false {
+               border-bottom:$override-cell-table-border!important;
+            }
+            
+            &:first-child:not(.force-is-not-leftmost) {
+               border-bottom-left-radius:inherit;
+            }
+            &:last-child {
+               border-bottom-right-radius:inherit;
+            }
+         }
       }
-   }
-   >tr+tr,
-   >#{$-part}>tr+tr,
-   >#{$-part}+#{$-part}>tr {
-      >#{$-cell} {
-         border-top-width:0!important;
+      
+      &:first-child>tr:first-child {
+         >:is(th, td) {
+            @if $separate-cells-from-tables {
+               border-top-width:0!important; /* collapse table/cell borders, preferring table */
+            } @else if $override-cell-table-border != false {
+               border-top:$override-cell-table-border!important;
+            }
+            
+            &:first-child:not(.force-is-not-leftmost) {
+               border-top-left-radius:inherit;
+            }
+            &:last-child {
+               border-top-right-radius:inherit;
+            }
+         }
+      }
+      &:last-child>tr:last-child {
+         >:is(th, td) {
+            @if $separate-cells-from-tables {
+               border-bottom-width:0!important; /* collapse table/cell borders, preferring table */
+            } @else if $override-cell-table-border != false {
+               border-bottom:$override-cell-table-border!important;
+            }
+            
+            &:first-child:not(.force-is-not-leftmost) {
+               border-bottom-left-radius:inherit;
+            }
+            &:last-child {
+               border-bottom-right-radius:inherit;
+            }
+         }
       }
    }
 }
