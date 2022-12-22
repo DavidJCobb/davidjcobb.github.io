@@ -211,494 +211,13 @@ extra_css_files:
    </p>
    <lu-math>
       <lu-math-row data-equation-number="4">
-         <lu-math-part>
-            ||<var>H<sub>p</sub></var> - 
-         </lu-math-part>
-         <lu-math-fraction>
-            <lu-math-raw>(</lu-math-raw>
-            <lu-math-numer>(<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>s</sub></var></lu-math-numer>
-            <lu-math-raw>) &divide; (</lu-math-raw>
-            <lu-math-denom><var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var></lu-math-denom>
-            <lu-math-raw>)</lu-math-raw><!--
-      --></lu-math-fraction><!--
-      --><lu-math-part>
-            <lu-math-raw> &times; </lu-math-raw>
-            <var>C<sub>s</sub></var>
-            + <var>C<sub>b</sub></var>||
-             =&nbsp;
-            <var>C<sub>r</sub></var>
-         </lu-math-part>
+         ||<var>H<sub>p</sub></var> - 
+         ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
+         + <var>C<sub>b</sub></var>||
+          =&nbsp;
+         <var>C<sub>r</sub></var>
       </lu-math-row>
    </lu-math>
-   <p>
-      We want to get <lu-math data-inline><var>H<sub>p</sub></var></lu-math> into a position where it's easier to solve for. Let's start by seeing if we can break it out of those inner dot products. We only need to operate on one of them; we can then copy that over the other.
-   </p>
-   <p>
-      Here's a shortcut rule we can use:
-   </p>
-   <lu-math>
-      <lu-math-row>
-         (<var>A</var> - <var>B</var>) &bullet; <var>C</var>
-      </lu-math-row>
-      <lu-math-row>
-         (<var>A<sub>x</sub></var> - <var>B<sub>x</sub></var>)<var>C<sub>x</sub></var> +
-         (<var>A<sub>y</sub></var> - <var>B<sub>y</sub></var>)<var>C<sub>y</sub></var> +
-         (<var>A<sub>z</sub></var> - <var>B<sub>z</sub></var>)<var>C<sub>z</sub></var>
-      </lu-math-row>
-      <lu-math-row>
-         (<var>A<sub>x</sub></var><mark><var>C<sub>x</sub></var></mark> - <var>B<sub>x</sub></var><mark><var>C<sub>x</sub></var></mark>) +
-         (<var>A<sub>y</sub></var><mark><var>C<sub>x</sub></var></mark> - <var>B<sub>y</sub></var><mark><var>C<sub>x</sub></var></mark>) +
-         (<var>A<sub>z</sub></var><mark><var>C<sub>x</sub></var></mark> - <var>B<sub>z</sub></var><mark><var>C<sub>x</sub></var></mark>)
-      </lu-math-row>
-      <lu-math-row>
-         <var>A<sub>x</sub></var><var>C<sub>x</sub></var>
-       + <var>A<sub>y</sub></var><var>C<sub>x</sub></var>
-       + <var>A<sub>z</sub></var><var>C<sub>x</sub></var>
-       - <var>B<sub>x</sub></var><var>C<sub>x</sub></var>
-       - <var>B<sub>y</sub></var><var>C<sub>x</sub></var>
-       - <var>B<sub>z</sub></var><var>C<sub>x</sub></var>
-      </lu-math-row>
-      <lu-math-row>
-         (<var>A</var> &bullet; <var>C</var>) - (<var>B</var> &bullet; <var>C</var>)
-      </lu-math-row>
-   </lu-math>
-   <p>
-      Let's apply that rule to our equation.
-   </p>
-   <lu-math>
-      <lu-math-row>
-         <lu-math-part>
-            ||<var>H<sub>p</sub></var> - 
-         </lu-math-part>
-         <lu-math-fraction>
-            <lu-math-raw>(</lu-math-raw>
-            <lu-math-numer>(<var>H<sub>p</sub></var> &bullet; <var>C<sub>s</sub></var>) - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>s</sub></var>)</lu-math-numer>
-            <lu-math-raw>) &divide; (</lu-math-raw>
-            <lu-math-denom><var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var></lu-math-denom>
-            <lu-math-raw>)</lu-math-raw>
-         </lu-math-fraction>
-         <lu-math-part>
-            <lu-math-raw> &times; </lu-math-raw><!--
-         --><var>C<sub>s</sub></var>
-            + <var>C<sub>b</sub></var>||
-             =&nbsp;
-            <var>C<sub>r</sub></var>
-         </lu-math-part>
-      </lu-math-row>
-   </lu-math>
-   <p>
-      The dot product of a vector with itself is equal to the vector's length squared. If we square both sides, then we can convert the lefthand side to a dot product, and then expand it.
-   </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         <lu-math-part>
-            ||<var>H<sub>p</sub></var> - 
-         </lu-math-part>
-         <lu-math-fraction>
-            <lu-math-raw>(</lu-math-raw>
-            <lu-math-numer>(<var>H<sub>p</sub></var> &bullet; <var>C<sub>s</sub></var>) - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>s</sub></var>)</lu-math-numer>
-            <lu-math-raw>) &divide; (</lu-math-raw>
-            <lu-math-denom><var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var></lu-math-denom>
-            <lu-math-raw>)</lu-math-raw>
-         </lu-math-fraction>
-         <lu-math-part>
-            <lu-math-raw> &times; </lu-math-raw><!--
-         --><var>C<sub>s</sub></var>
-            + <var>C<sub>b</sub></var>||{{lu_math_sq}}
-             =&nbsp;
-            <var>C<sub>r</sub></var>{{lu_math_sq}}
-         </lu-math-part>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>H<sub>p</sub></var> - 
-         </lu-math-part>
-         <lu-math-fraction>
-            <lu-math-raw>(</lu-math-raw>
-            <lu-math-numer>(<var>H<sub>p</sub></var> &bullet; <var>C<sub>s</sub></var>) - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>s</sub></var>)</lu-math-numer>
-            <lu-math-raw>) &divide; (</lu-math-raw>
-            <lu-math-denom><var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var></lu-math-denom>
-            <lu-math-raw>)</lu-math-raw>
-         </lu-math-fraction>
-         <lu-math-part>
-            <lu-math-raw> &times; </lu-math-raw><!--
-         --><var>C<sub>s</sub></var>
-            + <var>C<sub>b</sub></var>)
-            &bullet;
-            (<var>H<sub>p</sub></var> - 
-         </lu-math-part>
-         <lu-math-fraction>
-            <lu-math-raw>(</lu-math-raw>
-            <lu-math-numer>(<var>H<sub>p</sub></var> &bullet; <var>C<sub>s</sub></var>) - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>s</sub></var>)</lu-math-numer>
-            <lu-math-raw>) &divide; (</lu-math-raw>
-            <lu-math-denom><var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var></lu-math-denom>
-            <lu-math-raw>)</lu-math-raw>
-         </lu-math-fraction>
-         <lu-math-part>
-            <lu-math-raw> &times; </lu-math-raw><!--
-         --><var>C<sub>s</sub></var>
-            + <var>C<sub>b</sub></var>)
-             =&nbsp;
-            <var>C<sub>r</sub></var>{{lu_math_sq}}
-         </lu-math-part>
-      </lu-math-row>
-   </lu-math>
-   <p>
-      Now, before we try and expand that, let's move that huge fraction of scalars into its own variable.
-   </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         <lu-math-part>
-            <var>D<sub>h</sub></var> = 
-         </lu-math-part>
-         <lu-math-fraction>
-            <lu-math-raw>(</lu-math-raw>
-            <lu-math-numer>(<var>H<sub>p</sub></var> &bullet; <var>C<sub>s</sub></var>) - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>s</sub></var>)</lu-math-numer>
-            <lu-math-raw>) &divide; (</lu-math-raw>
-            <lu-math-denom><var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var></lu-math-denom>
-            <lu-math-raw>)</lu-math-raw>
-         </lu-math-fraction>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>H<sub>p</sub></var> - <mark><var>D<sub>h</sub></var></mark><var>C<sub>s</sub></var>
-            + <var>C<sub>b</sub></var>)
-            &bullet;
-            (<var>H<sub>p</sub></var> - <mark><var>D<sub>h</sub></var></mark><var>C<sub>s</sub></var>
-            + <var>C<sub>b</sub></var>)
-             =&nbsp;
-            <var>C<sub>r</sub></var>{{lu_math_sq}}
-         </lu-math-part>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>H<sub>px</sub></var> - <var>D<sub>h</sub></var><var>C<sub>sx</sub></var> + <var>C<sub>bx</sub></var>){{lu_math_sq}}
-            +
-            (<var>H<sub>py</sub></var> - <var>D<sub>h</sub></var><var>C<sub>sy</sub></var> + <var>C<sub>by</sub></var>){{lu_math_sq}}
-            +
-            (<var>H<sub>pz</sub></var> - <var>D<sub>h</sub></var><var>C<sub>sz</sub></var> + <var>C<sub>bz</sub></var>){{lu_math_sq}}
-             =&nbsp;
-            <var>C<sub>r</sub></var>{{lu_math_sq}}
-         </lu-math-part>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-body>
-               <lu-math-line>
-                  <var>H<sub>px</sub></var>{{lu_math_sq}}
-                + <var>D<sub>h</sub></var>{{lu_math_sq}}<var>C<sub>sx</sub></var>{{lu_math_sq}}
-                + <var>C<sub>bx</sub></var>{{lu_math_sq}}
-                - 2<var>H<sub>px</sub></var><var>D<sub>h</sub></var><var>C<sub>sx</sub></var>
-                - 2<var>D<sub>h</sub></var><var>C<sub>sx</sub></var><var>C<sub>bx</sub></var>
-                + 2<var>H<sub>px</sub></var><var>C<sub>bx</sub></var>
-               </lu-math-line>
-               <lu-math-sep>
-                  +
-               </lu-math-sep>
-               <lu-math-line>
-                  <var>H<sub>py</sub></var>{{lu_math_sq}}
-                + <var>D<sub>h</sub></var>{{lu_math_sq}}<var>C<sub>sy</sub></var>{{lu_math_sq}}
-                + <var>C<sub>by</sub></var>{{lu_math_sq}}
-                - 2<var>H<sub>py</sub></var><var>D<sub>h</sub></var><var>C<sub>sy</sub></var>
-                - 2<var>D<sub>h</sub></var><var>C<sub>sy</sub></var><var>C<sub>by</sub></var>
-                + 2<var>H<sub>py</sub></var><var>C<sub>by</sub></var>
-               </lu-math-line>
-               <lu-math-sep>
-                  +
-               </lu-math-sep>
-               <lu-math-line>
-                  <var>H<sub>pz</sub></var>{{lu_math_sq}}
-                + <var>D<sub>h</sub></var>{{lu_math_sq}}<var>C<sub>sz</sub></var>{{lu_math_sq}}
-                + <var>C<sub>bz</sub></var>{{lu_math_sq}}
-                - 2<var>H<sub>pz</sub></var><var>D<sub>h</sub></var><var>C<sub>sz</sub></var>
-                - 2<var>D<sub>h</sub></var><var>C<sub>sz</sub></var><var>C<sub>bz</sub></var>
-                + 2<var>H<sub>pz</sub></var><var>C<sub>bz</sub></var>
-               </lu-math-line>
-            </lu-math-body>
-            <lu-math-trailing>
-               =
-               <var>C<sub>r</sub></var>{{lu_math_sq}}
-            </lu-math-trailing>
-         </lu-math-multiline>
-      </lu-math-row>
-   </lu-math>
-   <p>
-      Let's group by the components of <lu-math data-inline><var>H<sub>p</sub></var></lu-math>:
-   </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-body>
-               <lu-math-line>
-                  <var>H<sub>px</sub></var>{{lu_math_sq}}
-                + 2(<!--
-                  --><var>C<sub>bx</sub></var>
-                   - <var>D<sub>h</sub></var><var>C<sub>sx</sub></var><!--
-               -->)<var>H<sub>px</sub></var>
-                + <var>D<sub>h</sub></var>{{lu_math_sq}}<var>C<sub>sx</sub></var>{{lu_math_sq}}
-                + <var>C<sub>bx</sub></var>{{lu_math_sq}}
-                - 2<var>D<sub>h</sub></var><var>C<sub>sx</sub></var><var>C<sub>bx</sub></var>
-               </lu-math-line>
-               <lu-math-sep>
-                  +
-               </lu-math-sep>
-               <lu-math-line>
-                  <var>H<sub>py</sub></var>{{lu_math_sq}}
-                + 2(<!--
-                  --><var>C<sub>by</sub></var>
-                   - <var>D<sub>h</sub></var><var>C<sub>sy</sub></var><!--
-               -->)<var>H<sub>py</sub></var>
-                + <var>D<sub>h</sub></var>{{lu_math_sq}}<var>C<sub>sy</sub></var>{{lu_math_sq}}
-                + <var>C<sub>by</sub></var>{{lu_math_sq}}
-                - 2<var>D<sub>h</sub></var><var>C<sub>sy</sub></var><var>C<sub>by</sub></var>
-               </lu-math-line>
-               <lu-math-sep>
-                  +
-               </lu-math-sep>
-               <lu-math-line>
-                  <var>H<sub>pz</sub></var>{{lu_math_sq}}
-                + 2(<!--
-                  --><var>C<sub>bz</sub></var>
-                   - <var>D<sub>h</sub></var><var>C<sub>sz</sub></var><!--
-               -->)<var>H<sub>pz</sub></var>
-                + <var>D<sub>h</sub></var>{{lu_math_sq}}<var>C<sub>sz</sub></var>{{lu_math_sq}}
-                + <var>C<sub>bz</sub></var>{{lu_math_sq}}
-                - 2<var>D<sub>h</sub></var><var>C<sub>sz</sub></var><var>C<sub>bz</sub></var>
-               </lu-math-line>
-            </lu-math-body>
-            <lu-math-trailing>
-               =
-               <var>C<sub>r</sub></var>{{lu_math_sq}}
-            </lu-math-trailing>
-         </lu-math-multiline>
-      </lu-math-row>
-   </lu-math>
-   <p>
-      We can now recombine some of these terms back into vectors.
-   </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-leading>
-               <mark class="mark-1">(<var>H<sub>p</sub></var> &bullet; <var>H<sub>p</sub></var>)</mark>
-             + <mark class="mark-2">(<var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var>)</mark><var>D<sub>h</sub></var>{{lu_math_sq}}
-             + <mark class="mark-3">(<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark>
-             - 2<mark class="mark-4">(<var>C<sub>s</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark><var>D<sub>h</sub></var>
-            </lu-math-leading>
-            <lu-math-body>
-               <lu-math-sep>
-                  +
-               </lu-math-sep>
-               <lu-math-line>
-                  2(<!--
-                  --><var>C<sub>bx</sub></var>
-                   - <var>D<sub>h</sub></var><var>C<sub>sx</sub></var><!--
-               -->)<var>H<sub>px</sub></var>
-               </lu-math-line>
-               <lu-math-sep>
-                  +
-               </lu-math-sep>
-               <lu-math-line>
-                  2(<!--
-                  --><var>C<sub>by</sub></var>
-                   - <var>D<sub>h</sub></var><var>C<sub>sy</sub></var><!--
-               -->)<var>H<sub>py</sub></var>
-               </lu-math-line>
-               <lu-math-sep>
-                  +
-               </lu-math-sep>
-               <lu-math-line>
-                  2(<!--
-                  --><var>C<sub>bz</sub></var>
-                   - <var>D<sub>h</sub></var><var>C<sub>sz</sub></var><!--
-               -->)<var>H<sub>pz</sub></var>
-               </lu-math-line>
-            </lu-math-body>
-            <lu-math-trailing>
-               =
-               <var>C<sub>r</sub></var>{{lu_math_sq}}
-            </lu-math-trailing>
-         </lu-math-multiline>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-leading>
-               (<var>H<sub>p</sub></var> &bullet; <var>H<sub>p</sub></var>)
-             + (<var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var>)<var>D<sub>h</sub></var>{{lu_math_sq}}
-             + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-             - 2(<var>C<sub>s</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>D<sub>h</sub></var>
-            </lu-math-leading>
-            <lu-math-body>
-               <lu-math-sep>
-                  +
-               </lu-math-sep>
-               <lu-math-line>
-                  2<var>C<sub>bx</sub></var><var>H<sub>px</sub></var>
-                - 2<var>D<sub>h</sub></var><var>C<sub>sx</sub></var><var>H<sub>px</sub></var>
-               </lu-math-line>
-               <lu-math-sep>
-                  +
-               </lu-math-sep>
-               <lu-math-line>
-                  2<var>C<sub>by</sub></var><var>H<sub>py</sub></var>
-                - 2<var>D<sub>h</sub></var><var>C<sub>sy</sub></var><var>H<sub>py</sub></var>
-               </lu-math-line>
-               <lu-math-sep>
-                  +
-               </lu-math-sep>
-               <lu-math-line>
-                  2<var>C<sub>bz</sub></var><var>H<sub>pz</sub></var>
-                - 2<var>D<sub>h</sub></var><var>C<sub>sz</sub></var><var>H<sub>pz</sub></var>
-               </lu-math-line>
-            </lu-math-body>
-            <lu-math-trailing>
-               =
-               <var>C<sub>r</sub></var>{{lu_math_sq}}
-            </lu-math-trailing>
-         </lu-math-multiline>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-leading>
-               (<var>H<sub>p</sub></var> &bullet; <var>H<sub>p</sub></var>)
-             + (<var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var>)<var>D<sub>h</sub></var>{{lu_math_sq}}
-             + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-             - 2(<var>C<sub>s</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>D<sub>h</sub></var>
-            </lu-math-leading>
-            <lu-math-body>
-               <lu-math-sep>
-                  +
-               </lu-math-sep>
-               <lu-math-line>
-                  2<var>C<sub>b</sub></var><var>H<sub>p</sub></var>
-                - 2(<var>C<sub>s</sub></var> &bullet; <var>H<sub>p</sub></var>)<var>D<sub>h</sub></var>
-               </lu-math-line>
-            </lu-math-body>
-            <lu-math-trailing>
-               =
-               <var>C<sub>r</sub></var>{{lu_math_sq}}
-            </lu-math-trailing>
-         </lu-math-multiline>
-      </lu-math-row>
-   </lu-math>
-   <p>
-      Now, let's try expanding <lu-math data-inline><var>D<sub>h</sub></var></lu-math>, starting with the one on the left.
-   </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>H<sub>p</sub></var> &bullet; <var>H<sub>p</sub></var>)
-          + (<var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var>)<!--
-         --><var>D<sub>h</sub></var><!--
-         -->{{lu_math_sq}}
-          + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-          - 2(<var>C<sub>s</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>D<sub>h</sub></var>
-            +
-            2<var>C<sub>b</sub></var><var>H<sub>p</sub></var>
-          - 2(<var>C<sub>s</sub></var> &bullet; <var>H<sub>p</sub></var>)
-         </lu-math-part><!--
-      --><mark><lu-math-big-parens><!--
-         --><lu-math-fraction>
-               <lu-math-raw>(</lu-math-raw>
-               <lu-math-numer>(<var>H<sub>p</sub></var> &bullet; <var>C<sub>s</sub></var>) - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>s</sub></var>)</lu-math-numer>
-               <lu-math-raw>) &divide; (</lu-math-raw>
-               <lu-math-denom><var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var></lu-math-denom>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-fraction>
-         </lu-math-big-parens></mark>
-         <lu-math-part>
-            =
-            <var>C<sub>r</sub></var>{{lu_math_sq}}
-         </lu-math-part>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>H<sub>p</sub></var> &bullet; <var>H<sub>p</sub></var>)
-          + (<var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var>)<!--
-         --><var>D<sub>h</sub></var><!--
-         -->{{lu_math_sq}}
-          + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-          - 2(<var>C<sub>s</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>D<sub>h</sub></var>
-            +
-            2<var>C<sub>b</sub></var><var>H<sub>p</sub></var>
-            - 
-         </lu-math-part>
-         <lu-math-fraction>
-            <lu-math-raw>(</lu-math-raw>
-            <lu-math-numer><mark>2(<var>C<sub>s</sub></var> &bullet; <var>H<sub>p</sub></var>)</mark>(<var>C<sub>s</sub></var> &bullet; <var>H<sub>p</sub></var>) - <mark>2(<var>C<sub>s</sub></var> &bullet; <var>H<sub>p</sub></var>)</mark>(<var>C<sub>b</sub></var> &bullet; <var>C<sub>s</sub></var>)</lu-math-numer>
-            <lu-math-raw>) &divide; (</lu-math-raw>
-            <lu-math-denom><var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var></lu-math-denom>
-            <lu-math-raw>)</lu-math-raw>
-         </lu-math-fraction>
-         <lu-math-part>
-            =
-            <var>C<sub>r</sub></var>{{lu_math_sq}}
-         </lu-math-part>
-      </lu-math-row>
-   </lu-math>
-   <p>
-      There's a useful identity we can make use of here:
-   </p>
-   <lu-math>
-      <lu-math-row>
-         (<var>A</var> &bullet; <var>B</var>)
-         -
-         (<var>C</var> &bullet; <var>B</var>)
-      </lu-math-row>
-      <lu-math-row>
-         <var>B<sub>x</sub></var><var>A<sub>x</sub></var>
-       + <var>B<sub>y</sub></var><var>A<sub>y</sub></var>
-       + <var>B<sub>z</sub></var><var>A<sub>z</sub></var>
-         -
-         <var>B<sub>x</sub></var><var>C<sub>x</sub></var>
-       + <var>B<sub>y</sub></var><var>C<sub>y</sub></var>
-       + <var>B<sub>z</sub></var><var>C<sub>z</sub></var>
-      </lu-math-row>
-      <lu-math-row>
-         <var>B<sub>x</sub></var>(<var>A<sub>x</sub></var> - <var>C<sub>x</sub></var>)
-       + <var>B<sub>y</sub></var>(<var>A<sub>y</sub></var> - <var>C<sub>y</sub></var>)
-       + <var>B<sub>z</sub></var>(<var>A<sub>z</sub></var> - <var>C<sub>z</sub></var>)
-      </lu-math-row>
-      <lu-math-row>
-         <var>B</var> &bullet; (<var>A</var> - <var>C</var>)
-      </lu-math-row>
-   </lu-math>
-   <p>
-      Let's apply it:
-   </p>
-   <lu-math>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>H<sub>p</sub></var> &bullet; <var>H<sub>p</sub></var>)
-          + (<var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var>)<!--
-         --><var>D<sub>h</sub></var><!--
-         -->{{lu_math_sq}}
-          + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-          - 2(<var>C<sub>s</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>D<sub>h</sub></var>
-            +
-            2<var>C<sub>b</sub></var><var>H<sub>p</sub></var>
-            - 
-         </lu-math-part>
-         <lu-math-fraction>
-            <lu-math-raw>(</lu-math-raw>
-            <lu-math-numer>2(<var>C<sub>s</sub></var> &bullet; <var>H<sub>p</sub></var>)(<var>C<sub>s</sub></var> &bullet; <var>H<sub>p</sub></var>) - 2(<var>C<sub>s</sub></var> &bullet; <var>H<sub>p</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>s</sub></var>)</lu-math-numer>
-            <lu-math-raw>) &divide; (</lu-math-raw>
-            <lu-math-denom><var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var></lu-math-denom>
-            <lu-math-raw>)</lu-math-raw>
-         </lu-math-fraction>
-         <lu-math-part>
-            =
-            <var>C<sub>r</sub></var>{{lu_math_sq}}
-         </lu-math-part>
-      </lu-math-row>
-   </lu-math>
-   
-   
-   
-   
-   <p>
-      I think this is as far as we can go without substituting the ray equation in.
-   </p>
 </section>
 
 <section>
@@ -739,11 +258,457 @@ extra_css_files:
    </p>
    <lu-math>
       <lu-math-row>
-         ||<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - ((<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var>||
-          = 
+         ||<mark><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - 
+         ((<mark><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
+         + <var>C<sub>b</sub></var>||
+          =&nbsp;
          <var>C<sub>r</sub></var>
       </lu-math-row>
    </lu-math>
+   <p>
+      Now, we want to pull <lu-math data-inline><var>H<sub>d</sub></var></lu-math> out of that fraction. The first thing we can do is rearrange the nearby dot product. Dot products are commutative in exactly the same ways that scalar multiplications are, so...
+   </p>
+   <lu-math>
+      <lu-math-row>
+         ||<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
+         (<mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+       + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+       - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark>)<var>C<sub>a</sub></var>
+         + <var>C<sub>b</sub></var>||
+          =&nbsp;
+         <var>C<sub>r</sub></var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      The dot product of a vector with itself is the vector's own length squared. This means that we can square both sides to turn our lefthand side into a dot product. Then, we can expand it.
+   </p>
+   <lu-math data-enormous-rows>
+      <lu-math-row>
+         ||<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
+         ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+       + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+       - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
+         + <var>C<sub>b</sub></var>||<mark>{{lu_math_sq}}</mark>
+          =&nbsp;
+         <var>C<sub>r</sub></var><mark>{{lu_math_sq}}</mark>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-multiline>
+            <lu-math-body>
+               <lu-math-line>
+                  (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
+                  ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
+                  + <var>C<sub>b</sub></var>)
+               </lu-math-line>
+               <lu-math-sep><mark> + </mark></lu-math-sep>
+               <lu-math-line>
+                  <mark>(<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
+                  ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
+                  + <var>C<sub>b</sub></var>)</mark>
+               </lu-math-line>
+            </lu-math-body>
+            <lu-math-trailing>
+               =&nbsp;<nobr><var>C<sub>r</sub></var>{{lu_math_sq}}</nobr>
+            </lu-math-trailing>
+         </lu-math-multiline>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Now, again, dot products are commutative in the same ways that scalar multiplications are. This means that the following rule works for both scalar variables and vector variables:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         (<var>a</var> + <var>b</var> + <var>c</var> + <var>d</var>){{lu_math_sq}}
+         =
+         <var>a</var>{{lu_math_sq}}
+       + <var>b</var>{{lu_math_sq}}
+       + <var>c</var>{{lu_math_sq}}
+       + <var>d</var>{{lu_math_sq}}
+       + 2<var>a</var><var>b</var>
+       + 2<var>a</var><var>c</var>
+       + 2<var>a</var><var>d</var>
+       + 2<var>b</var><var>c</var>
+       + 2<var>b</var><var>d</var>
+       + 2<var>c</var><var>d</var>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Let's fill in our variables.
+   </p>
+   <lu-math>
+      <lu-math-givens>
+         <label>Given (just for now):</label>
+         <dl>
+            <lu-math-dfn>
+               <dt><var>a</var></dt>
+               <dd><var>R<sub>o</sub></var></dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>b</var></dt>
+               <dd><var>R<sub>d</sub></var><var>H<sub>d</sub></var></dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>c</var></dt>
+               <dd>
+                  -(<!--
+                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+               -->)<var>C<sub>a</sub></var>
+               </dd>
+            </lu-math-dfn>
+            <lu-math-dfn>
+               <dt><var>d</var></dt>
+               <dd><var>C<sub>b</sub></var></dd>
+            </lu-math-dfn>
+         </dl>
+      </lu-math-givens>
+      <lu-math-row>
+         <lu-math-multiline>
+            <lu-math-body>
+               <lu-math-line>
+                  <mark class="mark-1"><var>R<sub>o</sub></var></mark>{{lu_math_sq}}
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  <mark class="mark-2"><var>R<sub>d</sub></var></mark>{{lu_math_sq}}<mark class="mark-2"><var>H<sub>d</sub></var></mark>{{lu_math_sq}}
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  <mark class="mark-3">((<!--
+         -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+          + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+          - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+      -->)<var>C<sub>a</sub></var>)</mark>{{lu_math_sq}}
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  <mark class="mark-4"><var>C<sub>b</sub></var></mark>{{lu_math_sq}}
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  2<mark class="mark-1"><var>R<sub>o</sub></var></mark><mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark>
+               </lu-math-line>
+               <lu-math-sep><mark class="mark-3"> - </mark></lu-math-sep>
+               <lu-math-line>
+                  2<mark class="mark-1"><var>R<sub>o</sub></var></mark><!--
+               --><mark class="mark-3">(<!--
+                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+               -->)<var>C<sub>a</sub></var></mark>
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  2<mark class="mark-1"><var>R<sub>o</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
+               </lu-math-line>
+               <lu-math-sep><mark class="mark-3"> - </mark></lu-math-sep>
+               <lu-math-line>
+                  2<mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark><mark class="mark-3">(<!--
+            -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+         -->)<var>C<sub>a</sub></var></mark>
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  2<mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
+               </lu-math-line>
+               <lu-math-sep><mark class="mark-3"> - </mark></lu-math-sep>
+               <lu-math-line>
+                  2<!--
+               --><mark class="mark-3">(<!--
+                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+               -->)<var>C<sub>a</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
+               </lu-math-line>
+            </lu-math-body>
+         </lu-math-multiline>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      <lu-math data-inline>
+         ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+       + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+       - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)) &bullet; <var>C<sub>a</sub></var>
+       </lu-math> is the projection of the ray onto the cylinder's axis; therefore, 
+       <lu-math data-inline>
+         (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+       + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+       - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+       </lu-math> is the length of that projection. Squaring the projection pretty much just means taking the dot product of the projection with itself &mdash; taking its length &mdash; so we can remove the multiplication by <lu-math data-inline><var>C<sub>a</sub></var></lu-math> in that first squared term. We can also convert the other squared vectors into dot products.
+   </p>
+   <lu-math data-enormous-rows>
+      <lu-math-row>
+         <lu-math-multiline>
+            <lu-math-body>
+               <lu-math-line>
+                  <var>R<sub>o</sub></var>{{lu_math_sq}}
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  <mark>(<!--
+         -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+          + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+          - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+      -->)</mark>{{lu_math_sq}}
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  <var>C<sub>b</sub></var>{{lu_math_sq}}
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+               </lu-math-line>
+               <lu-math-sep> - </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>o</sub></var><!--
+               -->(<!--
+                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+               -->)<var>C<sub>a</sub></var>
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+               </lu-math-line>
+               <lu-math-sep> - </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var>(<!--
+            -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+         -->)<var>C<sub>a</sub></var>
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
+               </lu-math-line>
+               <lu-math-sep> - </lu-math-sep>
+               <lu-math-line>
+                  2<!--
+               -->(<!--
+                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+               -->)<var>C<sub>a</sub></var><var>C<sub>b</sub></var>
+               </lu-math-line>
+            </lu-math-body>
+         </lu-math-multiline>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-multiline>
+            <lu-math-body>
+               <lu-math-line>
+                  <mark>(<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)</mark>
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  <mark>(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)</mark><var>H<sub>d</sub></var>{{lu_math_sq}}
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  <mark>(<!--
+         -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+          + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+          - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+      -->)</mark>{{lu_math_sq}}
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  <mark>(<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark>
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+               </lu-math-line>
+               <lu-math-sep> - </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>o</sub></var><!--
+               -->(<!--
+                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+               -->)<var>C<sub>a</sub></var>
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+               </lu-math-line>
+               <lu-math-sep> - </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var>(<!--
+            -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+         -->)<var>C<sub>a</sub></var>
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
+               </lu-math-line>
+               <lu-math-sep> - </lu-math-sep>
+               <lu-math-line>
+                  2<!--
+               -->(<!--
+                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+               -->)<var>C<sub>a</sub></var><var>C<sub>b</sub></var>
+               </lu-math-line>
+            </lu-math-body>
+         </lu-math-multiline>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Let's group our terms by <lu-math data-inline><var>H<sub>d</sub></var></lu-math>:
+   </p>
+   <lu-math>
+      <lu-math-row>
+         <lu-math-multiline>
+            <lu-math-body>
+               <lu-math-line>
+                  (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}} + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  (<!--
+         -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+          + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+          - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+      -->){{lu_math_sq}}
+               </lu-math-line>
+               <lu-math-sep> - </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>o</sub></var><!--
+               -->(<!--
+                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+               -->)<var>C<sub>a</sub></var>
+               </lu-math-line>
+               <lu-math-sep> - </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var>(<!--
+            -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+         -->)<var>C<sub>a</sub></var>
+               </lu-math-line>
+               <lu-math-sep> - </lu-math-sep>
+               <lu-math-line>
+                  2<!--
+               -->(<!--
+                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+               -->)<var>C<sub>a</sub></var><var>C<sub>b</sub></var>
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  2(
+                     <var>R<sub>o</sub></var><var>R<sub>d</sub></var>
+                   + <var>R<sub>d</sub></var><var>C<sub>b</sub></var>
+                  )<var>H<sub>d</sub></var>
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+               </lu-math-line>
+               <lu-math-sep> + </lu-math-sep>
+               <lu-math-line>
+                  2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+               </lu-math-line>
+            </lu-math-body>
+         </lu-math-multiline>
+      </lu-math-row>
+   </lu-math>
+   
+   
+   <p>
+      Let's give ourselves another variable to work with.
+   </p>
+   <lu-math>
+      <lu-math-row>
+         <lu-math-part>
+            ||<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
+         </lu-math-part>
+         <lu-math-fraction>
+            <lu-math-raw>(</lu-math-raw>
+            <lu-math-numer>(<mark><var>R<sub>l</sub></var></mark> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>) &bullet; <var>C<sub>s</sub></var></lu-math-numer>
+            <lu-math-raw>) &divide; (</lu-math-raw>
+            <lu-math-denom><var>C<sub>s</sub></var> &bullet; <var>C<sub>s</sub></var></lu-math-denom>
+            <lu-math-raw>)</lu-math-raw><!--
+      --></lu-math-fraction><!--
+      --><lu-math-part>
+            <lu-math-raw> &times; </lu-math-raw>
+            <var>C<sub>s</sub></var>
+            + <var>C<sub>b</sub></var>||
+             =&nbsp;
+            <var>C<sub>r</sub></var>
+         </lu-math-part>
+      </lu-math-row>
+   </lu-math>
+   <p>
+      Now, let's try something.
+   </p>
+   <lu-math>
+      <lu-math-row>
+         <lu-math-part>
+            ||<var>A</var> + <var>B</var> + 
+         </lu-math-part>
+         <lu-math-fraction>
+            <lu-math-raw>(</lu-math-raw>
+            <lu-math-numer><var>C</var></lu-math-numer>
+            <lu-math-raw>) &divide; (</lu-math-raw>
+            <lu-math-denom><var>n</var></lu-math-denom>
+            <lu-math-raw>)</lu-math-raw><!--
+      --></lu-math-fraction>
+         <lu-math-part>
+            + <var>D</var>|| = <var>D</var>
+         </lu-math-part>
+      </lu-math-row>
+      <lu-math-row>
+         <lu-math-part>
+            (<var>A</var> + <var>B</var> + 
+         </lu-math-part>
+         <lu-math-fraction>
+            <lu-math-raw>(</lu-math-raw>
+            <lu-math-numer><var>C</var></lu-math-numer>
+            <lu-math-raw>) &divide; (</lu-math-raw>
+            <lu-math-denom><var>n</var></lu-math-denom>
+            <lu-math-raw>)</lu-math-raw><!--
+      --></lu-math-fraction>
+         <lu-math-part>
+            + <var>D</var>) &bullet; (<var>A</var> + <var>B</var> + 
+         </lu-math-part>
+         <lu-math-fraction>
+            <lu-math-raw>(</lu-math-raw>
+            <lu-math-numer><var>C</var></lu-math-numer>
+            <lu-math-raw>) &divide; (</lu-math-raw>
+            <lu-math-denom><var>n</var></lu-math-denom>
+            <lu-math-raw>)</lu-math-raw><!--
+      --></lu-math-fraction>
+         <lu-math-part>
+            + <var>D</var>) = <var>D</var>{{lu_math_sq}}
+         </lu-math-part>
+      </lu-math-row>
+   </lu-math>
+   
+   
+   
+   
    <p>
       The dot product of a vector with itself is equal to the length squared. If we square both sides, then we can convert the lefthand side to a dot product:
    </p>

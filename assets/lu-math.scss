@@ -225,6 +225,13 @@ lu-math-multiline {
       >lu-math-sep {
          grid-column:1;
          padding:0 .5em 0 0;
+         
+         &:has(>mark:only-child) {
+            padding:0;
+            >mark {
+               padding-right:.5em;
+            }
+         }
       }
       >lu-math-line {
          grid-column:2;
@@ -345,7 +352,7 @@ lu-math-fraction {
    
    >:is(lu-math-numer, lu-math-denom) {
       text-align:center;
-      padding:.1em .5ch;
+      padding:0 .5ch;
    }
    
    >lu-math-numer {
