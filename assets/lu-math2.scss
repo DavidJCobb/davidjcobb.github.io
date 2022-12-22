@@ -275,7 +275,7 @@ lu-math m-solvestep {
    */
    display:grid;
    grid-template:
-      "_l          content     _r         " max-content
+      "_l          content     _r         " 1fr
       "open-expl   content     _r         " min-content
       "explanation explanation explanation" auto / 1fr fit-content(100%) 1fr;
    
