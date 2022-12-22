@@ -75,6 +75,13 @@ lu-math{
    }
 }
 
+lu-math del {
+   display:none; /* TODO... */
+}
+lu-math ins {
+   all:unset; /* TODO... */
+}
+
 /* keep "raw" content visible to screen readers */
 lu-math-raw{
    @include invisible-selectable-readable;
