@@ -9,10 +9,79 @@ tags:
 social_media:
    description: The math behind doing raycasts for 3D cylinder. Includes public-domain code.
 extra_css_files:
- - lu-math.css
+ - lu-math2.css
    
 ---
 {%- include lu-math/defines.html -%}
+
+{%- comment -%}
+   
+   Generate convenience variables for lu-math equation numbers. To display equation number 5, for example:
+   {{lu_math_eq_numbers[5]}}
+   
+{%- endcomment -%}
+{%- assign lu_math_eq_numbers = "" -%}
+{%- for i in (1..20) -%}
+   {%- capture temporary -%}
+      <m-equation-number>
+         <m-rawcap> </m-rawcap>
+         <m-raw>[Equation </m-raw><m-value>{{i}}</m-value><m-raw>:]</m-raw>
+         <m-rawcap> </m-rawcap>
+      </m-equation-number>
+   {%- endcapture -%}
+   {%- assign temporary = temporary | prepend: "SPLITTER" -%}
+   {%- assign lu_math_eq_numbers = lu_math_eq_numbers | append: temporary -%}
+{%- endfor -%}
+{%- assign lu_math_eq_numbers = lu_math_eq_numbers | split: "SPLITTER" -%}
+
+{%- comment -%}
+   
+   Generate convenience variables for vector-length start and end tags. It is imperative that no whitespace 
+   be present in these variables.
+   
+{%- endcomment -%}
+{%- capture temporary -%}
+   <m-veclength>
+      <m-delim>||</m-delim>
+      <m-content>%CONTENT%</m-content>
+      <m-delim>||</m-delim>
+   </m-veclength>
+{%- endcapture -%}
+{%- assign temporary  = temporary | strip_newlines | strip | split: " " -%}
+{%- assign temporary2 = "" -%}
+{%- assign temporary3 = false -%} {%- comment -%} In tag? {%- endcomment -%}
+{%- assign temporary4 = false -%}
+{%-comment-%}
+   Comments so Notepad++'s syntax highlighter doesn't choke.
+   <!--
+{%-endcomment-%}
+{%- for item in temporary -%}
+   {%- assign temporary2 = temporary2 | append: item -%}
+{%- endfor -%}
+{%-comment-%}
+   -->
+   End of syntax highlighter comment.
+{%-endcomment-%}
+{%- assign temporary = temporary2 | split: "%CONTENT%" -%}
+{%- assign lu_math_vec_start = temporary[0] -%}
+{%- assign lu_math_vec_end = temporary[1] -%}
+
+{%- capture lu_math_therefore_block -%}
+   <m-therefore data-block>
+      <span aria-hidden="true" title="therefore">&therefore;</span>
+      <m-raw data-screen-reader-only>&therefore;</m-raw>
+   </m-therefore>
+{%- endcapture -%}
+
+{%- assign math_inl_enter = "<lu-math data-inline>" -%}
+{%- assign math_inl_leave = "</lu-math>" -%}
+{%- assign var_Ca_inl = "<var>C<sub>a</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Cb_inl = "<var>C<sub>b</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Cr_inl = "<var>C<sub>r</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Cs_inl = "<var>C<sub>s</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Hd_inl = "<var>H<sub>d</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Hp_inl = "<var>H<sub>p</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Hs_inl = "<var>H<sub>s</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
 <section>
    <p>
       There are a lot of people out on the web who are willing to share raycasting code, 
@@ -32,66 +101,68 @@ extra_css_files:
       The parametric equations (that is, equations with parameters) for a cylinder are as follows:
    </p>
    <lu-math>
-      <lu-math-givens>
+      <m-givens>
          <label>Given:</label>
          <dl>
-            <lu-math-dfn>
-               <dt><var>C<sub>h</sub></var></dt>
+            <dt><var>C<sub>h</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>height of the cylinder</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>C<sub>r</sub></var></dt>
+            <dt><var>C<sub>r</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>radius of the cylinder</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>H<sub>o</sub></var></dt>
+            <dt><var>H<sub>o</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>height offset on the range [0, <var>C<sub>h</sub></var>], where 0 is aligned with an endcap</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>&theta;</var></dt>
+            <dt><var>&theta;</var></dt>
+            <m-sep> = </m-sep>
                <dd>any angle, basically</dd>
-            </lu-math-dfn>
          </dl>
-      </lu-math-givens>
-      <lu-math-aligned data-equation-number="1">
-         {%- assign common_args = "<var>H<sub>o</sub></var>, <var>&theta;</var>" | split: ", " -%}
-         <lu-math-row>
-            <lu-math-part>
-               {%- include lu-math/function-def.html
-                  name="f<sub><var>x</var></sub>"
-                  args=common_args
-               %}
-               =
-            </lu-math-part>
-            <lu-math-part>
-               <var>C<sub>r</sub></var> &times; cos(<var>&theta;</var>)<!--
-         --></lu-math-part>
-         </lu-math-row>
-         <lu-math-row>
-            <lu-math-part>
-               {%- include lu-math/function-def.html
-                  name="f<sub><var>y</var></sub>"
-                  args=common_args
-               %}
-               =
-            </lu-math-part>
-            <lu-math-part>
-               <var>C<sub>r</sub></var> &times; sin(<var>&theta;</var>)<!--
-         --></lu-math-part>
-         </lu-math-row>
-         <lu-math-row>
-            <lu-math-part>
-               {%- include lu-math/function-def.html
-                  name="f<sub><var>z</var></sub>"
-                  args=common_args
-               %}
-               =
-            </lu-math-part>
-            <lu-math-part><!--
-            --><var>H<sub>o</sub></var><!--
-         --></lu-math-part>
-         </lu-math-row>
-      </lu-math-aligned>
+      </m-givens>
+      <m-layout-left>
+         {{lu_math_eq_numbers[1]}}
+         <m-row>
+            <m-function-def>
+               <m-name>f<sub>x</sub></m-name><!--
+            --><m-args><!--
+               --><m-delim>(</m-delim>
+                     <m-arg><var>H<sub>o</sub></var></m-arg>
+                  <m-sep>, </m-sep>
+                     <m-arg><var>&theta;</var></m-arg>
+                  <m-delim>)</m-delim><!--
+            --></m-args>
+            </m-function-def>
+            =
+            <var>C<sub>r</sub></var> &times; cos(<var>&theta;</var>)
+         </m-row>
+         <m-row>
+            <m-function-def>
+               <m-name>f<sub>y</sub></m-name><!--
+            --><m-args><!--
+               --><m-delim>(</m-delim>
+                     <m-arg><var>H<sub>o</sub></var></m-arg>
+                  <m-sep>, </m-sep>
+                     <m-arg><var>&theta;</var></m-arg>
+                  <m-delim>)</m-delim><!--
+            --></m-args>
+            </m-function-def>
+            =
+            <var>C<sub>r</sub></var> &times; sin(<var>&theta;</var>)
+         </m-row>
+         <m-row>
+            <m-function-def>
+               <m-name>f<sub>z</sub></m-name><!--
+            --><m-args><!--
+               --><m-delim>(</m-delim>
+                     <m-arg><var>H<sub>o</sub></var></m-arg>
+                  <m-sep>, </m-sep>
+                     <m-arg><var>&theta;</var></m-arg>
+                  <m-delim>)</m-delim><!--
+            --></m-args>
+            </m-function-def>
+            =
+            <var>H<sub>o</sub></var>
+         </m-row>
+      </m-layout-left>
    </lu-math>
    <p>
       Technically, these equations describe an infinite cylinder &mdash; one with no endcaps, which extends forever in both directions. However, we can still use them to put together the tests for a finite clinder with endcaps.
@@ -107,49 +178,58 @@ extra_css_files:
       We have a <dfn>parametric surface</dfn> &mdash; that is, three parametric equations which define all points on the surface of the cylinder. In order to solve for any given part of the equation, however, we need an <dfn>implicit surface</dfn>: a surface defined by a single equation, wherein <lu-math data-inline><var>x</var></lu-math>, <lu-math data-inline><var>y</var></lu-math>, and <lu-math data-inline><var>z</var></lu-math> are on one side, and 0 is on the other side.
    </p>
    <p>
-      The above equations basically define a 2D circle anchored at <lu-math data-inline>(0, 0)</lu-math> on the XY-plane, and then extend it infinitely along the Z-axis. The circle's radius is <lu-math data-inline><var>C<sub>r</sub></var></lu-math>. This means that we can represent the X and Y equations in terms of any arbitrary 2D vector <lu-math data-inline><var>P<sub>2D</sub></var></lu-math>:
+      The above equations basically define a 2D circle anchored at <lu-math data-inline>(0, 0)</lu-math> on the XY-plane, and then extend it infinitely along the Z-axis. The circle's radius is {{var_Cr_inl}}. This means that we can represent the X and Y equations in terms of any arbitrary 2D vector <lu-math data-inline><var>P<sub>2D</sub></var></lu-math>:
    </p>
-   <lu-math data-equation-number="2">
-      ||<var>P<sub>2D</sub></var>||<!--
-   -->&nbsp;=&nbsp;<!--
-   --><var>C<sub>r</sub></var>
+   <lu-math>
+      {{lu_math_eq_numbers[2]}}
+      
+      <m-veclength>
+         <m-delim>||</m-delim><!--
+      --><var>P<sub>2D</sub></var><!--
+      --><m-delim>||</m-delim>
+      </m-veclength>
+      =
+      <var>C<sub>r</sub></var>
    </lu-math>
    <p>
       If we project a 3D vector <lu-math data-inline><var>P</var></lu-math> onto the Z-axis, then we'll have just its Z-component. Remove that component, and we can then fit it into the equation above.
    </p>
    <lu-math>
-      <lu-math-givens>
+      <m-givens>
          <label>Given:</label>
          <dl>
-            <lu-math-dfn>
-               <dt><var>P</var></dt>
+            <dt><var>P</var></dt>
+            <m-sep> = </m-sep>
                <dd>any point on the curved surface of the infinite cylinder</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>C<sub>a</sub></var></dt>
+            <dt><var>C<sub>a</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>axis of the cylinder; in this case, (0, 0, 1)</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>P<sub>s</sub></var></dt>
+            <dt><var>P<sub>s</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd><var>P</var> projected onto <var>C<sub>a</sub></var></dd>
-            </lu-math-dfn>
          </dl>
-      </lu-math-givens>
-      <lu-math-row>
+      </m-givens>
+      <m-row>
          <var>P<sub>s</sub></var>
           = 
          (<var>P</var> &bullet; <var>C<sub>a</sub></var>)
           &times;
          <var>C<sub>a</sub></var>
-      </lu-math-row>
-      <lu-math-row data-equation-number="3">
-         ||<var>P</var> - <var>P<sub>s</sub></var>||
-          =&nbsp;
+      </m-row>
+      <m-row>
+         {{lu_math_eq_numbers[3]}}
+         
+         <m-veclength>
+            <m-delim>||</m-delim><!--
+         --><var>P</var> - <var>P<sub>s</sub></var><!--
+         --><m-delim>||</m-delim>
+         </m-veclength>
+         =
          <var>C<sub>r</sub></var>
-      </lu-math-row>
+      </m-row>
    </lu-math>
    <p>
-      If we so desire, we can now subtract <var>C<sub>r</sub></var> from both sides of the equation in order to have one side contain only zero. As such, this is now an implicit surface, which defines a cylinder that has one endcap centered on <lu-math data-inline>(0, 0, 0)</lu-math>.
+      If we so desire, we can now subtract {{var_Cr_inl}} from both sides of the equation in order to have one side contain only zero. As such, this is now an implicit surface, which defines a cylinder that has one endcap centered on <lu-math data-inline>(0, 0, 0)</lu-math>.
    </p>
 </section>
 
@@ -162,61 +242,64 @@ extra_css_files:
       Let's take the implicit surface of an infinite cylinder, and represent it in terms of the endcaps.
    </p>
    <lu-math>
-      <lu-math-givens>
+      <m-givens>
          <label>Given:</label>
          <dl>
-            <lu-math-dfn>
-               <dt><var>C<sub>b</sub></var></dt>
+            <dt><var>C<sub>b</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>centerpoint of the cylinder's bottom endcap</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>C<sub>t</sub></var></dt>
+            <dt><var>C<sub>t</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>centerpoint of the cylinder's top endcap</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>C<sub>s</sub></var></dt>
+            <dt><var>C<sub>s</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>"spine" of the cylinder: a vector from the top to the bottom, equal to <var>C<sub>t</sub></var> - <var>C<sub>b</sub></var></dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>C<sub>a</sub></var></dt>
+            <dt><var>C<sub>a</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>axis of the cylinder: normalized spine</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>H<sub>p</sub></var></dt>
+            <dt><var>H<sub>p</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>hit position: a point that we presume is on the cylinder's curved surface</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>H<sub>s</sub></var></dt>
+            <dt><var>H<sub>s</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>hit spine position: the hit position projected onto <var>C<sub>s</sub></var>; this position = ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var> + <var>C<sub>b</sub></var></dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>H<sub>o</sub></var></dt>
+            <dt><var>H<sub>o</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>the height offset from our cylinder equations; this is the distance from <var>H<sub>s</sub></var> to <var>C<sub>b</sub></var> i.e. ||<var>H<sub>s</sub></var> - <var>C<sub>b</sub></var>||.</dd>
-            </lu-math-dfn>
          </dl>
-      </lu-math-givens>
+      </m-givens>
    </lu-math>
    <p>
-      <lu-math data-inline><var>H<sub>p</sub></var></lu-math> fills the role of <lu-math data-inline><var>P</var></lu-math> in Equation 3, and <lu-math data-inline><var>H<sub>s</sub></var></lu-math> fills the role of <lu-math data-inline><var>P<sub>p</sub></var></lu-math>. <lu-math data-inline><var>H<sub>s</sub></var></lu-math> is the hit position projected onto the cylinder's axis &mdash; its "spine." If we view the cylinder from its endcap, then <lu-math data-inline><var>H<sub>s</sub></var></lu-math> will be at the center of a circle; if <lu-math data-inline><var>H<sub>p</sub></var></lu-math> is indeed on the cylinder's curved surface, then the distance from it to <lu-math data-inline><var>H<sub>s</sub></var></lu-math> will equal tthe cylinder's radius:
+      {{var_Hp_inl}} fills the role of <lu-math data-inline><var>P</var></lu-math> in Equation 3, and {{var_Hs_inl}} fills the role of <lu-math data-inline><var>P<sub>p</sub></var></lu-math>. {{var_Hs_inl}} is the hit position projected onto the cylinder's axis &mdash; its "spine." If we view the cylinder from its endcap, then {{var_Hs_inl}} will be at the center of a circle; if {{var_Hp_inl}} is indeed on the cylinder's curved surface, then the distance from it to {{var_Hs_inl}} will equal the cylinder's radius:
    </p>
    <lu-math>
-      <lu-math-row>
-         ||<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>||
-          =&nbsp;
+      <m-row>
+         <m-veclength>
+            <m-delim>||</m-delim><!--
+         --><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var><!--
+         --><m-delim>||</m-delim><!--
+      --></m-veclength>
+         =
          <var>C<sub>r</sub></var>
-      </lu-math-row>
+      </m-row>
    </lu-math>
    <p>
-      We want to expand <lu-math data-inline><var>H<sub>s</sub></var></lu-math> at this point, but there are actually two ways to do that. We can expand it in terms of <lu-math data-inline><var>C<sub>a</sub></var></lu-math>, or in terms of <lu-math data-inline><var>C<sub>s</sub></var></lu-math>. Now, as it happens, I've tried <lu-math data-inline><var>C<sub>a</sub></var></lu-math>, and the end result (once I started solving for the ray) was an incredibly complex quadratic equation &mdash; completely unwieldy. So let's try <lu-math data-inline><var>C<sub>s</sub></var></lu-math> instead.
+      We want to expand {{var_Hs_inl}} at this point, but there are actually two ways to do that. We can expand it in terms of {{var_Ca_inl}}, or in terms of {{var_Cs_inl}}.
    </p>
    <lu-math>
-      <lu-math-row data-equation-number="4">
-         ||<var>H<sub>p</sub></var> - 
-         ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
-         + <var>C<sub>b</sub></var>||
-          =&nbsp;
+      {{lu_math_eq_numbers[4]}}
+      
+      <m-row>
+         <m-veclength>
+            <m-delim>||</m-delim><!--
+            --><var>H<sub>p</sub></var> - 
+               ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
+               + <var>C<sub>b</sub></var><!--
+         --><m-delim>||</m-delim><!--
+      --></m-veclength>
+         =
          <var>C<sub>r</sub></var>
-      </lu-math-row>
+      </m-row>
    </lu-math>
 </section>
 
@@ -226,133 +309,142 @@ extra_css_files:
       A ray is commonly defined in terms of a starting point, or <dfn>origin</dfn>, and a normalized direction vector. We can therefore define the hit position in terms of the same.
    </p>
    <lu-math>
-      <lu-math-givens>
+      <m-givens>
          <label>Given:</label>
          <dl>
-            <lu-math-dfn>
-               <dt><var>R<sub>o</sub></var></dt>
+            <dt><var>R<sub>o</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>the ray's origin</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>R<sub>d</sub></var></dt>
+            <dt><var>R<sub>d</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>the ray's direction</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>H<sub>p</sub></var></dt>
+            <dt><var>H<sub>p</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>the position at which the ray hits some surface</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>H<sub>d</sub></var></dt>
+            <dt><var>H<sub>d</sub></var></dt>
+            <m-sep> = </m-sep>
                <dd>the hit distance: the distance from the ray origin to the hit position</dd>
-            </lu-math-dfn>
          </dl>
-      </lu-math-givens>
-      <lu-math-row>
+      </m-givens>
+      <m-row>
          <var>H<sub>p</sub></var><!--
       -->&nbsp;=&nbsp;<!--
       --><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-      </lu-math-row>
+      </m-row>
    </lu-math>
    <p>
-      We can substitute this equation into our cone equation above, and then attempt to solve for the hit distance <lu-math data-inline><var>H<sub>d</sub></var></lu-math>:
+      We can substitute this equation into our cone equation above, and then attempt to solve for the hit distance {{var_Hd_inl}}:
    </p>
    <lu-math>
-      <lu-math-row>
-         ||<mark><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - 
-         ((<mark><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
-         + <var>C<sub>b</sub></var>||
-          =&nbsp;
-         <var>C<sub>r</sub></var>
-      </lu-math-row>
+      <m-row>
+         <m-veclength>
+            <m-delim>||</m-delim><!--
+            --><mark><var>R<sub>o</sub></var> + 
+               <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - 
+               ((<mark><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
+               + <var>C<sub>b</sub></var><!--
+         --><m-delim>||</m-delim><!--
+      --></m-veclength>
+         <nobr>
+            = <var>C<sub>r</sub></var>
+         </nobr>
+      </m-row>
    </lu-math>
    <p>
       Now, we want to pull <lu-math data-inline><var>H<sub>d</sub></var></lu-math> out of that fraction. The first thing we can do is rearrange the nearby dot product. Dot products are commutative in exactly the same ways that scalar multiplications are, so...
    </p>
    <lu-math>
-      <lu-math-row>
-         ||<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
-         (<mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-       + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-       - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark>)<var>C<sub>a</sub></var>
-         + <var>C<sub>b</sub></var>||
-          =&nbsp;
-         <var>C<sub>r</sub></var>
-      </lu-math-row>
+      <m-row>
+         {{lu_math_vec_start}}<!--
+         --><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
+               (<mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark>)<var>C<sub>a</sub></var>
+             + <var>C<sub>b</sub></var><!--
+      -->{{lu_math_vec_end}}
+         <nobr>
+            = <var>C<sub>r</sub></var>
+         </nobr>
+      </m-row>
    </lu-math>
    <p>
       The dot product of a vector with itself is the vector's own length squared. This means that we can square both sides to turn our lefthand side into a dot product. Then, we can expand it.
    </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         ||<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
-         ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-       + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-       - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
-         + <var>C<sub>b</sub></var>||<mark>{{lu_math_sq}}</mark>
-          =&nbsp;
-         <var>C<sub>r</sub></var><mark>{{lu_math_sq}}</mark>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-body>
-               <lu-math-line>
+   <lu-math>
+      <m-solvestep>
+         <m-content>
+            {{lu_math_vec_start}}<!--
+            --><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
+               ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
+               + <var>C<sub>b</sub></var><!--
+         -->{{lu_math_vec_end}}<mark>{{lu_math_sq}}</mark>
+            <nobr>
+               = <var>C<sub>r</sub></var><mark>{{lu_math_sq}}</mark>
+            </nobr>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-layout-snake>
+            <m-body>
+               <m-segment>
                   (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
                   ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
                 + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
                 - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
                   + <var>C<sub>b</sub></var>)
-               </lu-math-line>
-               <lu-math-sep><mark> + </mark></lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep><mark> + </mark></m-sep>
+               <m-segment>
                   <mark>(<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
                   ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
                 + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
                 - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
                   + <var>C<sub>b</sub></var>)</mark>
-               </lu-math-line>
+               </m-segment>
             </lu-math-body>
-            <lu-math-trailing>
-               =&nbsp;<nobr><var>C<sub>r</sub></var>{{lu_math_sq}}</nobr>
-            </lu-math-trailing>
-         </lu-math-multiline>
-      </lu-math-row>
+            </m-body>
+            <m-tail>
+               <nobr>
+                  = <var>C<sub>r</sub></var>
+               </nobr>
+            </m-tail>
+         </m-layout-snake>
+      </m-solvestep>
    </lu-math>
    <p>
       Now, again, dot products are commutative in the same ways that scalar multiplications are. This means that the following rule works for both scalar variables and vector variables:
    </p>
    <lu-math>
-      <lu-math-row>
-         (<var>a</var> + <var>b</var> + <var>c</var> + <var>d</var>){{lu_math_sq}}
-         =
-         <var>a</var>{{lu_math_sq}}
-       + <var>b</var>{{lu_math_sq}}
-       + <var>c</var>{{lu_math_sq}}
-       + <var>d</var>{{lu_math_sq}}
-       + 2<var>a</var><var>b</var>
-       + 2<var>a</var><var>c</var>
-       + 2<var>a</var><var>d</var>
-       + 2<var>b</var><var>c</var>
-       + 2<var>b</var><var>d</var>
-       + 2<var>c</var><var>d</var>
-      </lu-math-row>
-   </lu-math>
-   <p>
-      Let's fill in our variables.
-   </p>
-   <lu-math>
-      <lu-math-givens>
+      <m-row>
+         <m-content>
+            (<var>a</var> + <var>b</var> + <var>c</var> + <var>d</var>){{lu_math_sq}}
+            =
+            <var>a</var>{{lu_math_sq}}
+          + <var>b</var>{{lu_math_sq}}
+          + <var>c</var>{{lu_math_sq}}
+          + <var>d</var>{{lu_math_sq}}
+          + 2<var>a</var><var>b</var>
+          + 2<var>a</var><var>c</var>
+          + 2<var>a</var><var>d</var>
+          + 2<var>b</var><var>c</var>
+          + 2<var>b</var><var>d</var>
+          + 2<var>c</var><var>d</var>
+         </m-content>
+      </m-row>
+      {{lu_math_therefore_block}}
+      <m-givens>
          <label>Given (just for now):</label>
          <dl>
-            <lu-math-dfn>
-               <dt><var>a</var></dt>
+            <dt><var>a</var></dt>
+            <m-sep> = </m-sep>
                <dd><var>R<sub>o</sub></var></dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>b</var></dt>
+            <dt><var>b</var></dt>
+            <m-sep> = </m-sep>
                <dd><var>R<sub>d</sub></var><var>H<sub>d</sub></var></dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>c</var></dt>
+            <dt><var>c</var></dt>
+            <m-sep> = </m-sep>
                <dd>
                   -(<!--
                   -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
@@ -360,76 +452,74 @@ extra_css_files:
                    - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
                -->)<var>C<sub>a</sub></var>
                </dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>d</var></dt>
+            <dt><var>d</var></dt>
+            <m-sep> = </m-sep>
                <dd><var>C<sub>b</sub></var></dd>
-            </lu-math-dfn>
          </dl>
-      </lu-math-givens>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-body>
-               <lu-math-line>
+      </m-givens>
+      <m-solvestep>
+         <m-layout-snake>
+            <m-body>
+               <m-segment>
                   <mark class="mark-1"><var>R<sub>o</sub></var></mark>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <mark class="mark-2"><var>R<sub>d</sub></var></mark>{{lu_math_sq}}<mark class="mark-2"><var>H<sub>d</sub></var></mark>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <mark class="mark-3">((<!--
          -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
           + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
           - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
       -->)<var>C<sub>a</sub></var>)</mark>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <mark class="mark-4"><var>C<sub>b</sub></var></mark>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<mark class="mark-1"><var>R<sub>o</sub></var></mark><mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark>
-               </lu-math-line>
-               <lu-math-sep><mark class="mark-3"> - </mark></lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep><mark class="mark-3"> - </mark></m-sep>
+               <m-segment>
                   2<mark class="mark-1"><var>R<sub>o</sub></var></mark><!--
                --><mark class="mark-3">(<!--
                   -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
                    + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
                    - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
                -->)<var>C<sub>a</sub></var></mark>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<mark class="mark-1"><var>R<sub>o</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
-               </lu-math-line>
-               <lu-math-sep><mark class="mark-3"> - </mark></lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep><mark class="mark-3"> - </mark></m-sep>
+               <m-segment>
                   2<mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark><mark class="mark-3">(<!--
             -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
              + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
              - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
          -->)<var>C<sub>a</sub></var></mark>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
-               </lu-math-line>
-               <lu-math-sep><mark class="mark-3"> - </mark></lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep><mark class="mark-3"> - </mark></m-sep>
+               <m-segment>
                   2<!--
                --><mark class="mark-3">(<!--
                   -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
                    + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
                    - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
                -->)<var>C<sub>a</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
-               </lu-math-line>
-            </lu-math-body>
-         </lu-math-multiline>
-      </lu-math-row>
+               </m-segment>
+            </m-body>
+         </m-layout-snake>
+      </m-solvestep>
    </lu-math>
    <p>
       <lu-math data-inline>
@@ -441,580 +531,599 @@ extra_css_files:
          (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
        + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
        - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-       </lu-math> is the length of that projection. Squaring the projection pretty much just means taking the dot product of the projection with itself &mdash; taking its length &mdash; so we can remove the multiplication by <lu-math data-inline><var>C<sub>a</sub></var></lu-math> in that first squared term.
+       </lu-math> is the length of that projection. Squaring the projection pretty much just means taking the dot product of the projection with itself &mdash; taking its length &mdash; so we can remove the multiplication by {{var_Ca_inl}} in that first squared term.
    </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-body>
-               <lu-math-line>
+   <lu-math>
+      <m-solvestep>
+         <m-layout-snake>
+            <m-body>
+               <m-segment>
                   <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <mark>(<!--
-         -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-          + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-          - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-      -->)</mark>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+               -->)</mark>{{lu_math_sq}}
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><!--
                -->(<!--
                   -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
                    + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
                    - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
                -->)<var>C<sub>a</sub></var>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var>(<!--
-            -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-         -->)<var>C<sub>a</sub></var>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+               -->)<var>C<sub>a</sub></var>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<!--
                -->(<!--
                   -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
                    + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
                    - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
                -->)<var>C<sub>a</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-            </lu-math-body>
-         </lu-math-multiline>
-      </lu-math-row>
+               </m-segment>
+            </m-body>
+         </m-layout-snake>
+      </m-solvestep>
    </lu-math>
    <p>
       Some more dot product commutativity &mdash; and let's start notating dot products the same way we notate scalar multiplication, just to make the parallels clearer.
    </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         (<var>a</var> + <var>b</var> + <var>c</var>){{lu_math_sq}}
-         =
-         <var>a</var>{{lu_math_sq}}
-       + <var>b</var>{{lu_math_sq}}
-       + <var>c</var>{{lu_math_sq}}
-       + 2<var>a</var><var>b</var>
-       + 2<var>a</var><var>c</var>
-       + 2<var>b</var><var>c</var>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-body>
-               <lu-math-line>
+   <lu-math>
+      <m-solvestep>
+         <m-content>
+            (<var>a</var> + <var>b</var> + <var>c</var>){{lu_math_sq}}
+            =
+            <var>a</var>{{lu_math_sq}}
+          + <var>b</var>{{lu_math_sq}}
+          + <var>c</var>{{lu_math_sq}}
+          + 2<var>a</var><var>b</var>
+          + 2<var>a</var><var>c</var>
+          + 2<var>b</var><var>c</var>
+         </m-content>
+      </m-solvestep>
+      {{lu_math_therefore_block}}
+      <m-solvestep>
+         <m-layout-snake>
+            <m-body>
+               <m-segment>
                   <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <mark><var>R<sub>o</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}
                 + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
                 + <var>C<sub>b</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}
                 + 2<var>R<sub>o</sub></var><var>C<sub>a</sub></var><var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
                 - 2<var>R<sub>o</sub></var><var>C<sub>a</sub></var><var>C<sub>b</sub></var><var>C<sub>a</sub></var>
                 - 2<var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var><var>C<sub>a</sub></var></mark>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><!--
                -->(<!--
                   --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
                    + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
                -->)<var>C<sub>a</sub></var>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var>(<!--
             --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
              + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
              - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
          -->)<var>C<sub>a</sub></var>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<!--
                -->(<!--
                   --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
                    + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
                -->)<var>C<sub>a</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-            </lu-math-body>
-         </lu-math-multiline>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-body>
-               <lu-math-line>
+               </m-segment>
+            </m-body>
+         </m-layout-snake>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info...</summary>
+            <aside>
+               Basic cleanup. Terms that had {{var_Ca_inl}} multiplied into them twice can have those multiplications combined.
+            </aside>
+         </details>
+         <m-layout-snake>
+            <m-body>
+               <m-segment>
                   <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>R<sub>o</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}
                 + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
                 + <var>C<sub>b</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}
                 + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><var>H<sub>d</sub></var>
                 - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark>
                 - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><!--
                -->(<!--
                   --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
                    + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
                -->)<var>C<sub>a</sub></var>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var>(<!--
             --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
              + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
              - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
          -->)<var>C<sub>a</sub></var>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<!--
                -->(<!--
                   --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
                    + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
                -->)<var>C<sub>a</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-            </lu-math-body>
-         </lu-math-multiline>
-      </lu-math-row>
+               </m-segment>
+            </m-body>
+         </m-layout-snake>
+      </m-solvestep>
    </lu-math>
    <p>
-      If taking the dot product of two vectors is "multiplying" them (given that the two operations are commutative in the same way), then "squaring" a vector means taking the dot product of the vector with itself, and the result is the vector's length squared. <lu-math data-inline><var>C<sub>a</sub></var></lu-math> is a normalized axis vector, so its length is 1. That means that the square of that vector is 1 &mdash; and anywhere we multiply by that square, we can just cut the square out of the equation entirely.
+      If taking the dot product of two vectors is "multiplying" them (given that the two operations are commutative in the same way), then "squaring" a vector means taking the dot product of the vector with itself, and the result is the vector's length squared. {{var_Ca_inl}} is a normalized axis vector, so its length is 1. That means that the square of that vector is 1 &mdash; and anywhere we multiply by that square, we can just cut the square out of the equation entirely.
    </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-body>
-               <lu-math-line>
+   <lu-math>
+      <m-solvestep>
+         <m-layout-snake>
+            <m-body>
+               <m-segment>
                   <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>R<sub>o</sub></var>{{lu_math_sq}}<del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
                 + <var>R<sub>d</sub></var>{{lu_math_sq}}<del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><var>H<sub>d</sub></var>{{lu_math_sq}}
                 + <var>C<sub>b</sub></var>{{lu_math_sq}}<del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
                 + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><var>H<sub>d</sub></var>
                 - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
                 - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><!--
                -->(<!--
                   --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
                    + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
                -->)<var>C<sub>a</sub></var>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var>(<!--
             --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
              + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
              - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
          -->)<var>C<sub>a</sub></var>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<!--
                -->(<!--
                   --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
                    + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
                -->)<var>C<sub>a</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-            </lu-math-body>
-         </lu-math-multiline>
-      </lu-math-row>
+               </m-segment>
+            </m-body>
+         </m-layout-snake>
+      </m-solvestep>
    </lu-math>
    <p>
-      We've got some groups that are multiplied by <lu-math data-inline><var>C<sub>a</sub></var></lu-math>. If we apply those multiplications &mdash; distribute <lu-math data-inline><var>C<sub>a</sub></var></lu-math> across the terms &mdash; then we'll get a few more instances of <lu-math data-inline><var>C<sub>a</sub></var>{{lu_math_sq}}</lu-math>, which we can then cut out.
+      We've got some groups that are multiplied by {{var_Ca_inl}}. If we apply those multiplications &mdash; distribute {{var_Ca_inl}} across the terms &mdash; then we'll get a few more instances of {{var_Ca_inl}}, which we can then cut out.
    </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-body>
-               <lu-math-line>
+   <lu-math>
+      <m-solvestep>
+         <m-layout-snake>
+            <m-body>
+               <m-segment>
                   <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>R<sub>o</sub></var>{{lu_math_sq}}
                 + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
                 + <var>C<sub>b</sub></var>{{lu_math_sq}}
                 + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
                 - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
                 - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><!--
                -->(<!--
                   --><var>R<sub>o</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark>
                    + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><!--
                -->)
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><!--
                -->(<!--
                   --><var>R<sub>o</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark>
                    + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><!--
                -->)
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<!--
                -->(<!--
                   --><mark class="mark-2"><var>C<sub>b</sub></var></mark><var>R<sub>o</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark>
                    + <mark class="mark-2"><var>C<sub>b</sub></var></mark><var>R<sub>d</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var><mark class="mark-2">{{lu_math_sq}}</mark><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><!--
                -->)
-               </lu-math-line>
-            </lu-math-body>
-         </lu-math-multiline>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-multiline>
-            <lu-math-body>
-               <lu-math-line>
+               </m-segment>
+            </m-body>
+         </m-layout-snake>
+      </m-solvestep>
+      <m-solvestep>
+         <m-layout-snake>
+            <m-body>
+               <m-segment>
                   <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>R<sub>o</sub></var>{{lu_math_sq}}
                 + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
                 + <var>C<sub>b</sub></var>{{lu_math_sq}}
                 + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
                 - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
                 - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><!--
                -->(<!--
                   --><var>R<sub>o</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
                    + <var>R<sub>d</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><!--
                -->)
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><!--
                -->(<!--
                   --><var>R<sub>o</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
                    + <var>R<sub>d</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><!--
                -->)
-               </lu-math-line>
-               <lu-math-sep> + </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> + </m-sep>
+               <m-segment>
                   2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </lu-math-line>
-               <lu-math-sep> - </lu-math-sep>
-               <lu-math-line>
+               </m-segment>
+               <m-sep> - </m-sep>
+               <m-segment>
                   2<!--
                -->(<!--
                   --><var>C<sub>b</sub></var><var>R<sub>o</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
                    + <var>C<sub>b</sub></var><var>R<sub>d</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><var>H<sub>d</sub></var>
                    - <var>C<sub>b</sub></var>{{lu_math_sq}}<del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><!--
                -->)
-               </lu-math-line>
-            </lu-math-body>
-         </lu-math-multiline>
-      </lu-math-row>
+               </m-segment>
+            </m-body>
+         </m-layout-snake>
+      </m-solvestep>
    </lu-math>
    <p>
       Let's spill everything back onto one line; it'll be more legible that way now.
    </p>
    <lu-math>
-      <lu-math-row>
-         <var>R<sub>o</sub></var>{{lu_math_sq}}
-       + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-       + <var>R<sub>o</sub></var>{{lu_math_sq}}
-       + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-       + <var>C<sub>b</sub></var>{{lu_math_sq}}
-       + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-       - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-       - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-       + <var>C<sub>b</sub></var>{{lu_math_sq}}
-       + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-       - 2<var>R<sub>o</sub></var><!--
-      -->(<!--
-         --><var>R<sub>o</sub></var>
-          + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-          - <var>C<sub>b</sub></var><!--
-      -->)
-       + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-       - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><!--
-      -->(<!--
-         --><var>R<sub>o</sub></var>
-          + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-          - <var>C<sub>b</sub></var><!--
-      -->)
-       + 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-       - 2<!--
-      -->(<!--
-         --><var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-          + <var>C<sub>b</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-          - <var>C<sub>b</sub></var>{{lu_math_sq}}<!--
-      -->)
-      </lu-math-row>
+      <m-solvestep>
+         <m-content>
+            <var>R<sub>o</sub></var>{{lu_math_sq}}
+          + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+          + <var>R<sub>o</sub></var>{{lu_math_sq}}
+          + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+          + <var>C<sub>b</sub></var>{{lu_math_sq}}
+          + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+          - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+          - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
+          + <var>C<sub>b</sub></var>{{lu_math_sq}}
+          + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+          - 2<var>R<sub>o</sub></var><!--
+         -->(<!--
+            --><var>R<sub>o</sub></var>
+             + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+             - <var>C<sub>b</sub></var><!--
+         -->)
+          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+          - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><!--
+         -->(<!--
+            --><var>R<sub>o</sub></var>
+             + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+             - <var>C<sub>b</sub></var><!--
+         -->)
+          + 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
+          - 2<!--
+         -->(<!--
+            --><var>C<sub>b</sub></var><var>R<sub>o</sub></var>
+             + <var>C<sub>b</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+             - <var>C<sub>b</sub></var>{{lu_math_sq}}<!--
+         -->)
+         </m-content>
+      </m-solvestep>
    </lu-math>
    <p>
-      Let's expand any remaining multiplications by parentheses, and then group by <lu-math data-inline><var>H<sub>d</sub></var></lu-math>.
+      Let's expand any remaining multiplications by parentheses, and then group by {{var_Hd_inl}}.
    </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         <var>R<sub>o</sub></var>{{lu_math_sq}}
-       + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-       + <var>R<sub>o</sub></var>{{lu_math_sq}}
-       + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-       + <var>C<sub>b</sub></var>{{lu_math_sq}}
-       + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-       - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-       - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-       + <var>C<sub>b</sub></var>{{lu_math_sq}}
-       + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-       
-       - <mark>2<var>R<sub>o</sub></var>{{lu_math_sq}}
-       - 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-       + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var></mark>
-       
-       + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-       
-       - <mark>2<var>R<sub>d</sub></var><var>R<sub>o</sub></var><var>H<sub>d</sub></var>
-       - 2<var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-       + 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var><var>H<sub>d</sub></var></mark>
-       
-       + 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-       
-       - <mark>2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-       - 2<var>C<sub>b</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-       + 2<var>C<sub>b</sub></var>{{lu_math_sq}}</mark>
-      </lu-math-row>
-      <lu-math-row>
-         <mark class="mark-1">(<!--
-         --><var>R<sub>d</sub></var>{{lu_math_sq}}
-          + <var>R<sub>d</sub></var>{{lu_math_sq}}
-          - 2<var>R<sub>d</sub></var>{{lu_math_sq}}<!--
-      -->)</mark><var>H<sub>d</sub></var>{{lu_math_sq}}
+   <lu-math>
+      <m-solvestep>
+         <m-content>
+            <var>R<sub>o</sub></var>{{lu_math_sq}}
+          + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+          + <var>R<sub>o</sub></var>{{lu_math_sq}}
+          + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+          + <var>C<sub>b</sub></var>{{lu_math_sq}}
+          + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+          - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+          - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
+          + <var>C<sub>b</sub></var>{{lu_math_sq}}
+          + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+          
+          - <mark>2<var>R<sub>o</sub></var>{{lu_math_sq}}
+          - 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var></mark>
+          
+          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+          
+          - <mark>2<var>R<sub>d</sub></var><var>R<sub>o</sub></var><var>H<sub>d</sub></var>
+          - 2<var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+          + 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var><var>H<sub>d</sub></var></mark>
+          
+          + 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
+          
+          - <mark>2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
+          - 2<var>C<sub>b</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
+          + 2<var>C<sub>b</sub></var>{{lu_math_sq}}</mark>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            <mark class="mark-1">(<!--
+            --><var>R<sub>d</sub></var>{{lu_math_sq}}
+             + <var>R<sub>d</sub></var>{{lu_math_sq}}
+             - 2<var>R<sub>d</sub></var>{{lu_math_sq}}<!--
+         -->)</mark><var>H<sub>d</sub></var>{{lu_math_sq}}
+            
+          + <mark class="mark-2">(<!--
+            -->2<var>R<sub>o</sub></var><var>R<sub>d</sub></var>
+             - 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var>
+             + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var>
+             - 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var>
+             - 2<var>R<sub>d</sub></var><var>R<sub>o</sub></var>
+             + 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var>
+             + 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var>
+             - 2<var>C<sub>b</sub></var><var>R<sub>d</sub></var><!--
+         -->)</mark><var>H<sub>d</sub></var>
          
-       + <mark class="mark-2">(<!--
-         -->2<var>R<sub>o</sub></var><var>R<sub>d</sub></var>
-          - 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var>
-          + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var>
-          - 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var>
-          - 2<var>R<sub>d</sub></var><var>R<sub>o</sub></var>
-          + 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var>
-          + 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var>
-          - 2<var>C<sub>b</sub></var><var>R<sub>d</sub></var><!--
-      -->)</mark><var>H<sub>d</sub></var>
-      
-       + <var>R<sub>o</sub></var>{{lu_math_sq}}
-       + <var>R<sub>o</sub></var>{{lu_math_sq}}
-       + <var>C<sub>b</sub></var>{{lu_math_sq}}
-       - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-       + <var>C<sub>b</sub></var>{{lu_math_sq}}
-       
-       - 2<var>R<sub>o</sub></var>{{lu_math_sq}}
-       + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-       
-       + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-       
-       - 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-       + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
-      </lu-math-row>
+          + <var>R<sub>o</sub></var>{{lu_math_sq}}
+          + <var>R<sub>o</sub></var>{{lu_math_sq}}
+          + <var>C<sub>b</sub></var>{{lu_math_sq}}
+          - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+          + <var>C<sub>b</sub></var>{{lu_math_sq}}
+          
+          - 2<var>R<sub>o</sub></var>{{lu_math_sq}}
+          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+          
+          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+          
+          - 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
+          + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
+         </m-content>
+      </m-solvestep>
    </lu-math>
    <p>
       Some of these terms can be combined. Others can be canceled out entirely.
    </p>
-   <lu-math data-enormous-rows>
-      <lu-math-row>
-         (<!--
-         --><mark>2</mark><var>R<sub>d</sub></var>{{lu_math_sq}}
-          - 2<var>R<sub>d</sub></var>{{lu_math_sq}}<!--
-      -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
+   <lu-math>
+      <m-solvestep>
+         <m-content>
+            (<!--
+            --><mark>2</mark><var>R<sub>d</sub></var>{{lu_math_sq}}
+             - 2<var>R<sub>d</sub></var>{{lu_math_sq}}<!--
+         -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
+            
+          + (<!--
+            --><mark>4</mark><var>C<sub>b</sub></var><var>R<sub>d</sub></var>
+             - <mark>4</mark><var>C<sub>b</sub></var><var>R<sub>d</sub></var>
+             + <mark>4</mark><var>R<sub>d</sub></var><var>R<sub>o</sub></var>
+             - <mark>4</mark><var>R<sub>d</sub></var><var>R<sub>o</sub></var><!--
+         -->)<var>H<sub>d</sub></var>
          
-       + (<!--
-         --><mark>4</mark><var>C<sub>b</sub></var><var>R<sub>d</sub></var>
-          - <mark>4</mark><var>C<sub>b</sub></var><var>R<sub>d</sub></var>
-          + <mark>4</mark><var>R<sub>d</sub></var><var>R<sub>o</sub></var>
-          - <mark>4</mark><var>R<sub>d</sub></var><var>R<sub>o</sub></var><!--
-      -->)<var>H<sub>d</sub></var>
-      
-       + <mark>2</mark><var>R<sub>o</sub></var>{{lu_math_sq}}
-       + <mark>2</mark><var>C<sub>b</sub></var>{{lu_math_sq}}
-       
-       - 2<var>R<sub>o</sub></var>{{lu_math_sq}}
-       + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-       - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-       
-       + 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-       - 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-       + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
-      </lu-math-row>
-      <lu-math-row>
-         (<!--
-         --><del>2<var>R<sub>d</sub></var>{{lu_math_sq}}
-          - 2<var>R<sub>d</sub></var>{{lu_math_sq}}</del><ins>0</ins><!--
-      -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
-         
-       + (<!--
-         --><del>4<var>C<sub>b</sub></var><var>R<sub>d</sub></var>
-          - 4<var>C<sub>b</sub></var><var>R<sub>d</sub></var>
-          + 4<var>R<sub>d</sub></var><var>R<sub>o</sub></var>
-          - 4<var>R<sub>d</sub></var><var>R<sub>o</sub></var></del><ins>0</ins><!--
-      -->)<var>H<sub>d</sub></var>
-      
-      <del>
-          + 2<var>R<sub>o</sub></var>{{lu_math_sq}}
+          + <mark>2</mark><var>R<sub>o</sub></var>{{lu_math_sq}}
+          + <mark>2</mark><var>C<sub>b</sub></var>{{lu_math_sq}}
+          
           - 2<var>R<sub>o</sub></var>{{lu_math_sq}}
-      </del>
-       + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
-       + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
-      
-      <del>
-       + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-       - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-      </del>
-       
-      <del>
-       + 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-       - 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-      </del>
-      </lu-math-row>
+          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+          - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+          
+          + 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
+          - 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
+          + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            (<!--
+            --><del>2<var>R<sub>d</sub></var>{{lu_math_sq}}
+             - 2<var>R<sub>d</sub></var>{{lu_math_sq}}</del><ins>0</ins><!--
+         -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
+            
+          + (<!--
+            --><del>4<var>C<sub>b</sub></var><var>R<sub>d</sub></var>
+             - 4<var>C<sub>b</sub></var><var>R<sub>d</sub></var>
+             + 4<var>R<sub>d</sub></var><var>R<sub>o</sub></var>
+             - 4<var>R<sub>d</sub></var><var>R<sub>o</sub></var></del><ins>0</ins><!--
+         -->)<var>H<sub>d</sub></var>
+         
+         <del>
+             + 2<var>R<sub>o</sub></var>{{lu_math_sq}}
+             - 2<var>R<sub>o</sub></var>{{lu_math_sq}}
+         </del>
+          + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
+          + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
+         
+         <del>
+          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+          - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
+         </del>
+          
+         <del>
+          + 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
+          - 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
+         </del>
+         </m-content>
+      </m-solvestep>
    </lu-math>
    <p>
       Well, clearly, I screwed this up completely at some point.

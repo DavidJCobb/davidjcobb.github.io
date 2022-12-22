@@ -15,11 +15,11 @@ a:link{ color:#0066cc; }
 a:link:visited{ color:#801490; }
 
 code, pre {
-   font-family: Inconsolata, monospace;
+   font-family: $theme-code-font-family;
 }
 
 h1, h2, h3, h4, h5, h6 {
-   font-family:'Raleway',"Segoe UI","Source Sans Pro",sans-serif;
+   font-family: $theme-header-font-family;
 }
 h1 { font-size:2.00rem; }
 h2 { font-size:1.75rem; }
@@ -233,7 +233,7 @@ html {
    @include theme-background();
 }
 body{
-   font-family:"Segoe UI","Source Sans Pro",sans-serif;
+   font-family: $theme-body-font-family;
    line-height:1.7em;
    
    margin:0;

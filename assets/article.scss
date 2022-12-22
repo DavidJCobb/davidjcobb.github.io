@@ -1,6 +1,7 @@
 ---
 ---
 
+@import "utils";
 @import "theme-mixins";
 
 main p {
@@ -37,6 +38,53 @@ mark.mark-5 {
 }
 mark.mark-6 {
    background:#D8E0F0; /*silver*/
+}
+
+lu-math {
+   .toggle-explanation {
+      border-radius:.2rem;
+      font-family: $theme-body-font-family;
+      cursor: pointer;
+      
+      width:min-content;
+      padding:.5em 1em;
+      background:#E8E8E8;
+   }
+   .explanation>aside {
+      border-radius:.2rem;
+      font-family: $theme-body-font-family;
+      padding:.5em;
+      background:#E8E8E8;
+   }
+}
+lu-math mark {
+   &::before,
+   &::after {
+      @include screen-reader;
+   }
+   &::after {
+      content: "[mark end]";
+   }
+
+   &,
+   &.mark-1 {
+      &::before { content: "[mark orange start]" }
+   }
+   &.mark-2 {
+      &::before { content: "[mark green start]" }
+   }
+   &.mark-3 {
+      &::before { content: "[mark blue start]" }
+   }
+   &.mark-4 {
+      &::before { content: "[mark pink start]" }
+   }
+   &.mark-5 {
+      &::before { content: "[mark beige start]" }
+   }
+   &.mark-6 {
+      &::before { content: "[mark silver start]" }
+   }
 }
 
 section>aside {
