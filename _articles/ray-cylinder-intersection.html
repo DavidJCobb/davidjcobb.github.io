@@ -284,7 +284,7 @@ extra_css_files:
       </m-row>
    </lu-math>
    <p>
-      We want to expand {{var_Hs_inl}} at this point, but there are actually two ways to do that. We can expand it in terms of {{var_Ca_inl}}, or in terms of {{var_Cs_inl}}.
+      We want to expand {{var_Hs_inl}} at this point, but there are actually two ways to do that. We can expand it in terms of {{var_Ca_inl}}, or in terms of {{var_Cs_inl}}. Let's go with {{var_Ca_inl}}, the cylinder axis vector, to get a smaller equation.
    </p>
    <lu-math>
       {{lu_math_eq_numbers[4]}}
@@ -300,6 +300,86 @@ extra_css_files:
          =
          <var>C<sub>r</sub></var>
       </m-row>
+   </lu-math>
+   <p>
+      Now, let's see if we can move {{var_Hp_inl}} outside of those inner dot products. A key thing to remember is that taking the dot product of two vectors can be manipulated just like multiplication. It has the following properties:
+   </p>
+   <ul>
+      <li>
+         It's <dfn>commutative</dfn>:
+         <lu-math data-inline>
+            <var>A</var> &bullet; <var>B</var> = <var>B</var> &bullet; <var>A</var>
+         </lu-math>
+      </li>
+      <li>
+         It's <dfn>distributive</dfn>:
+         <lu-math data-inline>
+            <var>A</var> &bullet; (<var>B</var> + <var>C</var>) = (<var>A</var> &bullet; <var>B</var>) + (<var>A</var> &bullet; <var>C</var>)
+         </lu-math>
+      </li>
+      <li>
+         And when <var>c</var> is a scalar, it's <dfn>associative</dfn>:
+         <lu-math data-inline>
+            (<var>A</var> &bullet; <var>B</var>)<var>c</var> = <var>c</var><var>A</var> &bullet; <var>c</var><var>B</var>
+         </lu-math>
+      </li>
+   </ul>
+   <p>
+      So let's take advantage of that.
+   </p>
+   <lu-math>
+      <m-solvestep>
+         <m-content>
+            <m-veclength>
+               <m-delim>||</m-delim><!--
+               --><var>H<sub>p</sub></var>
+                  +
+                  <var>C<sub>b</sub></var>
+                  -
+                  (<!--
+                  -->(<var>H<sub>p</sub></var> &bullet; <mark><var>C<sub>a</sub></var></mark>)
+                   - (<var>C<sub>b</sub></var> &bullet; <mark><var>C<sub>a</sub></var></mark>)<!--
+               -->)<var>C<sub>a</sub></var><!--
+            --><m-delim>||</m-delim><!--
+         --></m-veclength>
+            =
+            <var>C<sub>r</sub></var>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            <m-veclength>
+               <m-delim>||</m-delim><!--
+               --><var>H<sub>p</sub></var>
+                  +
+                  <var>C<sub>b</sub></var>
+                  -
+                  (<var>H<sub>p</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark><var>C<sub>a</sub></var>
+                  + </mark>
+                  (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark><var>C<sub>a</sub></var></mark><!--
+            --><m-delim>||</m-delim><!--
+         --></m-veclength>
+            =
+            <var>C<sub>r</sub></var>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            <m-veclength>
+               <m-delim>||</m-delim><!--
+               --><var>H<sub>p</sub></var>
+                  +
+                  <var>C<sub>b</sub></var>
+                  -
+                  (<var>H<sub>p</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
+                  + 
+                  (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var><!--
+            --><m-delim>||</m-delim><!--
+         --></m-veclength>
+            =
+            <var>C<sub>r</sub></var>
+         </m-content>
+      </m-solvestep>
    </lu-math>
 </section>
 
@@ -388,21 +468,23 @@ extra_css_files:
       <m-solvestep>
          <m-layout-snake>
             <m-body>
-               <m-segment>
-                  (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
-                  ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
-                  + <var>C<sub>b</sub></var>)
-               </m-segment>
-               <m-sep><mark> + </mark></m-sep>
-               <m-segment>
-                  <mark>(<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
-                  ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
-                  + <var>C<sub>b</sub></var>)</mark>
-               </m-segment>
+               <m-layout-v-segments>
+                  <m-segment>
+                     (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
+                     ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
+                     + <var>C<sub>b</sub></var>)
+                  </m-segment>
+                  <m-sep><mark> + </mark></m-sep>
+                  <m-segment>
+                     <mark>(<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
+                     ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
+                     + <var>C<sub>b</sub></var>)</mark>
+                  </m-segment>
+               </m-layout-v-segments>
             </lu-math-body>
             </m-body>
             <m-tail>
@@ -460,63 +542,135 @@ extra_css_files:
       <m-solvestep>
          <m-layout-snake>
             <m-body>
-               <m-segment>
-                  <mark class="mark-1"><var>R<sub>o</sub></var></mark>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <mark class="mark-2"><var>R<sub>d</sub></var></mark>{{lu_math_sq}}<mark class="mark-2"><var>H<sub>d</sub></var></mark>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <mark class="mark-3">((<!--
-         -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-          + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-          - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-      -->)<var>C<sub>a</sub></var>)</mark>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <mark class="mark-4"><var>C<sub>b</sub></var></mark>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<mark class="mark-1"><var>R<sub>o</sub></var></mark><mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark>
-               </m-segment>
-               <m-sep><mark class="mark-3"> - </mark></m-sep>
-               <m-segment>
-                  2<mark class="mark-1"><var>R<sub>o</sub></var></mark><!--
-               --><mark class="mark-3">(<!--
-                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-               -->)<var>C<sub>a</sub></var></mark>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<mark class="mark-1"><var>R<sub>o</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
-               </m-segment>
-               <m-sep><mark class="mark-3"> - </mark></m-sep>
-               <m-segment>
-                  2<mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark><mark class="mark-3">(<!--
-            -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-         -->)<var>C<sub>a</sub></var></mark>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
-               </m-segment>
-               <m-sep><mark class="mark-3"> - </mark></m-sep>
-               <m-segment>
-                  2<!--
-               --><mark class="mark-3">(<!--
-                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-               -->)<var>C<sub>a</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
-               </m-segment>
+               <m-layout-v-segments>
+                  <m-segment>
+                     <mark class="mark-1"><var>R<sub>o</sub></var></mark>{{lu_math_sq}}
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     <mark class="mark-2"><var>R<sub>d</sub></var></mark>{{lu_math_sq}}<mark class="mark-2"><var>H<sub>d</sub></var></mark>{{lu_math_sq}}
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     <mark class="mark-3">((<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>)</mark>{{lu_math_sq}}
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     <mark class="mark-4"><var>C<sub>b</sub></var></mark>{{lu_math_sq}}
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2<mark class="mark-1"><var>R<sub>o</sub></var></mark><mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark>
+                  </m-segment>
+                  <m-sep><mark class="mark-3"> - </mark></m-sep>
+                  <m-segment>
+                     2<mark class="mark-1"><var>R<sub>o</sub></var></mark><!--
+                  --><mark class="mark-3">(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var></mark>
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2<mark class="mark-1"><var>R<sub>o</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
+                  </m-segment>
+                  <m-sep><mark class="mark-3"> - </mark></m-sep>
+                  <m-segment>
+                     2<mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark><mark class="mark-3">(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var></mark>
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2<mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
+                  </m-segment>
+                  <m-sep><mark class="mark-3"> - </mark></m-sep>
+                  <m-segment>
+                     2<!--
+                  --><mark class="mark-3">(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
+                  </m-segment>
+               </m-layout-v-segments>
+            </m-body>
+         </m-layout-snake>
+      </m-solvestep>
+   </lu-math>
+   <p>
+      Before we begin, let's be explicit about when we're taking the dot products of vectors, so as to avoid confusion with scalar products &mdash; and avoid getting ourselves into trouble later on. (Given three vectors <lu-math data-inline><var>A</var></lu-math>, <lu-math data-inline><var>B</var></lu-math>, and <lu-math data-inline><var>C</var></lu-math>, you <em>cannot</em> rearrange the expression <lu-math data-inline>(<var>A</var> &bullet; <var>B</var>)<var>C</var></lu-math> in terms of vectors. You can do some fun stuff if <lu-math data-inline><var>C</var></lu-math> is a scalar, but if it's a vector, then this expression is already in its simplest possible form. Expand it into scalars, rearrange terms, and you'll find that the axes of each vector get mixed up: you can't recombine them in any other way. The only way to spot these traps before you walk into them is by explicitly notating dot products.)
+   </p>
+   <lu-math>
+      <m-solvestep>
+         <m-layout-snake>
+            <m-body>
+               <m-layout-v-segments>
+                  <m-segment>
+                     (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     ((<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>){{lu_math_sq}}
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <!--
+                  -->(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2<!--
+                  -->(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
+                  </m-segment>
+               </m-layout-v-segments>
             </m-body>
          </m-layout-snake>
       </m-solvestep>
@@ -537,69 +691,71 @@ extra_css_files:
       <m-solvestep>
          <m-layout-snake>
             <m-body>
-               <m-segment>
-                  <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <mark>(<!--
-                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-               -->)</mark>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><!--
-               -->(<!--
-                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-               -->)<var>C<sub>a</sub></var>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var>(<!--
-                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-               -->)<var>C<sub>a</sub></var>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<!--
-               -->(<!--
-                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-               -->)<var>C<sub>a</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
+               <m-layout-v-segments>
+                  <m-segment>
+                     (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     <mark>(<del>(</del><!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  --><del>)<var>C<sub>a</sub></var></del>){{lu_math_sq}}</mark>
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <!--
+                  -->(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2<!--
+                  -->(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
+                  </m-segment>
+               </m-layout-v-segments>
             </m-body>
          </m-layout-snake>
       </m-solvestep>
    </lu-math>
    <p>
-      Some more dot product commutativity &mdash; and let's start notating dot products the same way we notate scalar multiplication, just to make the parallels clearer.
+      Some more dot product commutativity:
    </p>
    <lu-math>
       <m-solvestep>
@@ -617,515 +773,648 @@ extra_css_files:
       {{lu_math_therefore_block}}
       <m-solvestep>
          <m-layout-snake>
-            <m-body>
-               <m-segment>
-                  <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <mark><var>R<sub>o</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}
-                + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-                + <var>C<sub>b</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}
-                + 2<var>R<sub>o</sub></var><var>C<sub>a</sub></var><var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
-                - 2<var>R<sub>o</sub></var><var>C<sub>a</sub></var><var>C<sub>b</sub></var><var>C<sub>a</sub></var>
-                - 2<var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var><var>C<sub>a</sub></var></mark>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><!--
-               -->(<!--
-                  --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
-                   + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
-               -->)<var>C<sub>a</sub></var>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var>(<!--
-            --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
-             + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
-             - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
-         -->)<var>C<sub>a</sub></var>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<!--
-               -->(<!--
-                  --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
-                   + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
-               -->)<var>C<sub>a</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
+            <m-head>
+               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+               +
+               (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
+            </m-head><!--
+         --><m-body>
+               <mark data-lu-math-marked-block>
+               <m-layout-v-segments>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                      (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+                      + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                      2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                      2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                      2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+               </m-layout-v-segments>
+               </mark>
             </m-body>
+            <m-tail>
+               <m-layout-v-segments>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <!--
+                  -->(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2<!--
+                  -->(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
+                  </m-segment>
+               </m-layout-v-segments>
+            </m-tail>
+         </m-layout-snake>
+      </m-solvestep>
+      <m-solvestep>
+         <m-layout-snake>
+            <m-head>
+               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+               +
+               (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
+            </m-head><!--
+         --><m-body>
+               <m-layout-v-segments>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     <mark class="mark-1">(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}</mark>
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     <mark class="mark-2">2(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      - (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>H<sub>d</sub></var></mark>
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                      (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+                      + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                      2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                  </m-segment>
+               </m-layout-v-segments>
+            </m-body>
+            <m-tail>
+               <m-layout-v-segments>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <!--
+                  -->(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2<!--
+                  -->(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
+                  </m-segment>
+               </m-layout-v-segments>
+            </m-tail>
+         </m-layout-snake>
+      </m-solvestep>
+      <m-solvestep>
+         <m-layout-snake>
+            <m-head>
+               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+               +
+               (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
+            </m-head><!--
+         --><m-body>
+               <m-layout-v-segments>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<mark>(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark><var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                      (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+                      + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                      2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                  </m-segment>
+               </m-layout-v-segments>
+            </m-body>
+            <m-tail>
+               <m-layout-v-segments>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <!--
+                  -->(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var>)
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>H<sub>d</sub></var>
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     2<!--
+                  -->(<!--
+                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+                  -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
+                  </m-segment>
+               </m-layout-v-segments>
+            </m-tail>
          </m-layout-snake>
       </m-solvestep>
       <m-solvestep>
          <details class="explanation">
-            <summary class="toggle-explanation">info...</summary>
+            <summary class="toggle-explanation">info</summary>
             <aside>
-               Basic cleanup. Terms that had {{var_Ca_inl}} multiplied into them twice can have those multiplications combined.
+               Grouped terms by {{var_Hd_inl}}.
             </aside>
          </details>
-         <m-layout-snake>
-            <m-body>
-               <m-segment>
-                  <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>R<sub>o</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}
-                + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-                + <var>C<sub>b</sub></var>{{lu_math_sq}}<var>C<sub>a</sub></var>{{lu_math_sq}}
-                + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><var>H<sub>d</sub></var>
-                - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark>
-                - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><!--
-               -->(<!--
-                  --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
-                   + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
-               -->)<var>C<sub>a</sub></var>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var>(<!--
-            --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
-             + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
-             - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
-         -->)<var>C<sub>a</sub></var>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<!--
-               -->(<!--
-                  --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
-                   + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
-               -->)<var>C<sub>a</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-            </m-body>
-         </m-layout-snake>
+         <m-layout-v-segments>
+            <m-segment>
+               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               <mark>(<!--
+               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <nobr><var>C<sub>a</sub></var>){{lu_math_sq}}</nobr><!--
+            -->)</mark><nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<!--
+               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                + <mark>(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)</mark>
+                + <mark>(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark><!--
+            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <!--
+            -->(<!--
+               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+            -->)<var>C<sub>a</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
+               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+            -->)<var>C<sub>a</sub></var>)
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2<!--
+            -->(<!--
+               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
+            -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
+            </m-segment>
+         </m-layout-v-segments>
       </m-solvestep>
    </lu-math>
    <p>
-      If taking the dot product of two vectors is "multiplying" them (given that the two operations are commutative in the same way), then "squaring" a vector means taking the dot product of the vector with itself, and the result is the vector's length squared. {{var_Ca_inl}} is a normalized axis vector, so its length is 1. That means that the square of that vector is 1 &mdash; and anywhere we multiply by that square, we can just cut the square out of the equation entirely.
+      Now let's keep simplifying the expression further. We can get a lot of mileage out of the dot products' distributive property.
    </p>
    <lu-math>
       <m-solvestep>
-         <m-layout-snake>
-            <m-body>
-               <m-segment>
-                  <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>R<sub>o</sub></var>{{lu_math_sq}}<del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
-                + <var>R<sub>d</sub></var>{{lu_math_sq}}<del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><var>H<sub>d</sub></var>{{lu_math_sq}}
-                + <var>C<sub>b</sub></var>{{lu_math_sq}}<del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
-                + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><var>H<sub>d</sub></var>
-                - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
-                - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><!--
-               -->(<!--
-                  --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
-                   + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
-               -->)<var>C<sub>a</sub></var>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var>(<!--
-            --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
-             + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
-             - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
-         -->)<var>C<sub>a</sub></var>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<!--
-               -->(<!--
-                  --><var>R<sub>o</sub></var><var>C<sub>a</sub></var>
-                   + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><!--
-               -->)<var>C<sub>a</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-            </m-body>
-         </m-layout-snake>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               Using the distributive property of the vector dot product. There are several places where the same group of added-and-subtracted terms gets multiplied by {{var_Ca_inl}}; we can distribute {{var_Ca_inl}} across the group in order to make things easier to work with.
+            </aside>
+         </details>
+         <m-layout-v-segments>
+            <m-segment>
+               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<!--
+               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <nobr><var>C<sub>a</sub></var>){{lu_math_sq}}</nobr><!--
+            -->)<nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<!--
+               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
+            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <!--
+            -->(<!--
+               --><mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
+             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var><var>C<sub>a</sub></var>
+             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>)</mark><!--
+            -->))
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <!--
+            -->(<!--
+               --><mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
+             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var><var>C<sub>a</sub></var>
+             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>)</mark><!--
+            -->))
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2<!--
+            -->(<!--
+               --><mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var><var>C<sub>a</sub></var>
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>)</mark><!--
+            -->) &bullet; <var>C<sub>b</sub></var>
+            </m-segment>
+         </m-layout-v-segments>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               Now, we're doing the exact same thing as in the last step, but to the content we've just distributed.
+            </aside>
+         </details>
+         <m-layout-v-segments>
+            <m-segment>
+               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<!--
+               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <nobr><var>C<sub>a</sub></var>){{lu_math_sq}}</nobr><!--
+            -->)<nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<!--
+               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
+            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<!--
+               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark>
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark><var>H<sub>d</sub></var>
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark><!--
+            -->)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<!--
+               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var></mark>
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)</mark><var>H<sub>d</sub></var><mark>{{lu_math_sq}}</mark>
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var></mark><!--
+            -->)
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               (<!--
+               --><mark>2</mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
+                + <mark>2</mark>(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var><var>C<sub>a</sub></var>
+                - <mark>2</mark>(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>)<!--
+            -->) &bullet; <var>C<sub>b</sub></var>
+            </m-segment>
+         </m-layout-v-segments>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               We distributed a multiplication by 2 in the last step; now, we can distribute a dot product by {{var_Cb_inl}} across that same group. We'll also distribute the other multiplications by 2.
+            </aside>
+         </details>
+         <m-layout-v-segments>
+            <m-segment>
+               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<!--
+               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <nobr><var>C<sub>a</sub></var>){{lu_math_sq}}</nobr><!--
+            -->)<nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<!--
+               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
+            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               <mark class="mark-2">2</mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+             + <mark class="mark-2">2</mark>(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+             - <mark class="mark-2">2</mark>(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               <mark class="mark-2">2</mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
+             + <mark class="mark-2">2</mark>(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
+             - <mark class="mark-2">2</mark>(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark class="mark-1">(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark>
+             + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark class="mark-1">(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark><var>H<sub>d</sub></var>
+             - 2(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark class="mark-1">(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark>
+            </m-segment>
+         </m-layout-v-segments>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               There were terms in this equation that canceled each other out.
+            </aside>
+         </details>
+         <m-layout-v-segments>
+            <m-segment>
+               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<!--
+               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <nobr><var>C<sub>a</sub></var>){{lu_math_sq}}</nobr><!--
+            -->)<nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<!--
+               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
+            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+             - 2(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+             - 2(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+         </m-layout-v-segments>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               Combining terms, and reordering variables within groups for easier matching.
+            </aside>
+         </details>
+         <m-layout-v-segments>
+            <m-segment>
+               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<!--
+               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                + <mark>3</mark>(<var>C<sub>a</sub></var> &bullet; <nobr><var>R<sub>D</sub></var>){{lu_math_sq}}</nobr><!--
+            -->)<nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<!--
+               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
+                + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)
+                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
+            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
+            </m-segment>
+            <m-sep><mark> - </mark></m-sep>
+            <m-segment>
+               (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep><mark> - </mark></m-sep>
+            <m-segment>
+               (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
+            </m-segment>
+            <m-sep> - </m-sep>
+            <m-segment>
+               <mark>6</mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               2(<var>C<sub>b</sub></var> &bullet; <var>R<sub>o</sub></var>)
+            </m-segment>
+         </m-layout-v-segments>
       </m-solvestep>
    </lu-math>
-   <p>
-      We've got some groups that are multiplied by {{var_Ca_inl}}. If we apply those multiplications &mdash; distribute {{var_Ca_inl}} across the terms &mdash; then we'll get a few more instances of {{var_Ca_inl}}, which we can then cut out.
-   </p>
-   <lu-math>
-      <m-solvestep>
-         <m-layout-snake>
-            <m-body>
-               <m-segment>
-                  <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>R<sub>o</sub></var>{{lu_math_sq}}
-                + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-                + <var>C<sub>b</sub></var>{{lu_math_sq}}
-                + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-                - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-                - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><!--
-               -->(<!--
-                  --><var>R<sub>o</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark>
-                   + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><!--
-               -->)
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><!--
-               -->(<!--
-                  --><var>R<sub>o</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark>
-                   + <var>R<sub>d</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><!--
-               -->)
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<!--
-               -->(<!--
-                  --><mark class="mark-2"><var>C<sub>b</sub></var></mark><var>R<sub>o</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark>
-                   + <mark class="mark-2"><var>C<sub>b</sub></var></mark><var>R<sub>d</sub></var><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var><mark class="mark-2">{{lu_math_sq}}</mark><var>C<sub>a</sub></var><mark>{{lu_math_sq}}</mark><!--
-               -->)
-               </m-segment>
-            </m-body>
-         </m-layout-snake>
-      </m-solvestep>
-      <m-solvestep>
-         <m-layout-snake>
-            <m-body>
-               <m-segment>
-                  <var>R<sub>o</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>R<sub>o</sub></var>{{lu_math_sq}}
-                + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-                + <var>C<sub>b</sub></var>{{lu_math_sq}}
-                + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-                - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-                - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  <var>C<sub>b</sub></var>{{lu_math_sq}}
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><!--
-               -->(<!--
-                  --><var>R<sub>o</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
-                   + <var>R<sub>d</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><!--
-               -->)
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><!--
-               -->(<!--
-                  --><var>R<sub>o</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
-                   + <var>R<sub>d</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><!--
-               -->)
-               </m-segment>
-               <m-sep> + </m-sep>
-               <m-segment>
-                  2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-               </m-segment>
-               <m-sep> - </m-sep>
-               <m-segment>
-                  2<!--
-               -->(<!--
-                  --><var>C<sub>b</sub></var><var>R<sub>o</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del>
-                   + <var>C<sub>b</sub></var><var>R<sub>d</sub></var><del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><var>H<sub>d</sub></var>
-                   - <var>C<sub>b</sub></var>{{lu_math_sq}}<del><var>C<sub>a</sub></var>{{lu_math_sq}}</del><!--
-               -->)
-               </m-segment>
-            </m-body>
-         </m-layout-snake>
-      </m-solvestep>
-   </lu-math>
-   <p>
-      Let's spill everything back onto one line; it'll be more legible that way now.
-   </p>
-   <lu-math>
-      <m-solvestep>
-         <m-content>
-            <var>R<sub>o</sub></var>{{lu_math_sq}}
-          + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-          + <var>R<sub>o</sub></var>{{lu_math_sq}}
-          + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-          + <var>C<sub>b</sub></var>{{lu_math_sq}}
-          + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-          - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-          - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-          + <var>C<sub>b</sub></var>{{lu_math_sq}}
-          + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-          - 2<var>R<sub>o</sub></var><!--
-         -->(<!--
-            --><var>R<sub>o</sub></var>
-             + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-             - <var>C<sub>b</sub></var><!--
-         -->)
-          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-          - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><!--
-         -->(<!--
-            --><var>R<sub>o</sub></var>
-             + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-             - <var>C<sub>b</sub></var><!--
-         -->)
-          + 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-          - 2<!--
-         -->(<!--
-            --><var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-             + <var>C<sub>b</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-             - <var>C<sub>b</sub></var>{{lu_math_sq}}<!--
-         -->)
-         </m-content>
-      </m-solvestep>
-   </lu-math>
-   <p>
-      Let's expand any remaining multiplications by parentheses, and then group by {{var_Hd_inl}}.
-   </p>
-   <lu-math>
-      <m-solvestep>
-         <m-content>
-            <var>R<sub>o</sub></var>{{lu_math_sq}}
-          + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-          + <var>R<sub>o</sub></var>{{lu_math_sq}}
-          + <var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-          + <var>C<sub>b</sub></var>{{lu_math_sq}}
-          + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-          - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-          - 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-          + <var>C<sub>b</sub></var>{{lu_math_sq}}
-          + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-          
-          - <mark>2<var>R<sub>o</sub></var>{{lu_math_sq}}
-          - 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var></mark>
-          
-          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-          
-          - <mark>2<var>R<sub>d</sub></var><var>R<sub>o</sub></var><var>H<sub>d</sub></var>
-          - 2<var>R<sub>d</sub></var>{{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-          + 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var><var>H<sub>d</sub></var></mark>
-          
-          + 2<var>R<sub>d</sub></var><var>H<sub>d</sub></var><var>C<sub>b</sub></var>
-          
-          - <mark>2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-          - 2<var>C<sub>b</sub></var><var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-          + 2<var>C<sub>b</sub></var>{{lu_math_sq}}</mark>
-         </m-content>
-      </m-solvestep>
-      <m-solvestep>
-         <m-content>
-            <mark class="mark-1">(<!--
-            --><var>R<sub>d</sub></var>{{lu_math_sq}}
-             + <var>R<sub>d</sub></var>{{lu_math_sq}}
-             - 2<var>R<sub>d</sub></var>{{lu_math_sq}}<!--
-         -->)</mark><var>H<sub>d</sub></var>{{lu_math_sq}}
-            
-          + <mark class="mark-2">(<!--
-            -->2<var>R<sub>o</sub></var><var>R<sub>d</sub></var>
-             - 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var>
-             + 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var>
-             - 2<var>R<sub>o</sub></var><var>R<sub>d</sub></var>
-             - 2<var>R<sub>d</sub></var><var>R<sub>o</sub></var>
-             + 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var>
-             + 2<var>R<sub>d</sub></var><var>C<sub>b</sub></var>
-             - 2<var>C<sub>b</sub></var><var>R<sub>d</sub></var><!--
-         -->)</mark><var>H<sub>d</sub></var>
-         
-          + <var>R<sub>o</sub></var>{{lu_math_sq}}
-          + <var>R<sub>o</sub></var>{{lu_math_sq}}
-          + <var>C<sub>b</sub></var>{{lu_math_sq}}
-          - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-          + <var>C<sub>b</sub></var>{{lu_math_sq}}
-          
-          - 2<var>R<sub>o</sub></var>{{lu_math_sq}}
-          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-          
-          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-          
-          - 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-          + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
-         </m-content>
-      </m-solvestep>
-   </lu-math>
-   <p>
-      Some of these terms can be combined. Others can be canceled out entirely.
-   </p>
-   <lu-math>
-      <m-solvestep>
-         <m-content>
-            (<!--
-            --><mark>2</mark><var>R<sub>d</sub></var>{{lu_math_sq}}
-             - 2<var>R<sub>d</sub></var>{{lu_math_sq}}<!--
-         -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
-            
-          + (<!--
-            --><mark>4</mark><var>C<sub>b</sub></var><var>R<sub>d</sub></var>
-             - <mark>4</mark><var>C<sub>b</sub></var><var>R<sub>d</sub></var>
-             + <mark>4</mark><var>R<sub>d</sub></var><var>R<sub>o</sub></var>
-             - <mark>4</mark><var>R<sub>d</sub></var><var>R<sub>o</sub></var><!--
-         -->)<var>H<sub>d</sub></var>
-         
-          + <mark>2</mark><var>R<sub>o</sub></var>{{lu_math_sq}}
-          + <mark>2</mark><var>C<sub>b</sub></var>{{lu_math_sq}}
-          
-          - 2<var>R<sub>o</sub></var>{{lu_math_sq}}
-          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-          - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-          
-          + 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-          - 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-          + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
-         </m-content>
-      </m-solvestep>
-      <m-solvestep>
-         <m-content>
-            (<!--
-            --><del>2<var>R<sub>d</sub></var>{{lu_math_sq}}
-             - 2<var>R<sub>d</sub></var>{{lu_math_sq}}</del><ins>0</ins><!--
-         -->)<var>H<sub>d</sub></var>{{lu_math_sq}}
-            
-          + (<!--
-            --><del>4<var>C<sub>b</sub></var><var>R<sub>d</sub></var>
-             - 4<var>C<sub>b</sub></var><var>R<sub>d</sub></var>
-             + 4<var>R<sub>d</sub></var><var>R<sub>o</sub></var>
-             - 4<var>R<sub>d</sub></var><var>R<sub>o</sub></var></del><ins>0</ins><!--
-         -->)<var>H<sub>d</sub></var>
-         
-         <del>
-             + 2<var>R<sub>o</sub></var>{{lu_math_sq}}
-             - 2<var>R<sub>o</sub></var>{{lu_math_sq}}
-         </del>
-          + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
-          + 2<var>C<sub>b</sub></var>{{lu_math_sq}}
-         
-         <del>
-          + 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-          - 2<var>R<sub>o</sub></var><var>C<sub>b</sub></var>
-         </del>
-          
-         <del>
-          + 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-          - 2<var>C<sub>b</sub></var><var>R<sub>o</sub></var>
-         </del>
-         </m-content>
-      </m-solvestep>
-   </lu-math>
-   <p>
-      Well, clearly, I screwed this up completely at some point.
-   </p>
 </section>

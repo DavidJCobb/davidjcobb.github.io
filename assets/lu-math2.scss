@@ -77,6 +77,12 @@ lu-math{
    }
 }
 
+lu-math {
+   mark[data-lu-math-marked-block] {
+      display:inline-block;
+   }
+}
+
 lu-math m-equation-number {
    grid-area: none;
    position:absolute;
@@ -142,6 +148,7 @@ lu-math m-givens {
       }
    }
 }
+
 lu-math m-layout-left {
    /*
       Needs to be full-width so that equation numbers can be placed directly 
@@ -176,15 +183,27 @@ lu-math m-layout-snake {
    $v-offset: ($lu-math-line-height - 1em) * 0.5 * 3;
    
    display: grid;
-   grid-template:
-      "lead nulT nulT" max-content
-      "lead body tail" #{$lu-math-line-box-height} /* last line of lead aligns with first line of body */
-      "nulL body tail" max-content
-      "nulL body tail" min-content
-      "nulB nulB tail" minmax(0, auto) /
-      fit-content(100%) fit-content(100%) fit-content(100%);
    align-items: baseline;
    justify-content:center;
+   grid-template:
+      "lead nulT nulR" auto
+      "nulL body nulR" auto
+      "nulL nulB tail" auto /
+      fit-content(100%) fit-content(100%) fit-content(100%);
+      
+   >m-head+m-body {
+      margin-top:-$lu-math-line-box-height;
+   }
+   >m-head:has(sup, sub)+m-body {
+      /*
+         Line boxes vary in height depending on whether they contain superscripts 
+         and/or subscripts.
+      */
+      margin-top:-($lu-math-line-box-height + $lu-math-font-leading);
+   }
+   >m-body:not(:last-child) {
+      margin-bottom:-$lu-math-line-box-height;
+   }
    
    >m-head {
       grid-area:  lead;
@@ -193,25 +212,6 @@ lu-math m-layout-snake {
    }
    >m-body {
       grid-area: body;
-      
-      display:grid;
-      grid-template-columns:auto 1fr;
-      align-items:baseline;
-      
-      >m-sep {
-         grid-column:1;
-         padding:0 .5em 0 0;
-         
-         &:has(>mark:only-child) {
-            padding:0;
-            >mark {
-               padding-right:.5em;
-            }
-         }
-      }
-      >m-segment {
-         grid-column:2;
-      }
    }
    >m-tail {
       grid-area:  tail;
@@ -220,6 +220,28 @@ lu-math m-layout-snake {
       align-self:end;
    }
 }
+lu-math m-layout-v-segments {
+   display:grid;
+   grid-template-columns:auto 1fr;
+   align-items:baseline;
+   
+   >m-sep {
+      grid-column:1;
+      padding:0 .5em 0 0;
+      text-align:right;
+      
+      &:has(>mark:only-child) {
+         padding:0;
+         >mark {
+            padding-right:.5em;
+         }
+      }
+   }
+   >m-segment {
+      grid-column:2;
+   }
+}
+
 lu-math m-raw {
    /* hide content from sighted users, while leaving it audible for screen readers 
       and copyable into plain text. can optionally disable copying. */
@@ -282,13 +304,15 @@ lu-math m-solvestep {
    &>:is(
       m-content,
       m-layout-left,
-      m-layout-snake
+      m-layout-snake,
+      m-layout-v-segments
    ) {
       grid-area: content;
    }
    &>details.explanation>aside {
       grid-area: explanation;
       margin-top: 1em;
+      text-align:left;
    }
 
    position:relative;

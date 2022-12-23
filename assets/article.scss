@@ -54,37 +54,42 @@ lu-math {
    .explanation>aside {
       border-radius:.2rem;
       font-family: $theme-body-font-family;
-      padding:.5em;
+      padding:.5em 1.5em;
       background:#E8E8E8;
    }
 }
-lu-math mark {
-   &::before,
-   &::after {
-      @include screen-reader;
-   }
-   &::after {
-      content: "[mark end]";
-   }
+:is(
+   lu-math.announce-marks,
+   lu-math .announce-marks
+) {
+   mark {
+      &::before,
+      &::after {
+         @include screen-reader;
+      }
+      &::after {
+         content: "[mark end]";
+      }
 
-   &,
-   &.mark-1 {
-      &::before { content: "[mark orange start]" }
-   }
-   &.mark-2 {
-      &::before { content: "[mark green start]" }
-   }
-   &.mark-3 {
-      &::before { content: "[mark blue start]" }
-   }
-   &.mark-4 {
-      &::before { content: "[mark pink start]" }
-   }
-   &.mark-5 {
-      &::before { content: "[mark beige start]" }
-   }
-   &.mark-6 {
-      &::before { content: "[mark silver start]" }
+      &,
+      &.mark-1 {
+         &::before { content: "[mark orange start]" }
+      }
+      &.mark-2 {
+         &::before { content: "[mark green start]" }
+      }
+      &.mark-3 {
+         &::before { content: "[mark blue start]" }
+      }
+      &.mark-4 {
+         &::before { content: "[mark pink start]" }
+      }
+      &.mark-5 {
+         &::before { content: "[mark beige start]" }
+      }
+      &.mark-6 {
+         &::before { content: "[mark silver start]" }
+      }
    }
 }
 
