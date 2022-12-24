@@ -642,7 +642,7 @@ extra_css_files:
             </aside>
          </details>
          <m-content>
-            <mark>1</mark><!--
+            <ins><mark>1</mark></ins><!--
          --><del class="invis"><m-big-parens class="del"><!--
             --><m-delim>(</m-delim><!--
             --><m-content><!--
@@ -826,7 +826,7 @@ extra_css_files:
          <details class="explanation">
             <summary class="toggle-explanation">info</summary>
             <aside>
-               When you multiply two fractions together, the inverse (<lu-math data-inline>1 &divide; <var>x</var></lu-math>) of their denominator acts like a common factor. You can group both of the fractions together &mdash; numerator 1 times numerator 2, all divided by denominator 1 times denominator 2.
+               When you multiply two fractions together, the inverse (<lu-math data-inline>1 &divide; <var>x</var></lu-math>) of their denominator acts like a common factor. You can merge both of the fractions together: numerator 1 times numerator 2, all divided by denominator 1 times denominator 2.
             </aside>
          </details>
          <m-content>
@@ -921,7 +921,7 @@ extra_css_files:
                   Just to simplify the notation, we've distributed the negation inside of the dot product operation. Remember that <lu-math data-inline>(<var>A</var> &bullet; <nobr><var>B</var>)<var>c</var></nobr> = <var>A</var><var>c</var> &bullet; <var>B</var><var>c</var></lu-math>.
                </p>
                <p>
-                  It's pretty easy to miss, so note that where we were subtracting vectors, the order of the subtraction has changed: <lu-math data-inline>-(<var>a</var> - <var>b</var>) = <var>b</var> - <var>a</var></lu-math>.
+                  It's pretty easy to miss, so note that where we were subtracting vectors, the order of the subtraction has changed: <lu-math data-inline><nobr>-(<var>a</var> - <var>b</var>)</nobr> = <nobr><var>b</var> - <var>a</var></nobr></lu-math>.
                </p>
             </aside>
          </details>
@@ -933,6 +933,12 @@ extra_css_files:
          </m-content>
       </m-solvestep>
    </lu-math>
+   <p>
+      And this equation makes sense, really, because the dot product of two unit vectors will be zero if those vectors are perpendicular to one another. If {{var_Hp_inl}} is on the cylinder's curved surface, then the vector from {{var_Hp_inl}} to {{var_Hs_inl}} will be parallel to the cylinder's endcaps and perpendicular to the cylinder's main axis {{var_Ca_inl}}. If we were to divide the whole equation (so really, just both of the vectors) by {{var_Cr_inl}}, then we'd be taking the dot product of two unit vectors. An especially neat trick is that we can negate either or both of the vectors we're dotting above, and the equation should still work.
+   </p>
+   <p>
+      ...Hm. Y'know, we probably could've skipped literally all of the work we just did if we started out with the premise that <lu-math data-inline><var>H<sub>n</sub></var> &bullet; <var>C<sub>a</sub></var> = 0</lu-math>. That might even be a better starting point, actually.
+   </p>
    <p>
       Now, let's expand {{var_Hs_inl}}. Maybe we'll be able to simplify further after that. Even if we can't, expanding that variable is still a necessary step to be able to plug our ray equation in.
    </p>
@@ -1076,8 +1082,69 @@ extra_css_files:
    <p>
       We can substitute this equation into our cylinder equation above, and then attempt to solve for the hit distance {{var_Hd_inl}}:
    </p>
+   <lu-math>
+      <m-solvestep>
+         <m-content>
+            (<!--
+            --><mark>(<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>)</mark>
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)
+            -
+            (<!--
+            -->(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <mark>(<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>)</mark>)
+                  -
+                  (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
+            -->)<var>C<sub>a</sub></var>
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)
+            -
+            (<!--
+            --><var>C<sub>b</sub></var>
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)
+            = 0
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               We can distribute dot product operations over additions.
+            </aside>
+         </details>
+         <m-content>
+            <mark>(<var>C<sub>a</sub></var><var>C<sub>r</sub></var> &bullet; {{dont_eat_this_space}}</mark><var>R<sub>o</sub></var>)
+            +
+            <mark>(<var>C<sub>a</sub></var><var>C<sub>r</sub></var> &bullet; {{dont_eat_this_space}}</mark><var>R<sub>d</sub></var><var>H<sub>d</sub></var>)
+            -
+            (<!--
+            -->(<!--
+               --><mark>(<var>C<sub>a</sub></var><var>C<sub>r</sub></var> &bullet; {{dont_eat_this_space}}</mark><var>R<sub>o</sub></var>)
+                  +
+                  <mark>(<var>C<sub>a</sub></var><var>C<sub>r</sub></var> &bullet; {{dont_eat_this_space}}</mark><var>R<sub>d</sub></var><var>H<sub>d</sub></var>)
+                  -
+                  (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
+            -->)<var>C<sub>a</sub></var>
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)
+            -
+            (<!--
+            --><var>C<sub>b</sub></var>
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)
+            = 0
+         </m-content>
+      </m-solvestep>
+   </lu-math>
    
    <!-- CONTINUE FROM HERE -->
+   
    <!--
       IF THIS DOESN'T WORK, TRY BACKING UP TO BEFORE WE STRIPPED OUT THE CROSS PRODUCT. 
       WE COULD ATTEMPT TO SUBSTITUTE THE RAY IN RIGHT AT THAT POINT, AND ONLY SIMPLIFY 

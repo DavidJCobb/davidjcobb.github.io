@@ -511,6 +511,30 @@ lu-math m-solvestep {
          
       }
    }
+   
+   >m-equation-number {
+      /*
+         Changes needed to prevent this element from overlapping with the 
+         solvestep explanation, when the explanation is expanded and when 
+         it's as tall as, or taller than, the solvestep content.
+      */
+   
+      grid-area: _r;
+      
+      position:  static;
+      transform: none;
+      top: auto;
+      
+      align-self:   center;
+      justify-self: end;
+      
+      line-height: 1em;
+      
+      >m-value {
+         line-height:    inherit;
+         vertical-align: initial;
+      }
+   }
 }
 lu-math m-therefore {
    &[data-block] {

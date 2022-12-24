@@ -41,22 +41,52 @@ mark.mark-6 {
 }
 
 lu-math {
+   
+   $padding: .05em;
+   $stripe-width: 6px;
+   
+   :is(del:not(.invis), .del,),
+   .explanation[open] ~ * :is(ins:not(.invis), .ins) {
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: .25em;
+      
+      padding:        $padding;
+      padding-bottom: $padding + .10em;
+      margin:         0 calc(#{-$padding} - 1px);
+      /*
+         Negative margins here, so that the padding doesn't displace this element 
+         from adjacent non-INS and non-DEL math.
+      */
+      
+      mark {
+         background: transparent none;
+         border:0;
+      }
+   }
+   
+   /*
+      Don't overlap INS and DEL elements.
+   */
+   :is(ins, .ins, del, .del) + :is(ins, .ins, del, .del) {
+      margin-left:calc(#{$padding * 2} + 2px + 0.1ch);
+   }
+   
    del {
       text-decoration: none;
    }
    :is(del:not(.invis), .del) {
-      $stripe-width: 6px;
-      $padding: .05em;
-      
-      border:1px solid rgba(0, 0, 0, 0.1);
-      padding: $padding;
-      padding-bottom: $padding + .10em;
-      margin: 0 calc(#{-$padding} - 1px);
-      border-radius: .25em;
-   
       background:
-         repeating-linear-gradient(45deg, #FF000040 0 #{$stripe-width}, #FF000000 #{$stripe-width} #{$stripe-width * 2}),
+         repeating-linear-gradient(45deg, #FF000040 0 #{$stripe-width}, transparent #{$stripe-width} #{$stripe-width * 2}),
          #FF000030;
+   }
+   
+   ins {
+      text-decoration: none;
+   }
+   .explanation[open] ~ * :is(ins:not(.invis), .ins) {
+      background:
+         repeating-linear-gradient(45deg, #00FF0040 0 #{$stripe-width}, transparent #{$stripe-width} #{$stripe-width * 2}),
+         #00FF0030;
    }
 }
 
