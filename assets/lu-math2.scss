@@ -100,6 +100,42 @@ lu-math {
       display:inline-block;
       vertical-align:middle;
    }
+   
+   del {
+      display:none;
+   }
+   ins {
+      all:unset;
+   }
+
+   var {
+      white-space:nowrap;
+      
+      &>sub {
+         &::before,
+         &::after {
+            white-space:pre;
+            
+            @include invisible-readable;
+         }
+         &::before { content: " sub "; }
+         &::after { content: " base " }
+         
+         /*
+            edge-case: italicized subscript elements may overlap the next visible 
+            line box by 1px; if that box has a background color (e.g. a highlighted 
+            portion of an equation), it will clip the subscript.
+         */
+         &:last-child {
+            position:relative;
+            z-index:1;
+         }
+      }
+      
+      &[data-type="vector"] {
+         font-weight: bold;
+      }
+   }
 }
 
 lu-math m-equation-number {
@@ -645,37 +681,6 @@ lu-math {
    }
 }
 
-lu-math del {
-   display:none; /* TODO... */
-}
-lu-math ins {
-   all:unset; /* TODO... */
-}
-
-lu-math var {
-   white-space:nowrap;
-   
-   &>sub {
-      &::before,
-      &::after {
-         white-space:pre;
-         
-         @include invisible-readable;
-      }
-      &::before { content: " sub "; }
-      &::after { content: " base " }
-      
-      /*
-         edge-case: italicized subscript elements may overlap the next visible 
-         line box by 1px; if that box has a background color (e.g. a highlighted 
-         portion of an equation), it will clip the subscript.
-      */
-      &:last-child {
-         position:relative;
-         z-index:1;
-      }
-   }
-}
 
 /* this element allows you to display exponents, with appropriate copy-and-paste 
    and screen reader behavior. here is a usage example; brace yourself:
