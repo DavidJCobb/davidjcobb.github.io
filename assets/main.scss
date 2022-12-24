@@ -63,6 +63,7 @@ section {
    a::before {
       content:" ";
       display:inline-block;
+      color-scheme:light dark;
       width:1em;
       height:1em;
       margin-right:.5em;
@@ -72,6 +73,7 @@ section {
    }
    li.github a::before {
       background-image:url(icons/github.png);
+      color-scheme:light;
    }
    li.nexus a::before {
       background-image:url(icons/nexusmods.png);

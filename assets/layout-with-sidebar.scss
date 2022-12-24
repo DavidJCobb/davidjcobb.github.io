@@ -89,6 +89,7 @@ body {
    
    >img {
       display:block;
+      color-scheme: light dark;
       
       /*
          The IMG element will have explicit dimensions set in order to avoid insensible behavior 
@@ -118,6 +119,8 @@ body {
       box-shadow:none;
       transition-property:box-shadow;
       transition-duration:0.8s;
+      
+      color-scheme: light dark;
    }
    &:hover::after {
       box-shadow:
@@ -161,6 +164,7 @@ body {
    font-size:.85em;
    
    >a {
+      @extend %cannot-handle-auto-dark-mode;
       $inset: 2px;
    
       line-height:1.5em;
@@ -275,6 +279,7 @@ body>footer {
    a::before {
       content:" ";
       display:inline-block;
+      color-scheme:light dark;
       width:1em;
       height:1em;
       margin-right:.5em;
@@ -285,6 +290,7 @@ body>footer {
    }
    li.github a::before {
       background-image:url(icons/github.png);
+      color-scheme:light;
    }
    li.nexus a::before {
       background-image:url(icons/nexusmods.png);

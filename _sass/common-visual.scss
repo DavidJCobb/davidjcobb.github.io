@@ -11,8 +11,13 @@ $code-block-back-color: #F8F8F8;
 
 @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@600&family=Source+Sans+Pro&display=swap&family=Inconsolata');
 
-a:link{ color:#0066cc; }
-a:link:visited{ color:#801490; }
+:root {
+   color-scheme: light;
+}
+
+a:link { color:#0066cc; }
+a:link:visited,
+a:visited { color:#801490; }
 
 code, pre {
    font-family: $theme-code-font-family;

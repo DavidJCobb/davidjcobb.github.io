@@ -17,27 +17,21 @@ main p {
 
 */
 
-/* decorative */
+$mark-colors-normal: #FC0, #8FA, #BCF, #F9C, #ED9, #D8E0F0; /* orange, green, blue, pink, beige, silver */
+
+@if length($mark-colors-normal) < 6 {
+   @error "At least six highlight colors are needed.";
+}
+
 mark {
-   background:#FC0;
-}
-mark.mark-1 {
-   background:#FC0; /*orange*/
-}
-mark.mark-2 {
-   background:#8FA; /*green*/
-}
-mark.mark-3 {
-   background:#BCF; /*blue*/
-}
-mark.mark-4 {
-   background:#F9C; /*pink*/
-}
-mark.mark-5 {
-   background:#ED9; /*beige*/
-}
-mark.mark-6 {
-   background:#D8E0F0; /*silver*/
+   background: nth($mark-colors-normal, 1);
+   @extend %cannot-handle-auto-dark-mode;
+   
+   @for $i from 1 through length($mark-colors-normal) {
+      &.mark-#{$i} {
+         background: nth($mark-colors-normal, $i);
+      }
+   }
 }
 
 lu-math {

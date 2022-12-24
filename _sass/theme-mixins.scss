@@ -7,6 +7,15 @@ $theme-header-font-family: "Raleway", "Segoe UI", "Source Sans Pro", sans-serif;
 $theme-body-font-family: "Segoe UI", "Source Sans Pro", sans-serif;
 $theme-code-font-family: Inconsolata, monospace;
 
+%cannot-handle-auto-dark-mode {
+   /*
+      Google Chrome's Auto Dark Mode mangles some elements. For these, 
+      just lie. "Yeah, no, bro, this element's already dark. You don't 
+      need to worry about it. Leave it alone."
+   */
+   color-scheme: light dark;
+}
+
 $card-back-color:  #FFF;
 $card-text-color:  #000;
 $card-corner-size: 1rem;

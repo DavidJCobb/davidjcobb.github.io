@@ -191,6 +191,7 @@ lu-math m-exp {
 
    font-size: smaller;
    vertical-align: super;
+   white-space: nowrap;
 }
 lu-math m-fraction {
 
@@ -238,7 +239,7 @@ lu-math m-fraction {
    }
    >m-denom {
       grid-area: denom;
-      border-top:1px solid #000; /* dividing line: */
+      border-top:1px solid currentcolor; /* dividing line: */
    }
    
    >m-rawcap {
@@ -487,7 +488,7 @@ lu-math m-solvestep {
    
    &+m-solvestep {
       padding-top:0.5em;
-      border-top:1px dotted #000;
+      border-top:1px dotted currentcolor;
    }
    
    >details.explanation {
