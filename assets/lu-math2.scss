@@ -1,7 +1,7 @@
 ---
 ---
 
-$lu-math-line-height: 1.2em !default;
+$lu-math-line-height: 1.2 !default;
 
 $lu-math-font-face: "Times New Roman";
 /*
@@ -15,11 +15,11 @@ $lu-math-font-face-os2-typo-descender: -442; /* sTypoDescender */
 $lu-math-font-top-to-bottom-height:
    ($lu-math-font-face-os2-typo-ascender - $lu-math-font-face-os2-typo-descender)
    /
-   $lu-math-font-face-units-per-em
-   *
-   1em;
-$lu-math-font-leading:    $lu-math-line-height - $lu-math-font-top-to-bottom-height;
-$lu-math-line-box-height: $lu-math-line-height + $lu-math-font-leading;
+   $lu-math-font-face-units-per-em;
+
+$lu-math-font-top-to-bottom-height-em: $lu-math-font-top-to-bottom-height * 1em;
+$lu-math-font-leading:    ($lu-math-line-height * 1em) - $lu-math-font-top-to-bottom-height-em;
+$lu-math-line-box-height: ($lu-math-line-height * 1em) + $lu-math-font-leading;
 
 /* when paired with invisible-readable, makes text non-selectable 
    and effectively only accessible to screen readers */
@@ -60,26 +60,45 @@ $lu-math-line-box-height: $lu-math-line-height + $lu-math-font-leading;
    @include unselectable-not-in-flow;
 }
 
+@function make-big-glyph-background($symbol) {
+   $mime:    "data:image/svg+xml";
+   $charset: "utf8";
+   
+   $svg-open: "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 100' width='30' height='100' preserveAspectRatio='none'>";
+   
+   $node: "<text dominant-baseline='ideographic' x='0' y='100' textLength='30' fill='black' font-size='100'>#{$symbol}</text>";
+
+   @return url("#{$mime};charset=#{$charset},#{$svg-open}#{$node}</svg>");
+}
+
 lu-math{
    display:block;
    position:relative;
    
-   margin:1em 0;
    text-align:center;
    
    font-family:Times New Roman,serif;
-   line-height:$lu-math-line-height;
+   line-height:$lu-math-line-height * 100%;
    hyphens: none;
    
    &[data-inline] {
-      display:inline-block;
+      display:inline;
       margin:initial;
+   }
+   &:not([data-inline]) {
+      margin:1em 0;
+      margin-block-start:1em!important;
+      margin-block-end:1em!important;
    }
 }
 
 lu-math {
-   mark[data-lu-math-marked-block] {
+   mark {
       display:inline-block;
+   }
+   span {
+      display:inline-block;
+      vertical-align:middle;
    }
 }
 
@@ -96,6 +115,143 @@ lu-math m-equation-number {
       
       &::before { content: "("; }
       &::after { content: ")"; }
+   }
+}
+lu-math m-exp {
+
+   /* this element allows you to display exponents, with appropriate copy-and-paste 
+      and screen reader behavior. here is a usage example; brace yourself:
+      
+         <m-exp><span aria-hidden="true"><m-raw>^</m-raw>2</span><m-raw data-screen-reader-only>&nbsp;squared</m-raw></m-exp>
+      
+      there are three ways this element can be viewed.
+      
+       - when seen by a sighted user, it is "x" adorned with a superscript "2".
+       - when copied into plaintext, it is "x^2".
+       - when read by a screen reader, it is "x squared".
+      
+      correct setup for most cases is as follows:
+      
+       - the element's first child should be a SPAN with aria-hidden="true", to 
+         define content for sighted users and plaintext. this element's contents 
+         will vary depending on whether the exponent is...
+         
+          - ...a monomial (single term).
+          
+             - the first child should be an m-raw with "^" as text content.
+             
+             - after this, just write the bare exponent.
+          
+          - ...an expression.
+          
+             - the first child should be an m-raw with "^(" as text content.
+             
+             - the last child should be an m-raw with ")" as text content.
+         
+       - the element's second child should be an m-raw containing an attribute 
+         named data-screen-reader-only; this element should contain a non-breaking 
+         space, followed by the content intended for screen readers, followed by an 
+         additional non-breaking space:
+         
+          - if the exponent is 2, use "squared"
+          - if the exponent is 3, use "cubed"
+          - if the exponent is any single number besides those, use "to the N-th 
+            power" substituting the number in for "N".
+      
+      if the exponent is anything more complex than a single number, then alter the 
+      above instructions as follows:
+      
+       - move the screen-reader-only content to the start of the m-exp element.
+       - use "&nbsp;to the power of&nbsp;" as the screen-reader-only content.
+       - move the exponent content (i.e. everything but the caret) outside of, and 
+         after, the aria-hidden element.
+      
+      example, with whitespace added (strip it when doing this yourself):
+      
+         <m-exp>
+            <m-raw data-screen-reader-only>
+               &nbsp;
+               to the power of
+               &nbsp;
+            </m-raw>
+            <span aria-hidden="true"><m-raw>^</m-raw></span>
+            <m-raw>(</m-raw>
+            2<var>x</var> + <var>y</var>
+            <m-raw>)</m-raw>
+         </m-exp>
+      
+      some developer notes:
+
+       - we need the non-breaking spaces so that screen readers don't collapse the 
+         word "squared" into the variable. using the example at the top of this 
+         comment, if we replace the non-breaking space with a normal one, then NVDA 
+         reads the value as "xsquared" (which sounds like "ssssquared," like, with a 
+         hiss). NVDA can see caret symbols but won't read them (i tested with it 
+         outside of the aria-hidden content, obviously). */
+
+   font-size: smaller;
+   vertical-align: super;
+}
+lu-math m-fraction {
+
+   /*
+   
+      Basic usage instructions:
+      
+       - m-raw   child with "(" text content
+       - m-numer child with numerator content
+       - m-raw   child with " &divide; " text content
+       - m-denom child with denominator content
+       - m-raw   child with ")" text content
+       
+      If numerator is multiple terms:
+      
+       - prepend "(" to first   m-raw
+       - prepend ")" to midddle m-raw
+       
+      If denominator is multiple terms:
+      
+       - append "(" to middle m-raw 
+       - append ")" to last   m-raw
+      
+      Outer raw delimiters are only  needed if the fraction as 
+      a whole is multiplied by something without the use of an 
+      intervening multiplication sign.
+   
+   */
+
+   display:inline-grid;
+   vertical-align:middle;
+   grid-template:
+      "lc l numer r rc" max-content
+      "lc l denom r rc" max-content / fit-content(100%);
+   
+   flex-flow:column nowrap;
+   
+   >:is(m-numer, m-denom) {
+      text-align:center;
+      padding:0 .5ch;
+   }
+   
+   >m-numer {
+      grid-area: numer;
+   }
+   >m-denom {
+      grid-area: denom;
+      border-top:1px solid #000; /* dividing line: */
+   }
+   
+   >m-rawcap {
+      grid-area: lc;
+   }
+   >m-raw {
+      grid-area: l;
+   }
+   >m-denom~m-raw {
+      grid-area: r;
+   }
+   >m-denom~m-rawcap {
+      grid-area: rc;
    }
 }
 lu-math m-function-def {
@@ -130,6 +286,12 @@ lu-math m-givens {
       grid-template-columns:max-content max-content 1fr;
       
       margin:0;
+      
+      >dt,
+      >m-sep,
+      >dd {
+         align-self: baseline;
+      }
       
       >dt {
          grid-column:1;
@@ -283,6 +445,10 @@ lu-math m-row {
    position:relative;
    margin:0.5em 0;
    orphans: 0; /* do not split equations across pages */
+   
+   &+m-row {
+      margin-top: 1.5em;
+   }
 }
 lu-math m-solvestep {
    /*
@@ -297,9 +463,9 @@ lu-math m-solvestep {
    */
    display:grid;
    grid-template:
-      "_l          content     _r         " 1fr
-      "open-expl   content     _r         " min-content
-      "explanation explanation explanation" auto / 1fr fit-content(100%) 1fr;
+      [expl-margin-top]    "_l          content     _r         " 1fr
+      [expl-margin-middle] "open-expl   content     _r         " min-content [expl-margin-bottom] 
+                           "explanation explanation explanation" auto / 1fr fit-content(100%) 1fr;
    
    &>:is(
       m-content,
@@ -329,7 +495,10 @@ lu-math m-solvestep {
       
       >summary {
          user-select: none;
-         grid-area: open-expl;
+         grid-column: 1;
+      }
+      @at-root :where(#{&})>summary { /* use :where for easier overriding */
+         grid-row: expl-margin-middle / expl-margin-bottom;
       }
       
       &:not([open]) {
@@ -349,10 +518,105 @@ lu-math m-therefore {
       text-align:center;
       margin:.5em 0;
       font-size:3em;
+      
+      >span {
+         vertical-align: ($lu-math-line-height - $lu-math-font-top-to-bottom-height) * 100%;
+      }
    }
 }
-lu-math m-veclength {
+
+/*
+   Vertically stretchy delimiters. Proper usage is as follows:
+   
+    - Delimiter container element
+       - m-delim   element with opening delimiter as text content
+       - m-content element containing group content
+       - m-delim   element with closing delimiter as text content
+   
+   Note that these containers have no way to cope with the word-rapping of 
+   their contents. Their content can wrap, but the delimiters won't be 
+   limited to just one "logical line;" they'll stretch to the full height 
+   of the entire container.
+*/
+lu-math :is(m-big-parens, m-veclength) {
+   /*
    >m-delim {
+      display: inline-block;
+      height:  100%;
+      vertical-align: top;
+      
+      --glyph-width:1ch;
+      
+      position:relative;
+      width:1px;
+      margin-right:var(--glyph-width);
+      
+      text-indent: -1000vw;
+      
+      &::after {
+         content: "";
+         display: block;
+         
+         position: absolute;
+         left: 0;
+         top:  0;
+      
+         width:  var(--glyph-width);
+         height: 100%;
+      }
+   }*/
+   /*
+      above code doesn't allow things like MARK or DEL to properly contain 
+      the full height of this element, unless those things are made into 
+      inline-blocks (which then breaks delim heights from the above code).
+   */
+   
+   display:inline-grid;
+   grid-template: "l body r" / min-content fit-content(100%) min-content;
+   vertical-align:middle;
+   
+   >m-delim {
+      grid-area: l;
+   }
+   >m-content {
+      grid-area: body;
+   }
+   >m-content~m-delim {
+      grid-area: r;
+   }
+   >m-delim {
+      --glyph-width:1ch;
+      
+      position:relative;
+      width:1px;
+      margin-right:var(--glyph-width);
+      
+      text-indent: -1000vw;
+      
+      &::after {
+         content: "";
+         display: block;
+         
+         position: absolute;
+         left: 0;
+         top:  0;
+      
+         width:  var(--glyph-width);
+         height: 100%;
+      }
+   }
+}
+lu-math {
+   m-big-parens {
+      >m-delim::after {
+         background: no-repeat left top/var(--glyph-width) 100% make-big-glyph-background("(");
+      }
+      >*+m-delim::after {
+         background: no-repeat left top/var(--glyph-width) 100% make-big-glyph-background(")");
+      }
+   }
+   m-veclength>m-delim::after {
+      background: no-repeat left top/var(--glyph-width) 100% make-big-glyph-background("||");
    }
 }
 
@@ -361,23 +625,6 @@ lu-math del {
 }
 lu-math ins {
    all:unset; /* TODO... */
-}
-
-/* keep "raw" content visible to screen readers */
-lu-math-raw{
-   @include invisible-selectable-readable;
-   
-   &[data-screen-reader-only] {
-      @include unselectable-not-in-flow;
-   }
-}
-
-lu-math-spacing {
-   display:inline-block;
-   visibility:hidden;
-   vertical-align:middle;
-   user-select:none;
-   pointer-events:none;
 }
 
 lu-math var {
@@ -402,132 +649,6 @@ lu-math var {
          position:relative;
          z-index:1;
       }
-   }
-}
-
-
-/* centering, with left-alignment of centered blocks */
-:is(lu-math-aligned, lu-math-givens) {
-   display:grid;
-   grid-template-columns:1fr fit-content(100%) 1fr;
-   
-   &>* {
-      grid-column: 2;
-   }
-   &::after {
-      content:" ";
-      grid-column: 3;
-   }
-}
-
-lu-math[data-enormous-rows] lu-math-row+lu-math-row {
-   border-top:1px dotted #000;
-   padding-top:0.8em;
-}
-   lu-math-row-chunk {  
-      display:block;
-      text-align:left;
-   }
-   lu-math-row-chunk:not(:first-child) {
-      padding-left:10em;
-      text-indent:-5em;
-   }
-
-
-/* use lu-math-aligned and lu-math-row to have groups of equations left-align */
-lu-math-aligned>lu-math-row{text-align:left}
-
-/* equation numbers */
-:is(lu-math, lu-math-row, lu-math-aligned)[data-equation-number] {
-   position:relative;
-   padding-inline-start:5em;
-   padding-inline-end:5em;
-   
-   &::after {
-      position:absolute;
-      right:1em;
-      top:50%;
-      transform:translate(0, -50%);
-      content:"(" attr(data-equation-number) ")";
-   }
-}
-
-
-/* generic "horizontal part," to allow parts of an equation with differing heights to vertically center */
-lu-math-part {
-   display:inline-block;
-   vertical-align:middle;
-}
-
-
-lu-math-function-def {
-   &>lu-math-name,
-   &>lu-math-delim {
-      font-weight: bold;
-   }
-   
-   &>lu-math-delim:first-of-type::before {
-      content:" of ";
-      @include screen-reader-only;
-   }
-}
-lu-math-function-args>li {
-   display:inline;
-   padding:0;
-   margin:0;
-   list-style:none;
-   
-   &:not(:first-of-type)::before{
-      content:",";
-      margin:0 .5ch;
-      font-weight:bold;
-   }
-}
-
-/* this element allows you to display fractions with the numerator above the 
-   denominator, separated by a line. correct usage is as follows:
-   
-    - place the numerator in a lu-math-numer element
-    - place the denominator in a lu-math-denom element
-    - between the two, place a lu-math-raw element with text content "&divide;"
-    - if the numerator is an expression...
-       - place a lu-math-raw element before it with the text content "("
-       - add a ") " to the start of the lu-math-raw element between the numerator 
-         and denominator
-    - if the denominator is an expression...
-       - place a lu-math-raw element after it with the text content ")"
-       - add a " (" to the end of the lu-math-raw element between the numerator 
-         and denominator
-   
-   if the fraction is directly adjacent to another element, then use HTML comments 
-   to ensure no HTML whitespace.
-*/
-lu-math-fraction {
-   display:inline-grid;
-   vertical-align:middle;
-   grid-template:
-      "numer" 1fr
-      "denom" 1fr / fit-content(100%);
-   
-   flex-flow:column nowrap;
-   
-   >:is(lu-math-numer, lu-math-denom) {
-      text-align:center;
-      padding:0 .5ch;
-   }
-   
-   >lu-math-numer {
-      order:0;
-      grid-area: numer;
-   }
-   >lu-math-denom,
-   >lu-math-denom~* {
-      order:2;
-   }
-   
-   >lu-math-denom {
-      grid-area: denom;
-      border-top:1px solid #000; /* dividing line: */
    }
 }
 

@@ -41,21 +41,107 @@ mark.mark-6 {
 }
 
 lu-math {
-   .toggle-explanation {
-      border-radius:.2rem;
-      font-family: $theme-body-font-family;
-      cursor: pointer;
+   del {
+      text-decoration: none;
+   }
+   :is(del:not(.invis), .del) {
+      $stripe-width: 6px;
+      $padding: .05em;
       
-      width:min-content;
-      white-space:nowrap;
-      padding:.5em 1em;
-      background:#E8E8E8;
+      border:1px solid rgba(0, 0, 0, 0.1);
+      padding: $padding;
+      padding-bottom: $padding + .10em;
+      margin: 0 calc(#{-$padding} - 1px);
+      border-radius: .25em;
+   
+      background:
+         repeating-linear-gradient(45deg, #FF000040 0 #{$stripe-width}, #FF000000 #{$stripe-width} #{$stripe-width * 2}),
+         #FF000030;
+   }
+}
+
+lu-math {
+   $badge-explanation-button: true;
+   
+   $explanation-border-radius: .2rem;
+
+   .toggle-explanation {
+      font-family: $theme-body-font-family;
+   }
+   @if $badge-explanation-button {
+   
+      $badge-explanation-match-corners: true;
+   
+      $padding: .125rem;
+      $margin:  .250rem;
+      
+      @if $badge-explanation-match-corners {
+         $margin: 0;
+      }
+   
+      .toggle-explanation {
+         /*grid-row: expl-margin-top / expl-margin-bottom;*/
+         position: relative;
+         
+         font-size: 0;
+         width:     1.2rem + $padding * 2;
+         height:    1.2rem + $padding * 2;
+         border-radius: 50%; /* :hover and click interactions are based on SUMMARY's hitbox, not ::after's hitbox */
+         
+         align-self:   center;
+         justify-self: start;
+         
+         margin-left: $margin;
+         
+         &::after {
+            content: "?";
+            
+            display: inline-block;
+            width:   1.2rem;
+            height:  1.2rem;
+            padding: $padding;
+            
+            border-radius: 50%;
+            cursor: pointer;
+            
+            font-size:   1.2rem;
+            line-height: 1.2rem;
+            text-align:  center;
+            background:  #E8E8E8;
+         }
+         &:hover::after {
+            background:#FF7400;
+         }
+      }
+      @if $badge-explanation-match-corners {
+         .explanation[open]>.toggle-explanation {
+            &::after {
+               border-radius: 50% 50% $explanation-border-radius $explanation-border-radius;
+            }
+         }
+      }
+   } @else {
+      .toggle-explanation {
+         border-radius:$explanation-border-radius;
+         font-family: $theme-body-font-family;
+         cursor: pointer;
+         
+         width:min-content;
+         white-space:nowrap;
+         padding:.5em 1em;
+         background:#E8E8E8;
+      }
    }
    .explanation>aside {
-      border-radius:.2rem;
+      border-radius:$explanation-border-radius;
       font-family: $theme-body-font-family;
       padding:.5em 1.5em;
       background:#E8E8E8;
+      
+      p {
+         text-align: left;
+         text-align: inline-start;
+      }
    }
 }
 :is(

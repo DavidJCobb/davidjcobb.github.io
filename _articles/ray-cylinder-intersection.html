@@ -15,6 +15,42 @@ extra_css_files:
 {%- include lu-math/defines.html -%}
 
 {%- comment -%}
+
+   HTML's whitespace handling works well for prose documents, but falls apart completely when we are, in 
+   essence, designing our own markup, as we have for lu-math. Sometimes, we need to be able to GUARANTEE 
+   that a given space WON'T be collapsed, without making it a non-breaking space.
+   
+   One example: having a leading space inside of an inline-block element.  Leading whitespace'll usually 
+   be collapsed (y'know, except when it isn't), so using  this variable will slip a dummy element before 
+   it so that it's not "leading" anymore.
+   
+{%- endcomment -%}
+{%- assign dont_eat_this_space = "<span></span>" -%}
+{%- assign print_one_space = "<span></span>&#32;" -%}
+
+{%- assign lu_math_exps = "" | split: "," -%}
+{%- for i in (0..5) -%}
+   {%- capture temporary -%}
+      <m-exp><span aria-hidden="true"><m-raw>^</m-raw>{{ i }}</span><m-raw data-screen-reader-only>&nbsp;
+         {%- case i %}
+            {%- when "0", 0 -%}
+               to the zeroth power
+            {%- when "1", 1 -%}
+               to the first power
+            {%- when "2", 2 -%}
+               squared
+            {%- when "3", 3 -%}
+               cubed
+            {%- else -%}
+               to the {{i}}th power
+         {%- endcase -%}&nbsp;</m-raw></m-exp>
+   {%- endcapture -%}
+   {%- assign temporary = temporary | append: "NEVEROCCURRINGSTRING" | split: "NEVEROCCURRINGSTRING" | slice: 0, 1 -%}
+   {%- assign lu_math_exps = lu_math_exps | concat: temporary -%}
+{%- endfor -%}
+{%- assign lu_math_sq = lu_math_exps[2] -%}
+
+{%- comment -%}
    
    Generate convenience variables for lu-math equation numbers. To display equation number 5, for example:
    {{lu_math_eq_numbers[5]}}
@@ -80,6 +116,7 @@ extra_css_files:
 {%- assign var_Cr_inl = "<var>C<sub>r</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
 {%- assign var_Cs_inl = "<var>C<sub>s</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
 {%- assign var_Hd_inl = "<var>H<sub>d</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Hn_inl = "<var>H<sub>n</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
 {%- assign var_Hp_inl = "<var>H<sub>p</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
 {%- assign var_Hs_inl = "<var>H<sub>s</sub></var>" | prepend: math_inl_enter | append: math_inl_leave -%}
 <section>
@@ -273,114 +310,738 @@ extra_css_files:
       {{var_Hp_inl}} fills the role of <lu-math data-inline><var>P</var></lu-math> in Equation 3, and {{var_Hs_inl}} fills the role of <lu-math data-inline><var>P<sub>p</sub></var></lu-math>. {{var_Hs_inl}} is the hit position projected onto the cylinder's axis &mdash; its "spine." If we view the cylinder from its endcap, then {{var_Hs_inl}} will be at the center of a circle; if {{var_Hp_inl}} is indeed on the cylinder's curved surface, then the distance from it to {{var_Hs_inl}} will equal the cylinder's radius:
    </p>
    <lu-math>
-      <m-row>
-         <m-veclength>
-            <m-delim>||</m-delim><!--
-         --><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var><!--
-         --><m-delim>||</m-delim><!--
-      --></m-veclength>
-         =
-         <var>C<sub>r</sub></var>
-      </m-row>
-   </lu-math>
-   <p>
-      We want to expand {{var_Hs_inl}} at this point, but there are actually two ways to do that. We can expand it in terms of {{var_Ca_inl}}, or in terms of {{var_Cs_inl}}. Let's go with {{var_Ca_inl}}, the cylinder axis vector, to get a smaller equation.
-   </p>
-   <lu-math>
       {{lu_math_eq_numbers[4]}}
       
       <m-row>
-         <m-veclength>
-            <m-delim>||</m-delim><!--
-            --><var>H<sub>p</sub></var> - 
-               ((<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
-               + <var>C<sub>b</sub></var><!--
-         --><m-delim>||</m-delim><!--
-      --></m-veclength>
+         {{lu_math_vec_start}}<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>{{lu_math_vec_end}}
          =
          <var>C<sub>r</sub></var>
       </m-row>
    </lu-math>
    <p>
-      Now, let's see if we can move {{var_Hp_inl}} outside of those inner dot products. A key thing to remember is that taking the dot product of two vectors can be manipulated just like multiplication. It has the following properties:
+      We could try expanding {{var_Hs_inl}} and getting a more complete equation &mdash; something we could plug the equation for our ray into &mdash; but I've actually tried that, and, uh,... it doesn't work so well. We <em>get</em> an equation that we <em>could</em> technically use, but it's huge and inefficient. So instead, let's look at the geometry of the problem and see if we can make any deductions that might help.
    </p>
-   <ul>
-      <li>
-         It's <dfn>commutative</dfn>:
-         <lu-math data-inline>
-            <var>A</var> &bullet; <var>B</var> = <var>B</var> &bullet; <var>A</var>
-         </lu-math>
-      </li>
-      <li>
-         It's <dfn>distributive</dfn>:
-         <lu-math data-inline>
-            <var>A</var> &bullet; (<var>B</var> + <var>C</var>) = (<var>A</var> &bullet; <var>B</var>) + (<var>A</var> &bullet; <var>C</var>)
-         </lu-math>
-      </li>
-      <li>
-         And when <var>c</var> is a scalar, it's <dfn>associative</dfn>:
-         <lu-math data-inline>
-            (<var>A</var> &bullet; <var>B</var>)<var>c</var> = <var>c</var><var>A</var> &bullet; <var>c</var><var>B</var>
-         </lu-math>
-      </li>
-   </ul>
    <p>
-      So let's take advantage of that.
+      If the hit position is on the surface, then the vector from {{var_Hs_inl}} to {{var_Hp_inl}} will have the same length as the cylinder's radius. What's more: it will be perpendicular to the cylinder's axis {{var_Ca_inl}}, and parallel to the surface normal vector at the hit position. If we normalize this vector, we <em>get</em> the surface normal. We can add that to our equations: if two vectors are perpendicular, then their cross product will have length 1.
+   </p>
+   <lu-math>
+      <m-givens>
+         <label>Given:</label>
+         <dl>
+            <dt><var>H<sub>n</sub></var></dt>
+            <m-sep> = </m-sep>
+               <dd>
+                  <span>
+                     the surface normal at the hit position =
+                  </span>
+                  <m-fraction>
+                     <m-raw>(</m-raw>
+                     <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                     <m-raw> &divide; </m-raw>
+                     <m-denom>
+                        {{lu_math_vec_start}}<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>{{lu_math_vec_end}}
+                     </m-denom>
+                     <m-raw>)</m-raw>
+                     <m-rawcap> </m-rawcap>
+                  </m-fraction>
+               </dd>
+         </dl>
+      </m-givens>
+      <m-row>
+         {{lu_math_vec_start}}<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>{{lu_math_vec_end}}
+         =
+         <var>C<sub>r</sub></var>
+      </m-row>
+      <m-row>
+         <span>
+            <var>H<sub>n</sub></var>
+            =
+         </span>
+         <m-fraction>
+            <m-raw>(</m-raw>
+            <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+            <m-raw> &divide; </m-raw>
+            <m-denom>
+               {{lu_math_vec_start}}<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>{{lu_math_vec_end}}
+            </m-denom>
+            <m-raw>)</m-raw>
+            <m-rawcap> </m-rawcap>
+         </m-fraction>
+         <span>
+            =
+         </span>
+         <m-fraction>
+            <m-raw>(</m-raw>
+            <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+            <m-raw> &divide; </m-raw>
+            <m-denom>
+               <var>C<sub>r</sub></var>
+            </m-denom>
+            <m-raw>)</m-raw>
+            <m-rawcap> </m-rawcap>
+         </m-fraction>
+      </m-row>
+      <m-row>
+         {{lu_math_eq_numbers[5]}}
+         
+         {{lu_math_vec_start}}<var>H<sub>n</sub></var> &times; <var>C<sub>a</sub></var>{{lu_math_vec_end}}
+         =
+         1
+      </m-row>
+   </lu-math>
+   <p>
+      It seems that the thing to do, at this point, is try and solve for a ray/cylinder intersection based on the surface normal at the hit position. Let's start by expanding {{var_Hn_inl}} within Equation 5.
    </p>
    <lu-math>
       <m-solvestep>
          <m-content>
-            <m-veclength>
-               <m-delim>||</m-delim><!--
-               --><var>H<sub>p</sub></var>
-                  +
-                  <var>C<sub>b</sub></var>
-                  -
-                  (<!--
-                  -->(<var>H<sub>p</sub></var> &bullet; <mark><var>C<sub>a</sub></var></mark>)
-                   - (<var>C<sub>b</sub></var> &bullet; <mark><var>C<sub>a</sub></var></mark>)<!--
-               -->)<var>C<sub>a</sub></var><!--
-            --><m-delim>||</m-delim><!--
-         --></m-veclength>
+            <m-rawcap> </m-rawcap>
+            {{lu_math_vec_start}}<!--
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction>
+               &times;
+               <var>C<sub>a</sub></var><!--
+         -->{{lu_math_vec_end}}
             =
-            <var>C<sub>r</sub></var>
+            1
          </m-content>
       </m-solvestep>
       <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               If you take the dot product of a vector with itself, then you get the vector's length squared. This means that we can square both sides of the equation, and convert the squared length on the lefthand side to a dot product of the contents with themselves. Of course, 1 squared is just 1 again, so in practice, we don't see an exponent on either side.
+            </aside>
+         </details>
          <m-content>
-            <m-veclength>
-               <m-delim>||</m-delim><!--
-               --><var>H<sub>p</sub></var>
-                  +
-                  <var>C<sub>b</sub></var>
-                  -
-                  (<var>H<sub>p</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark><var>C<sub>a</sub></var>
-                  + </mark>
-                  (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark><var>C<sub>a</sub></var></mark><!--
-            --><m-delim>||</m-delim><!--
-         --></m-veclength>
+            <m-rawcap> </m-rawcap>
+            (<!--
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction>
+               &times;
+               <var>C<sub>a</sub></var><!--
+         -->)<mark>{{dont_eat_this_space}} &bullet; (<!--
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction>
+               &times;
+               <var>C<sub>a</sub></var><!--
+         -->)</mark>
             =
-            <var>C<sub>r</sub></var>
-         </m-content>
-      </m-solvestep>
-      <m-solvestep>
-         <m-content>
-            <m-veclength>
-               <m-delim>||</m-delim><!--
-               --><var>H<sub>p</sub></var>
-                  +
-                  <var>C<sub>b</sub></var>
-                  -
-                  (<var>H<sub>p</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
-                  + 
-                  (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var><!--
-            --><m-delim>||</m-delim><!--
-         --></m-veclength>
-            =
-            <var>C<sub>r</sub></var>
+            1
          </m-content>
       </m-solvestep>
    </lu-math>
+   <p>
+      Let's look at some known identities involving vector algebra, and see if we can rearrange that further.
+   </p>
+   <lu-math>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               This is the <dfn>Binet-Cauchy identity</dfn>.
+            </aside>
+         </details>
+         <m-content>
+            (<var>A</var> &times; <var>B</var>) &bullet; (<var>C</var> &times; <var>D</var>)
+            =
+            (<var>A</var> &bullet; <var>C</var>)(<var>B</var> &bullet; <var>D</var>)
+            -
+            (<var>B</var> &bullet; <var>C</var>)(<var>A</var> &bullet; <var>D</var>)
+         </m-content>
+      </m-solvestep>
+      {{lu_math_therefore_block}}
+      <m-solvestep>
+         <m-content>
+            <m-big-parens><!--
+            --><m-delim>(</m-delim><!--
+            --><m-content><!--
+               
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction>
+               &bullet;
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction><!--
+               
+            --></m-content><!--
+            --><m-delim>)</m-delim><!--
+         --></m-big-parens><!--
+         -->(<!--
+            --><var>C<sub>a</sub></var>
+               &bullet;
+               <var>C<sub>a</sub></var><!--
+         -->)
+            -
+            <m-big-parens><!--
+            --><m-delim>(</m-delim><!--
+            --><m-content><!--
+               
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction>
+               &bullet;
+               <var>C<sub>a</sub></var><!--
+               
+            --></m-content><!--
+            --><m-delim>)</m-delim><!--
+         --></m-big-parens><!--
+         --><m-big-parens><!--
+            --><m-delim>(</m-delim><!--
+            --><m-content><!--
+               
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction>
+               &bullet;
+               <var>C<sub>a</sub></var><!--
+               
+            --></m-content><!--
+            --><m-delim>)</m-delim><!--
+         --></m-big-parens>
+            <span>
+               = 1
+            </span>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               Removed a multiplication by <lu-math data-inline><var>C<sub>a</sub></var> &bullet; <var>C<sub>a</sub></var></lu-math>. That vector has length 1, so that dot product just produces 1.
+            </aside>
+         </details>
+         <m-content>
+            <m-big-parens><!--
+            --><m-delim>(</m-delim><!--
+            --><m-content><!--
+               
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction>
+               &bullet;
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction><!--
+               
+            --></m-content><!--
+            --><m-delim>)</m-delim><!--
+         --></m-big-parens><!--
+         --><del>(<!--
+            --><var>C<sub>a</sub></var>
+               &bullet;
+               <var>C<sub>a</sub></var><!--
+         -->)</del>
+            -
+            <m-big-parens><!--
+            --><m-delim>(</m-delim><!--
+            --><m-content><!--
+               
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction>
+               &bullet;
+               <var>C<sub>a</sub></var><!--
+               
+            --></m-content><!--
+            --><m-delim>)</m-delim><!--
+         --></m-big-parens><!--
+         --><m-big-parens><!--
+            --><m-delim>(</m-delim><!--
+            --><m-content><!--
+               
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction>
+               &bullet;
+               <var>C<sub>a</sub></var><!--
+               
+            --></m-content><!--
+            --><m-delim>)</m-delim><!--
+         --></m-big-parens>
+            <span>
+               = 1
+            </span>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               Those terms on the left are the hit normal {{var_Hn_inl}}, remember? That vector's length is also 1, so we can remove the other lefthand dot product as well.
+            </aside>
+         </details>
+         <m-content>
+            <mark>1</mark><!--
+         --><del class="invis"><m-big-parens class="del"><!--
+            --><m-delim>(</m-delim><!--
+            --><m-content><!--
+                  
+               --><m-fraction>
+                     <m-raw>(</m-raw>
+                     <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                     <m-raw>) &divide; </m-raw>
+                     <m-denom>
+                        <var>C<sub>r</sub></var>
+                     </m-denom>
+                     <m-rawcap> </m-rawcap>
+                  </m-fraction>
+                  &bullet;
+                  <m-fraction>
+                     <m-raw>(</m-raw>
+                     <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                     <m-raw>) &divide; </m-raw>
+                     <m-denom>
+                        <var>C<sub>r</sub></var>
+                     </m-denom>
+                     <m-rawcap> </m-rawcap>
+                  </m-fraction><!--
+                  
+            --></m-content><!--
+            --><m-delim>)</m-delim><!--
+         --></m-big-parens></del>
+            -
+            <m-big-parens><!--
+            --><m-delim>(</m-delim><!--
+            --><m-content><!--
+               
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction>
+               &bullet;
+               <var>C<sub>a</sub></var><!--
+               
+            --></m-content><!--
+            --><m-delim>)</m-delim><!--
+         --></m-big-parens><!--
+         --><m-big-parens><!--
+            --><m-delim>(</m-delim><!--
+            --><m-content><!--
+               
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><var>H<sub>p</sub></var> - <var>H<sub>s</sub></var></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+                  <m-rawcap> </m-rawcap>
+               </m-fraction>
+               &bullet;
+               <var>C<sub>a</sub></var><!--
+               
+            --></m-content><!--
+            --><m-delim>)</m-delim><!--
+         --></m-big-parens>
+            <span>
+               = 1
+            </span>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               <p>
+                  The vector dot product is associative, but for scalars only. What this means is that for two vectors, <lu-math data-inline><var>A</var></lu-math> and <lu-math data-inline><var>B</var></lu-math>, and a scalar <nobr><lu-math data-inline><var>c</var></lu-math>,</nobr> the expression <lu-math data-inline>(<var>A</var> &bullet; <nobr><var>B</var>)<var>c</var></nobr></lu-math> is equal to <lu-math data-inline><var>A</var><var>c</var> &bullet; <var>B</var><var>c</var></lu-math>. We're converting between these two forms, but in reverse. Only one of our vectors is divided, but that's not a problem:
+               </p>
+               <lu-math>
+                  <m-row>
+                     <span>
+                        <var>A</var>
+                        &bullet;
+                        <var>B</var><var>c</var>
+                        = 
+                     </span>
+                     <m-big-parens><!--
+                     --><m-delim>(</m-delim><!--
+                     --><m-content><!--
+                        
+                        --><m-raw>(</m-raw><!--
+                        --><m-fraction>
+                              <m-numer><var>A</var></m-numer>
+                              <m-raw> &divide; </m-raw>
+                              <m-denom><var>c</var></m-denom>
+                           </m-fraction><!--
+                        --><m-raw>)</m-raw>
+                           &bullet;
+                           <var>B</var><!--
+               
+                     --></m-content><!--
+                     --><m-delim>)</m-delim><!--
+                  --></m-big-parens><!--
+                  --><var>c</var>
+                  </m-row>
+               </lu-math>
+               <p>
+                  Division by <lu-math data-inline><var>c</var></lu-math> is, of course, just multiplication by <lu-math data-inline>1 &divide; <var>c</var></lu-math>, so we can apply this rule to unpack divisions within the dot product as well:
+               </p>
+               <lu-math>
+                  <m-row>
+                     <var>A</var>
+                     &bullet;
+                     <m-fraction>
+                        <m-numer><var>B</var></m-numer>
+                        <m-raw> &divide; </m-raw>
+                        <m-denom><var>c</var></m-denom>
+                     </m-fraction><!--
+                  --><m-raw>)</m-raw>
+                     =
+                     <m-fraction>
+                        <m-numer>
+                           <var>A</var><var>c</var> &bullet; <var>B</var>
+                        </m-numer>
+                        <m-raw> &divide; </m-raw>
+                        <m-denom><var>c</var></m-denom>
+                     </m-fraction>
+                  </m-row>
+               </lu-math>
+            </aside>
+         </details>
+         <m-content>
+            1
+            &minus;
+            <m-big-parens><!--
+            --><m-delim>(</m-delim><!--
+            --><m-content><!--
+               
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><!--
+                  -->(<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>)
+                     &bullet;
+                     <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+               --></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+               </m-fraction><!--
+               
+            --></m-content><!--
+            --><m-delim>)</m-delim><!--
+         --></m-big-parens><!--
+         --><m-big-parens><!--
+            --><m-delim>(</m-delim><!--
+            --><m-content><!--
+               
+            --><m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer><!--
+                  -->(<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>)
+                     &bullet;
+                     <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+               --></m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>
+                     <var>C<sub>r</sub></var>
+                  </m-denom>
+               </m-fraction><!--
+               
+            --></m-content><!--
+            --><m-delim>)</m-delim><!--
+         --></m-big-parens>
+            <span>
+               = 1
+            </span>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               When you multiply two fractions together, the inverse (<lu-math data-inline>1 &divide; <var>x</var></lu-math>) of their denominator acts like a common factor. You can group both of the fractions together &mdash; numerator 1 times numerator 2, all divided by denominator 1 times denominator 2.
+            </aside>
+         </details>
+         <m-content>
+            1
+            &minus;
+            <m-fraction>
+               <m-raw>(</m-raw>
+               <m-numer><!--
+               -->(<!--
+                  -->((<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>)
+                     &bullet;
+                     <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+               -->)<!--
+               -->(<!--
+                  -->(<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>)
+                     &bullet;
+                     <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+               -->)<!--
+            --></m-numer>
+               <m-raw>) &divide; </m-raw>
+               <m-denom>
+                  <var>C<sub>r</sub></var>{{lu_math_sq}}
+               </m-denom>
+            </m-fraction>
+            <span>
+               = 1
+            </span>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               Multiplfying both sides by the denominator, to get us out of that fraction.
+            </aside>
+         </details>
+         <m-content>
+            <var>C<sub>r</sub></var>{{lu_math_sq}}
+            -
+            (<!--
+            -->((<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>)
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)<!--
+         -->(<!--
+            -->(<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>)
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)
+            = <var>C<sub>r</sub></var>{{lu_math_sq}}
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               Square root of both sides.
+            </aside>
+         </details>
+         <m-content>
+            <var>C<sub>r</sub></var><del>{{lu_math_sq}}</del>
+            -
+            (<!--
+            -->((<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>)
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)<!--
+         --><del>(<!--
+            -->(<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>)
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)</del>
+            = <var>C<sub>r</sub></var><del>{{lu_math_sq}}</del>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            -<!--
+         -->(<!--
+            -->((<var>H<sub>p</sub></var> - <var>H<sub>s</sub></var>)
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)
+            = 0
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               <p>
+                  Just to simplify the notation, we've distributed the negation inside of the dot product operation. Remember that <lu-math data-inline>(<var>A</var> &bullet; <nobr><var>B</var>)<var>c</var></nobr> = <var>A</var><var>c</var> &bullet; <var>B</var><var>c</var></lu-math>.
+               </p>
+               <p>
+                  It's pretty easy to miss, so note that where we were subtracting vectors, the order of the subtraction has changed: <lu-math data-inline>-(<var>a</var> - <var>b</var>) = <var>b</var> - <var>a</var></lu-math>.
+               </p>
+            </aside>
+         </details>
+         <m-content>
+            (<var>H<sub>s</sub></var> - <var>H<sub>p</sub></var>)
+            &bullet;
+            -<var>C<sub>a</sub></var><var>C<sub>r</sub></var>
+            = 0
+         </m-content>
+      </m-solvestep>
+   </lu-math>
+   <p>
+      Now, let's expand {{var_Hs_inl}}. Maybe we'll be able to simplify further after that. Even if we can't, expanding that variable is still a necessary step to be able to plug our ray equation in.
+   </p>
+   <lu-math>
+      <m-solvestep>
+         <m-content>
+            (<!--
+            -->(<!--
+               -->(<var>H<sub>p</sub></var> - <var>C<sub>b</sub></var>)
+                  &bullet;
+                  <var>C<sub>a</sub></var><!--
+            -->)<var>C<sub>a</sub></var>
+               +
+               <var>C<sub>b</sub></var>
+               -
+               <var>H<sub>p</sub></var><!--
+         -->)
+            &bullet;
+            -<var>C<sub>a</sub></var><var>C<sub>r</sub></var>
+            = 0
+         </m-content>
+      </m-solvestep>
+   </lu-math>
+   <p>
+      Hm. I can actually see some opportunities in there.
+   </p>
+   <lu-math>
+      <m-solvestep>
+         <m-content>
+            (<!--
+            -->(<!--
+               -->(<mark><var>C<sub>a</sub></var> &bullet; {{dont_eat_this_space}}</mark><var>H<sub>p</sub></var>)
+                  -
+                  (<mark><var>C<sub>a</sub></var> &bullet; {{dont_eat_this_space}}</mark><var>C<sub>b</sub></var>)<!--
+            -->)<var>C<sub>a</sub></var>
+               +
+               <var>C<sub>b</sub></var>
+               -
+               <var>H<sub>p</sub></var><!--
+         -->)
+            &bullet;
+            -<var>C<sub>a</sub></var><var>C<sub>r</sub></var>
+            = 0
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            (<!--
+            -->(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>H<sub>p</sub></var>)
+                  -
+                  (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
+            -->)<var>C<sub>a</sub></var><!--
+            --><mark>{{dont_eat_this_space}} &bullet;
+               -<var>C<sub>a</sub></var><var>C<sub>r</sub></var></mark><!--
+         -->)
+            +
+            (<!--
+            --><var>C<sub>b</sub></var><!--
+            --><mark>{{dont_eat_this_space}} &bullet;
+               -<var>C<sub>a</sub></var><var>C<sub>r</sub></var></mark><!--
+         -->)
+            -
+            (<!--
+            --><var>H<sub>p</sub></var><!--
+            --><mark>{{dont_eat_this_space}} &bullet;
+               -<var>C<sub>a</sub></var><var>C<sub>r</sub></var></mark><!--
+         -->)
+            = 0
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         {{lu_math_eq_numbers[6]}}
+         
+         <details class="explanation">
+            <summary class="toggle-explanation">info</summary>
+            <aside>
+               We're taking the dot product of several vectors by another vector, which is negated. We can distribute the multiplication by -1, which has the effect of flipping signs all over the place.
+            </aside>
+         </details>
+         <m-content>
+            (<!--
+            --><var>H<sub>p</sub></var>
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)<!--
+         --><mark>{{dont_eat_this_space}} - {{dont_eat_this_space}} </mark><!--
+         -->(<!--
+            -->(<!--
+               -->(<var>C<sub>a</sub></var> &bullet; <var>H<sub>p</sub></var>)
+                  -
+                  (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
+            -->)<var>C<sub>a</sub></var>
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)<!--
+         --><mark>{{dont_eat_this_space}} - {{dont_eat_this_space}} </mark><!--
+         -->(<!--
+            --><var>C<sub>b</sub></var>
+               &bullet;
+               <var>C<sub>a</sub></var><var>C<sub>r</sub></var><!--
+         -->)
+            = 0
+         </m-content>
+      </m-solvestep>
+   </lu-math>
+   <p>
+      That's pretty bulky, but we may be able to simplify it down further once we substitute in the equation for our ray.
+   </p>
 </section>
 
 <section>
@@ -413,1008 +1074,13 @@ extra_css_files:
       </m-row>
    </lu-math>
    <p>
-      We can substitute this equation into our cone equation above, and then attempt to solve for the hit distance {{var_Hd_inl}}:
+      We can substitute this equation into our cylinder equation above, and then attempt to solve for the hit distance {{var_Hd_inl}}:
    </p>
-   <lu-math>
-      <m-row>
-         <m-veclength>
-            <m-delim>||</m-delim><!--
-            --><mark><var>R<sub>o</sub></var> + 
-               <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - 
-               ((<mark><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - <var>C<sub>b</sub></var>) &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
-               + <var>C<sub>b</sub></var><!--
-         --><m-delim>||</m-delim><!--
-      --></m-veclength>
-         <nobr>
-            = <var>C<sub>r</sub></var>
-         </nobr>
-      </m-row>
-   </lu-math>
-   <p>
-      Now, we want to pull <lu-math data-inline><var>H<sub>d</sub></var></lu-math> out of that fraction. The first thing we can do is rearrange the nearby dot product. Dot products are commutative in exactly the same ways that scalar multiplications are, so...
-   </p>
-   <lu-math>
-      <m-row>
-         {{lu_math_vec_start}}<!--
-         --><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
-               (<mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark>)<var>C<sub>a</sub></var>
-             + <var>C<sub>b</sub></var><!--
-      -->{{lu_math_vec_end}}
-         <nobr>
-            = <var>C<sub>r</sub></var>
-         </nobr>
-      </m-row>
-   </lu-math>
-   <p>
-      The dot product of a vector with itself is the vector's own length squared. This means that we can square both sides to turn our lefthand side into a dot product. Then, we can expand it.
-   </p>
-   <lu-math>
-      <m-solvestep>
-         <m-content>
-            {{lu_math_vec_start}}<!--
-            --><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
-               ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
-               + <var>C<sub>b</sub></var><!--
-         -->{{lu_math_vec_end}}<mark>{{lu_math_sq}}</mark>
-            <nobr>
-               = <var>C<sub>r</sub></var><mark>{{lu_math_sq}}</mark>
-            </nobr>
-         </m-content>
-      </m-solvestep>
-      <m-solvestep>
-         <m-layout-snake>
-            <m-body>
-               <m-layout-v-segments>
-                  <m-segment>
-                     (<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
-                     ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
-                     + <var>C<sub>b</sub></var>)
-                  </m-segment>
-                  <m-sep><mark> + </mark></m-sep>
-                  <m-segment>
-                     <mark>(<var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var> - 
-                     ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>))<var>C<sub>a</sub></var>
-                     + <var>C<sub>b</sub></var>)</mark>
-                  </m-segment>
-               </m-layout-v-segments>
-            </lu-math-body>
-            </m-body>
-            <m-tail>
-               <nobr>
-                  = <var>C<sub>r</sub></var>
-               </nobr>
-            </m-tail>
-         </m-layout-snake>
-      </m-solvestep>
-   </lu-math>
-   <p>
-      Now, again, dot products are commutative in the same ways that scalar multiplications are. This means that the following rule works for both scalar variables and vector variables:
-   </p>
-   <lu-math>
-      <m-row>
-         <m-content>
-            (<var>a</var> + <var>b</var> + <var>c</var> + <var>d</var>){{lu_math_sq}}
-            =
-            <var>a</var>{{lu_math_sq}}
-          + <var>b</var>{{lu_math_sq}}
-          + <var>c</var>{{lu_math_sq}}
-          + <var>d</var>{{lu_math_sq}}
-          + 2<var>a</var><var>b</var>
-          + 2<var>a</var><var>c</var>
-          + 2<var>a</var><var>d</var>
-          + 2<var>b</var><var>c</var>
-          + 2<var>b</var><var>d</var>
-          + 2<var>c</var><var>d</var>
-         </m-content>
-      </m-row>
-      {{lu_math_therefore_block}}
-      <m-givens>
-         <label>Given (just for now):</label>
-         <dl>
-            <dt><var>a</var></dt>
-            <m-sep> = </m-sep>
-               <dd><var>R<sub>o</sub></var></dd>
-            <dt><var>b</var></dt>
-            <m-sep> = </m-sep>
-               <dd><var>R<sub>d</sub></var><var>H<sub>d</sub></var></dd>
-            <dt><var>c</var></dt>
-            <m-sep> = </m-sep>
-               <dd>
-                  -(<!--
-                  -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                   + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                   - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-               -->)<var>C<sub>a</sub></var>
-               </dd>
-            <dt><var>d</var></dt>
-            <m-sep> = </m-sep>
-               <dd><var>C<sub>b</sub></var></dd>
-         </dl>
-      </m-givens>
-      <m-solvestep>
-         <m-layout-snake>
-            <m-body>
-               <m-layout-v-segments>
-                  <m-segment>
-                     <mark class="mark-1"><var>R<sub>o</sub></var></mark>{{lu_math_sq}}
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     <mark class="mark-2"><var>R<sub>d</sub></var></mark>{{lu_math_sq}}<mark class="mark-2"><var>H<sub>d</sub></var></mark>{{lu_math_sq}}
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     <mark class="mark-3">((<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>)</mark>{{lu_math_sq}}
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     <mark class="mark-4"><var>C<sub>b</sub></var></mark>{{lu_math_sq}}
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2<mark class="mark-1"><var>R<sub>o</sub></var></mark><mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark>
-                  </m-segment>
-                  <m-sep><mark class="mark-3"> - </mark></m-sep>
-                  <m-segment>
-                     2<mark class="mark-1"><var>R<sub>o</sub></var></mark><!--
-                  --><mark class="mark-3">(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var></mark>
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2<mark class="mark-1"><var>R<sub>o</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
-                  </m-segment>
-                  <m-sep><mark class="mark-3"> - </mark></m-sep>
-                  <m-segment>
-                     2<mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark><mark class="mark-3">(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var></mark>
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2<mark class="mark-2"><var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
-                  </m-segment>
-                  <m-sep><mark class="mark-3"> - </mark></m-sep>
-                  <m-segment>
-                     2<!--
-                  --><mark class="mark-3">(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var></mark><mark class="mark-4"><var>C<sub>b</sub></var></mark>
-                  </m-segment>
-               </m-layout-v-segments>
-            </m-body>
-         </m-layout-snake>
-      </m-solvestep>
-   </lu-math>
-   <p>
-      Before we begin, let's be explicit about when we're taking the dot products of vectors, so as to avoid confusion with scalar products &mdash; and avoid getting ourselves into trouble later on. (Given three vectors <lu-math data-inline><var>A</var></lu-math>, <lu-math data-inline><var>B</var></lu-math>, and <lu-math data-inline><var>C</var></lu-math>, you <em>cannot</em> rearrange the expression <lu-math data-inline>(<var>A</var> &bullet; <var>B</var>)<var>C</var></lu-math> in terms of vectors. You can do some fun stuff if <lu-math data-inline><var>C</var></lu-math> is a scalar, but if it's a vector, then this expression is already in its simplest possible form. Expand it into scalars, rearrange terms, and you'll find that the axes of each vector get mixed up: you can't recombine them in any other way. The only way to spot these traps before you walk into them is by explicitly notating dot products.)
-   </p>
-   <lu-math>
-      <m-solvestep>
-         <m-layout-snake>
-            <m-body>
-               <m-layout-v-segments>
-                  <m-segment>
-                     (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     ((<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>){{lu_math_sq}}
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <!--
-                  -->(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2<!--
-                  -->(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
-                  </m-segment>
-               </m-layout-v-segments>
-            </m-body>
-         </m-layout-snake>
-      </m-solvestep>
-   </lu-math>
-   <p>
-      <lu-math data-inline>
-         ((<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-       + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-       - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)) &bullet; <var>C<sub>a</sub></var>
-       </lu-math> is the projection of the ray onto the cylinder's axis; therefore, 
-       <lu-math data-inline>
-         (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-       + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-       - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-       </lu-math> is the length of that projection. Squaring the projection pretty much just means taking the dot product of the projection with itself &mdash; taking its length &mdash; so we can remove the multiplication by {{var_Ca_inl}} in that first squared term.
-   </p>
-   <lu-math>
-      <m-solvestep>
-         <m-layout-snake>
-            <m-body>
-               <m-layout-v-segments>
-                  <m-segment>
-                     (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     <mark>(<del>(</del><!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  --><del>)<var>C<sub>a</sub></var></del>){{lu_math_sq}}</mark>
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <!--
-                  -->(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2<!--
-                  -->(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
-                  </m-segment>
-               </m-layout-v-segments>
-            </m-body>
-         </m-layout-snake>
-      </m-solvestep>
-   </lu-math>
-   <p>
-      Some more dot product commutativity:
-   </p>
-   <lu-math>
-      <m-solvestep>
-         <m-content>
-            (<var>a</var> + <var>b</var> + <var>c</var>){{lu_math_sq}}
-            =
-            <var>a</var>{{lu_math_sq}}
-          + <var>b</var>{{lu_math_sq}}
-          + <var>c</var>{{lu_math_sq}}
-          + 2<var>a</var><var>b</var>
-          + 2<var>a</var><var>c</var>
-          + 2<var>b</var><var>c</var>
-         </m-content>
-      </m-solvestep>
-      {{lu_math_therefore_block}}
-      <m-solvestep>
-         <m-layout-snake>
-            <m-head>
-               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
-               +
-               (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
-            </m-head><!--
-         --><m-body>
-               <mark data-lu-math-marked-block>
-               <m-layout-v-segments>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                      (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-                      + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                      2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                      2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                      2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-               </m-layout-v-segments>
-               </mark>
-            </m-body>
-            <m-tail>
-               <m-layout-v-segments>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <!--
-                  -->(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2<!--
-                  -->(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
-                  </m-segment>
-               </m-layout-v-segments>
-            </m-tail>
-         </m-layout-snake>
-      </m-solvestep>
-      <m-solvestep>
-         <m-layout-snake>
-            <m-head>
-               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
-               +
-               (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
-            </m-head><!--
-         --><m-body>
-               <m-layout-v-segments>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     <mark class="mark-1">(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}</mark>
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     <mark class="mark-2">2(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      - (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>H<sub>d</sub></var></mark>
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                      (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-                      + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                      2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                  </m-segment>
-               </m-layout-v-segments>
-            </m-body>
-            <m-tail>
-               <m-layout-v-segments>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <!--
-                  -->(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2<!--
-                  -->(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
-                  </m-segment>
-               </m-layout-v-segments>
-            </m-tail>
-         </m-layout-snake>
-      </m-solvestep>
-      <m-solvestep>
-         <m-layout-snake>
-            <m-head>
-               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
-               +
-               (<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
-            </m-head><!--
-         --><m-body>
-               <m-layout-v-segments>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}<var>H<sub>d</sub></var>{{lu_math_sq}}
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<mark>(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark><var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                      (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-                      + (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                      2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                  </m-segment>
-               </m-layout-v-segments>
-            </m-body>
-            <m-tail>
-               <m-layout-v-segments>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <!--
-                  -->(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var>)
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<var>H<sub>d</sub></var>
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     2<!--
-                  -->(<!--
-                     -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                      + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                      - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-                  -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
-                  </m-segment>
-               </m-layout-v-segments>
-            </m-tail>
-         </m-layout-snake>
-      </m-solvestep>
-      <m-solvestep>
-         <details class="explanation">
-            <summary class="toggle-explanation">info</summary>
-            <aside>
-               Grouped terms by {{var_Hd_inl}}.
-            </aside>
-         </details>
-         <m-layout-v-segments>
-            <m-segment>
-               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               <mark>(<!--
-               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <nobr><var>C<sub>a</sub></var>){{lu_math_sq}}</nobr><!--
-            -->)</mark><nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<!--
-               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                + <mark>(<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)</mark>
-                + <mark>(<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark><!--
-            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <!--
-            -->(<!--
-               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-            -->)<var>C<sub>a</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; (<!--
-               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-            -->)<var>C<sub>a</sub></var>)
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2<!--
-            -->(<!--
-               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<!--
-            -->)<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-   </lu-math>
-   <p>
-      Now let's keep simplifying the expression further. We can get a lot of mileage out of the dot products' distributive property.
-   </p>
-   <lu-math>
-      <m-solvestep>
-         <details class="explanation">
-            <summary class="toggle-explanation">info</summary>
-            <aside>
-               Using the distributive property of the vector dot product. There are several places where the same group of added-and-subtracted terms gets multiplied by {{var_Ca_inl}}; we can distribute {{var_Ca_inl}} across the group in order to make things easier to work with.
-            </aside>
-         </details>
-         <m-layout-v-segments>
-            <m-segment>
-               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<!--
-               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <nobr><var>C<sub>a</sub></var>){{lu_math_sq}}</nobr><!--
-            -->)<nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<!--
-               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
-            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <!--
-            -->(<!--
-               --><mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
-             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var><var>C<sub>a</sub></var>
-             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>)</mark><!--
-            -->))
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>d</sub></var><var>H<sub>d</sub></var> &bullet; <!--
-            -->(<!--
-               --><mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
-             + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var><var>C<sub>a</sub></var>
-             - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>)</mark><!--
-            -->))
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2<!--
-            -->(<!--
-               --><mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var><var>C<sub>a</sub></var>
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>)</mark><!--
-            -->) &bullet; <var>C<sub>b</sub></var>
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-      <m-solvestep>
-         <details class="explanation">
-            <summary class="toggle-explanation">info</summary>
-            <aside>
-               Now, we're doing the exact same thing as in the last step, but to the content we've just distributed.
-            </aside>
-         </details>
-         <m-layout-v-segments>
-            <m-segment>
-               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<!--
-               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <nobr><var>C<sub>a</sub></var>){{lu_math_sq}}</nobr><!--
-            -->)<nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<!--
-               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
-            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<!--
-               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark>
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark><var>H<sub>d</sub></var>
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)</mark><!--
-            -->)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<!--
-               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var></mark>
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)</mark><var>H<sub>d</sub></var><mark>{{lu_math_sq}}</mark>
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var></mark><!--
-            -->)
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               (<!--
-               --><mark>2</mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>
-                + <mark>2</mark>(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var><var>C<sub>a</sub></var>
-                - <mark>2</mark>(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>C<sub>a</sub></var>)<!--
-            -->) &bullet; <var>C<sub>b</sub></var>
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-      <m-solvestep>
-         <details class="explanation">
-            <summary class="toggle-explanation">info</summary>
-            <aside>
-               We distributed a multiplication by 2 in the last step; now, we can distribute a dot product by {{var_Cb_inl}} across that same group. We'll also distribute the other multiplications by 2.
-            </aside>
-         </details>
-         <m-layout-v-segments>
-            <m-segment>
-               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<!--
-               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <nobr><var>C<sub>a</sub></var>){{lu_math_sq}}</nobr><!--
-            -->)<nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<!--
-               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
-            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               <mark class="mark-2">2</mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-             + <mark class="mark-2">2</mark>(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-             - <mark class="mark-2">2</mark>(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               <mark class="mark-2">2</mark>(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
-             + <mark class="mark-2">2</mark>(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
-             - <mark class="mark-2">2</mark>(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark class="mark-1">(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark>
-             + 2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark class="mark-1">(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark><var>H<sub>d</sub></var>
-             - 2(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)<mark class="mark-1">(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)</mark>
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-      <m-solvestep>
-         <details class="explanation">
-            <summary class="toggle-explanation">info</summary>
-            <aside>
-               There were terms in this equation that canceled each other out.
-            </aside>
-         </details>
-         <m-layout-v-segments>
-            <m-segment>
-               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<!--
-               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <nobr><var>C<sub>a</sub></var>){{lu_math_sq}}</nobr><!--
-            -->)<nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<!--
-               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
-            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-             - 2(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>R<sub>d</sub></var>)<var>H<sub>d</sub></var>{{lu_math_sq}}
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               2(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
-             - 2(<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-      <m-solvestep>
-         <details class="explanation">
-            <summary class="toggle-explanation">info</summary>
-            <aside>
-               Combining terms, and reordering variables within groups for easier matching.
-            </aside>
-         </details>
-         <m-layout-v-segments>
-            <m-segment>
-               (<var>R<sub>o</sub></var> &bullet; <var>R<sub>o</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<!--
-               -->(<var>R<sub>d</sub></var> &bullet; <var>R<sub>d</sub></var>)
-                + <mark>3</mark>(<var>C<sub>a</sub></var> &bullet; <nobr><var>R<sub>D</sub></var>){{lu_math_sq}}</nobr><!--
-            -->)<nobr><var>H<sub>d</sub></var>{{lu_math_sq}}</nobr>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<!--
-               -->(<var>R<sub>o</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                - (<var>C<sub>b</sub></var> &bullet; <var>C<sub>a</sub></var>)
-                + (<var>R<sub>o</sub></var> &bullet; <var>R<sub>d</sub></var>)
-                + (<var>R<sub>d</sub></var> &bullet; <var>C<sub>b</sub></var>)<!--
-            -->)(<var>R<sub>d</sub></var> &bullet; <var>C<sub>a</sub></var>)<var>H<sub>d</sub></var>
-            </m-segment>
-            <m-sep><mark> - </mark></m-sep>
-            <m-segment>
-               (<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep><mark> - </mark></m-sep>
-            <m-segment>
-               (<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>){{lu_math_sq}}
-            </m-segment>
-            <m-sep> - </m-sep>
-            <m-segment>
-               <mark>6</mark>(<var>C<sub>a</sub></var> &bullet; <var>R<sub>o</sub></var>)(<var>C<sub>a</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               (<var>C<sub>b</sub></var> &bullet; <var>C<sub>b</sub></var>)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               2(<var>C<sub>b</sub></var> &bullet; <var>R<sub>o</sub></var>)
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-   </lu-math>
+   
+   <!-- CONTINUE FROM HERE -->
+   <!--
+      IF THIS DOESN'T WORK, TRY BACKING UP TO BEFORE WE STRIPPED OUT THE CROSS PRODUCT. 
+      WE COULD ATTEMPT TO SUBSTITUTE THE RAY IN RIGHT AT THAT POINT, AND ONLY SIMPLIFY 
+      THE CROSS PRODUCT OUT AFTERWARD.
+   -->
 </section>
