@@ -33,6 +33,20 @@
    @return $number;
 }
 
+@function str-replace($string, $substring, $target) {
+   $i: str-index($string, $substring);
+   @while $i != null {
+      $head: str-slice($string, 0, $i);
+      $tail: str-slice($string, $i + str-length($substring));
+      
+      $substring: str-insert($head, $target, -1);
+      $substring: str-insert($substring, $tail, -1);
+   
+      $i: str-index($string, $substring);
+   }
+   @return $substring;
+}
+
 @function text-shadows-for-outline($color) {
    $text-shadows: ();
    @for $x from -1 through 1 {

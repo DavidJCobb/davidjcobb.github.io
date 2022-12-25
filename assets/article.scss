@@ -39,8 +39,8 @@ lu-math {
    $padding: .05em;
    $stripe-width: 6px;
    
-   :is(del:not(.invis), .del,),
-   .explanation[open] ~ * :is(ins:not(.invis), .ins) {
+   :is(del, .del,):not(.invis),
+   .explanation[open] ~ * :is(ins, .ins):not(.invis) {
       border: 1px solid rgba(0, 0, 0, 0.1);
       border-radius: .25em;
       
@@ -56,7 +56,7 @@ lu-math {
    del {
       text-decoration: none;
    }
-   :is(del:not(.invis), .del) {
+   :is(del, .del):not(.invis) {
       background:
          repeating-linear-gradient(45deg, #FF000040 0 #{$stripe-width}, transparent #{$stripe-width} #{$stripe-width * 2}),
          #FF000030;
@@ -65,7 +65,7 @@ lu-math {
    ins {
       text-decoration: none;
    }
-   .explanation[open] ~ * :is(ins:not(.invis), .ins) {
+   .explanation[open] ~ * :is(ins, .ins):not(.invis) {
       background:
          repeating-linear-gradient(45deg, #00FF0040 0 #{$stripe-width}, transparent #{$stripe-width} #{$stripe-width * 2}),
          #00FF0030;

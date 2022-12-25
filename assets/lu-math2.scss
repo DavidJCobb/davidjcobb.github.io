@@ -126,7 +126,7 @@ lu-math {
       vertical-align:middle;
    }
    
-   del {
+   del, .del {
       display:none;
    }
    ins {
@@ -573,7 +573,7 @@ lu-math m-solvestep {
       }
       &[open] {
          
-         &~* del {
+         &~* :is(del, .del) {
             display:initial;
          }
          
