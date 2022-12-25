@@ -1109,8 +1109,8 @@ extra_css_files:
                         -->({{var_Rd}} &bullet; {{var_Rd}})<!--
                         --><del>{{dont_eat_this_space}} + ({{var_Ca}} &bullet; {{var_Rd}}){{lu_math_sq}}</del><!--
                         -->{{dont_eat_this_space}} - {{dont_eat_this_space}}<!--
-                        --><del>2({{var_Ca}} &bullet; {{var_Rd}}){{lu_math_sq}}</del>
-                           <ins>({{var_Ca}} &bullet; {{var_Rd}}){{lu_math_sq}}</ins><!--
+                        --><del>2({{var_Ca}} &bullet; {{var_Rd}}){{lu_math_sq}}</del><!--
+                        --><ins>({{var_Ca}} &bullet; {{var_Rd}}){{lu_math_sq}}</ins><!--
                      -->){{var_Hd}}{{lu_math_sq}}
                      </m-segment>
                      <m-sep class="del invis"><del class="invis"> + </del></m-sep>
@@ -1136,9 +1136,46 @@ extra_css_files:
                      <m-segment class="del">
                         <del class="invis">2({{var_Ca}} &bullet; {{var_Rl}}){{lu_math_sq}}</del>
                      </m-segment>
-                     <m-sep class="ins invis"><ins class="invis"> - </del></m-sep>
+                     <m-sep class="ins invis"><ins class="invis"> - </ins></m-sep>
                      <m-segment class="ins">
                         <ins class="invis">({{var_Ca}} &bullet; {{var_Rl}}){{lu_math_sq}}</ins>
+                     </m-segment>
+                     <m-sep> + </m-sep>
+                     <m-segment>
+                        ({{var_Rl}} &bullet; {{var_Rl}})
+                     </m-segment>
+                  </m-layout-v-segments>
+               </m-body>
+               <m-tail>
+                  = {{var_Cr}}{{lu_math_sq}}
+               </m-tail>
+            </m-layout-snake>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         {{lu_math_expl_start}}
+         {{lu_math_expl_end}}
+         <m-content>
+            <m-layout-snake>
+               <m-body>
+                  <m-layout-v-segments>
+                     <m-segment>
+                        (<!--
+                        -->({{var_Rd}} &bullet; {{var_Rd}})
+                           -
+                           ({{var_Ca}} &bullet; {{var_Rd}}){{lu_math_sq}}<!--
+                     -->){{var_Hd}}{{lu_math_sq}}
+                     </m-segment>
+                     <m-sep> + </m-sep>
+                     <m-segment>
+                        2(<!--
+                        -->({{var_Rd}} &bullet; {{var_Rl}})
+                           - ({{var_Ca}} &bullet; {{var_Rd}})({{var_Ca}} &bullet; {{var_Rl}})<!--
+                     -->){{var_Hd}}
+                     </m-segment>
+                     <m-sep> - </m-sep>
+                     <m-segment>
+                        ({{var_Ca}} &bullet; {{var_Rl}}){{lu_math_sq}}
                      </m-segment>
                      <m-sep> + </m-sep>
                      <m-segment>
