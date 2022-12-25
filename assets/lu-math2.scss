@@ -21,6 +21,8 @@ $lu-math-font-top-to-bottom-height-em: $lu-math-font-top-to-bottom-height * 1em;
 $lu-math-font-leading:    ($lu-math-line-height * 1em) - $lu-math-font-top-to-bottom-height-em;
 $lu-math-line-box-height: ($lu-math-line-height * 1em) + $lu-math-font-leading;
 
+$lu-math-line-box-height-max: ($lu-math-line-height * 1em) + ($lu-math-font-leading * 2);
+
 /* when paired with invisible-readable, makes text non-selectable 
    and effectively only accessible to screen readers */
 @mixin unselectable-not-in-flow {
@@ -94,7 +96,30 @@ lu-math{
 
 lu-math {
    mark {
-      display:inline-block;
+      /*display:inline-block;*/
+      
+      /*
+         display:inline-block will make this element stretch vertically to 
+         highlight its full contents... but only its full contents. recall 
+         that a line box's height will vary depending on whether there's a 
+         superscript or subscript inside of it: if every MARK is made into 
+         an  inline-block  on principle, then we'll have single-line marks 
+         with inconsistent heights right next to each other,  depending on 
+         which ones contain subscripts and which contain superscripts.
+         
+         instead, we just have to set  inline-block for marks that contain 
+         specific elements that are often or always multi-line. of course, 
+         that relies on  :has,  which is unsupported in Firefox as of this 
+         writing.
+      */
+      
+      &:has(
+         m-big-parens,
+         m-fraction,
+         m-veclength
+      ) {
+         display:inline-block;
+      }
    }
    span {
       display:inline-block;
@@ -135,6 +160,13 @@ lu-math {
       &[data-type="vector"] {
          font-weight: bold;
       }
+   }
+   
+   /*
+      micro-level formatting helpers
+   */
+   m-nobr {
+      white-space:nowrap;
    }
 }
 
@@ -390,18 +422,17 @@ lu-math m-layout-snake {
       "nulL nulB tail" auto /
       fit-content(100%) fit-content(100%) fit-content(100%);
       
-   >m-head+m-body {
-      margin-top:-$lu-math-line-box-height;
+   >m-head,
+   >m-body,
+   >m-tail {
+      min-height: $lu-math-line-box-height-max;
    }
-   >m-head:has(sup, sub)+m-body {
-      /*
-         Line boxes vary in height depending on whether they contain superscripts 
-         and/or subscripts.
-      */
-      margin-top:-($lu-math-line-box-height + $lu-math-font-leading);
+      
+   >m-head+m-body {
+      margin-top:-$lu-math-line-box-height-max;
    }
    >m-body:not(:last-child) {
-      margin-bottom:-$lu-math-line-box-height;
+      margin-bottom:-$lu-math-line-box-height-max;
    }
    
    >m-head {

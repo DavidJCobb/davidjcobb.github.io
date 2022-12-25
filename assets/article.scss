@@ -46,23 +46,11 @@ lu-math {
       
       padding:        $padding;
       padding-bottom: $padding + .10em;
-      margin:         0 calc(#{-$padding} - 1px);
-      /*
-         Negative margins here, so that the padding doesn't displace this element 
-         from adjacent non-INS and non-DEL math.
-      */
       
       mark {
          background: transparent none;
          border:0;
       }
-   }
-   
-   /*
-      Don't overlap INS and DEL elements.
-   */
-   :is(ins, .ins, del, .del) + :is(ins, .ins, del, .del) {
-      margin-left:calc(#{$padding * 2} + 2px + 0.1ch);
    }
    
    del {
@@ -165,6 +153,11 @@ lu-math {
       p {
          text-align: left;
          text-align: inline-start;
+      }
+      
+      >lu-math:not([data-inline]):only-child {
+         margin-top:0!important;
+         margin-bottom:0!important;
       }
    }
 }
