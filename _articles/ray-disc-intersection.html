@@ -8,9 +8,9 @@ tags:
  - raycasting
 social_media:
    title: Cobb - Ray/disc intersections
-   description: The math behind doing raycasts for 3D discs. Includes public-domain code.
+   description: The math behind doing raycasts for 3D discs, with the mathematical derivation fully explained step, by step. Includes public-domain code.
 extra_css_files:
- - lu-math2.css
+ - lu-math.css
    
 ---
 {%- include lu-math/defines.html -%}
@@ -31,14 +31,10 @@ extra_css_files:
 
 <section>
    <p>
-      A ray/disc intersection is just the combination of two other tests. We check for an 
-      intersection between the ray and the infinite plane that contains the disc; if such 
-      an intersection exists, then we check whether the hit position lies on the disc, 
-      using a simple distance check.
+      A ray/disc intersection is just the combination of two other tests. We check for an intersection between the ray and the infinite plane that contains the disc; if such an intersection exists, then we check whether the hit position lies on the disc, using a simple distance check.
    </p>
    <p>
-      I've already written about <a href="{% link _articles/ray-plane-intersection.html %}">ray/plane intersection tests</a>, 
-      so this article will build on those. I've also provided code at the bottom as a public domain work.
+      I've already written about <a href="{% link _articles/ray-plane-intersection.html %}">ray/plane intersection tests</a>, so this article will build on those. I've also provided code at the bottom as a public domain work.
    </p>
 </section>
 
