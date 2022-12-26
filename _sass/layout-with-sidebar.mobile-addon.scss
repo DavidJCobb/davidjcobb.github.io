@@ -352,7 +352,7 @@ body {
                comma
             );
          }
-         $stop-a: calc(100% - #{$stripe-thickness)});
+         $stop-a: calc(100% - #{$stripe-thickness});
          $stops: append($stops, transparent $stop-a 100%, comma);
          
          $radial-stripe-start-position: calc(#{$radial-stripe-radius + 100vw - $radial-stripe-x-offset} - #{$stripe-thickness * $stripe-count * 2});
