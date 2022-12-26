@@ -10,6 +10,17 @@ social_media:
    description: The math behind doing raycasts for 3D cylinder. Includes public-domain code.
 extra_css_files:
  - lu-math2.css
+table_of_contents:
+ - id:    parametric
+   title: Parametric surface of a cylinder
+ - id:    implicit
+   title: Implicit surface of a cylinder
+ - id:    transformed
+   title: Handling a translated and rotated cylinder
+ - id:    solving
+   title: Solving for the ray
+ - id:    free-code
+   title: Free code!
    
 ---
 {%- include lu-math/defines.html -%}
@@ -1189,7 +1200,7 @@ extra_css_files:
       </m-solvestep>
    </lu-math>
    <p>
-      If we arrange that lengthwise, it'll be easier to see that as with ray/cone intersections, we've ended up with a quadratic equation.
+      If we arrange that lengthwise, it'll be easier to see that as with ray/cone intersections, we've ended up with a quadratic equation. We can use the quadratic formula to find its <dfn>roots</dfn> &mdash; its solutions; the hit distances.
    </p>
    <lu-math>
       <m-row>
@@ -1259,4 +1270,240 @@ extra_css_files:
          <m-rawcap> </m-rawcap>
       </m-row>
    </lu-math>
+   <p>
+      In the quadratic formula, the expression 
+      <lu-math data-inline>{{var_Bsca}}{{lu_math_sq}} - 4{{var_Asca}}{{var_Csca}}</lu-math>
+      is called the <dfn>discriminant</dfn>. If its value is negative, then there is no valid solution &mdash; no intersection between the ray and the curved surface of our cylinder. If its value is zero, then there's exactly one solution: you can apply the formula either way (plus or minus) and you'll get the same result. If the discriminant is a positive non-zero number, then there are two different solutions &mdash; two different points at which we have potential intersections.
+   </p>
+   <p>
+      Yes. "Potential." This equation <em>actually</em> tests for intersections between an infinite double-sided line, and an infinitely long cylinder with no endcaps. In order to test for the intersection between a ray and a bounded cylinder, we need to add some additional inequalities, and require that they be true. Let's start with one to rule out any hit positions behind the ray origin:
+   </p>
+   <lu-math>
+      <m-row>
+         {{lu_math_eq_numbers[6]}}
+         
+         {{var_Hd}} &geq; 0
+      </m-row>
+   </lu-math>
+   <p>
+      Simple enough. Next up, we need to apply bounds to our cylinder. We'll take the vector from the hit position to one of the cylinder's endcaps, project that onto the cylinder's axis, and check the resulting length against the cylinder's height.
+   </p>
+   <lu-math>
+      0
+      &leq;
+      ({{var_Ct}} - {{var_Hp}}) &bullet; {{var_Ca}}
+      &leq;
+      {{lu_math_vec_start}}{{var_Ct}} - {{var_Cb}}{{lu_math_vec_end}}
+   </lu-math>
+   <p>
+      There's one more wrinkle: we need to test the ray against the cylinder's endcaps. That'll be two <a href="{% link _articles/ray-disc-intersection.html %}">ray/disc intersection</a> checks. However, since both discs exist on parallel planes, we can actually combine some of the math. Both discs have the same normal vectors, so when we take the dot product of the ray direction with the plane normal, we can reuse that across both ray/disc checks.
+   </p>
+</section>
+
+<section>
+   <h2><a name="free-code">Free code!</a></h2>
+   <p>
+      The following C++ code is licensed under CC0 (<a href="https://creativecommons.org/publicdomain/zero/1.0/legalcode">full legal text</a> / <a href="https://creativecommons.org/publicdomain/zero/1.0/">summary</a>), and so is effectively a public domain work. You can incorporate it into your programs without the need for attribution, payment, or similar. (That said, linking back here would be polite!)
+   </p>
+   <p>
+      This code makes use of the <a href="https://github.com/g-truc/glm">GLM</a> library for vector math. It has 
+      transitive dependencies on some of my other math, in the form of <a href="{% link _articles/ray-disc-intersection.html %}"><code>ray_disc_intersection</code></a> and, through it, <a href="{% link _articles/ray-plane-intersection.html %}"><code>ray_plane_intersection</code></a>.
+      </li>
+   </ul>
+{% highlight cpp %}
+//
+// Given coefficients in a quadratic equation, this function gives you the roots 
+// and returns the number of roots. If there is only one root, then both root 
+// variables are set to the same value.
+//
+int quadratic_roots(
+   const float a,
+   const float b,
+   const float c,
+   //
+   float& root_lower,
+   float& root_upper
+) {
+   constexpr auto EPSILON = 1e-8;
+
+   float discriminant = (b * b) - (4.0 * a * c);
+   if (discriminant > EPSILON) {
+      float b_term = b < EPSILON ? -b + sqrt(discriminant) : -b - sqrt(discriminant);
+
+      root_lower = b_term / (2.0 * a); // quadratic formula
+      root_upper = (2.0 * c) / b_term; // citardauq formula
+
+      if (root_lower > root_upper)
+         std::swap(root_lower, root_upper); // use of both formulae, plus this, avoids catastrophic cancellation due to floating-point limits
+
+      return 2;
+   } else if (discriminant > -EPSILON && discriminant <= EPSILON) {
+      root_lower = -(b / 2.0 * a);
+      root_upper = root_lower;
+      return 1;
+   }
+   root_lower = NAN;
+   root_upper = NAN;
+   return 0;
+}
+   
+bool ray_cylinder_intersection(
+   const glm::vec3& ray_origin,
+   const glm::vec3& ray_direction, // must be normalized
+
+   const glm::vec3& cylinder_endcap_t, // centerpoint of a disc on one end of the cylinder
+   const glm::vec3& cylinder_endcap_b, // centerpoint of a disc on one end of the cylinder
+   const float      cylinder_radius,   // radius of both discs
+
+   const bool hits_from_inside_count,
+
+   float& hit_distance
+) {
+   //
+   // First, identify intersections between a line and an infinite cylinder. An infinite 
+   // cylinder has no base and extends in both directions.
+   //
+   glm::vec3 Rl = ray_origin - cylinder_endcap_b;        // Ray origin local to centerpoint
+   glm::vec3 Cs = cylinder_endcap_t - cylinder_endcap_b; // Cylinder spine
+   float     Ch = length(Cs);                            // Cylinder height
+   glm::vec3 Ca = Cs / Ch;                               // Cylinder axis
+
+   auto Ca_dot_Rd = dot(Ca, ray_direction);
+   auto Ca_dot_Rl = dot(Ca, Rl);
+   auto Rl_dot_Rl = dot(Rl, Rl);
+
+   float a = 1 - (Ca_dot_Rd * Ca_dot_Rd);
+   float b = 2 * (dot(ray_direction, Rl) - Ca_dot_Rd * Ca_dot_Rl);
+   float c = Rl_dot_Rl - Ca_dot_Rl * Ca_dot_Rl - (cylinder_radius * cylinder_radius);
+
+   float hit_near;
+   float hit_away;
+   auto  count = quadratic_roots(a, b, c, hit_near, hit_away);
+   if (count == 0) {
+      //
+      // There is no intersection between a line (i.e. a "double-sided" ray) and the 
+      // infinite cone that matches our finite cone. This means that we cannot be 
+      // hitting any part of the cone: if we were hitting the base from the inside, 
+      // for example, then the "back of our ray" would be hitting the upper part of 
+      // the infinite cone.
+      //
+      return false;
+   }
+   //
+   // Now, we need to take our intersection points and ensure that they lie on the 
+   // surface of a finite cylinder. If one of them is past the edges of the finite 
+   // cylinder, then we need to check for a valid intersection with the endcaps.
+   //
+   if (count > 2) {
+      cobb::unreachable();
+   }
+   bool valid1 = true;
+   bool valid2 = true;
+   //
+   glm::vec3 Hp1 = ray_origin + ray_direction * hit_near;
+   glm::vec3 Hp2 = ray_origin + ray_direction * hit_away;
+   float     Ho1 = dot(cylinder_endcap_t - Hp1, Ca); // height offset
+   float     Ho2 = dot(cylinder_endcap_t - Hp2, Ca);
+   //
+   int valid_count = count;
+   if (hit_near < 0.0 || Ho1 < 1.0e-8 || Ho1 > Ch) {
+      valid1 = false;
+      --valid_count;
+   }
+   if (hit_away < 0.0 || Ho2 < 1.0e-8 || Ho2 > Ch) {
+      valid2 = false;
+      if (count > 1)
+         --valid_count;
+   }
+   //
+   if (valid_count == 0) {
+      //
+      // The ray never hits the bounded cylinder's curved surface. If we're looking 
+      // along the cylinder's axis -- whether from inside or outside -- then the ray 
+      // could still hit an endcap.
+      // 
+      // Let's project the ray origin onto the cylinder's axis, and figure out which 
+      // endcap we're nearer to. (Well, actually, we already have that value: it's 
+      // Ca_dot_Rl.)
+      //
+      if (Ca_dot_Rl <= 0.0) { // above
+         valid1 = ray_disc_intersection(ray_origin, ray_direction, cylinder_endcap_t, Ca, cylinder_radius, hit_near);
+      } else if (Ca_dot_Rl >= Ch) { // below
+         valid1 = ray_disc_intersection(ray_origin, ray_direction, cylinder_endcap_b, Ca, cylinder_radius, hit_away);
+      } else {
+         //
+         // Inside. Test both discs.
+         //
+         if (!hits_from_inside_count) {
+            return false;
+         }
+         valid1 = ray_disc_intersection(ray_origin, ray_direction, cylinder_endcap_t, Ca, cylinder_radius, hit_near);
+         valid2 = ray_disc_intersection(ray_origin, ray_direction, cylinder_endcap_b, Ca, cylinder_radius, hit_away);
+         if (valid1) {
+            if (valid2) {
+               if (hit_away < hit_near)
+                  hit_near = hit_away;
+            }
+            hit_distance = hit_near;
+            return true;
+         } else if (valid2) {
+            hit_distance = hit_away;
+            return true;
+         }
+      }
+      if (valid1) {
+         hit_distance = hit_near;
+         return true;
+      }
+      return false;
+   }
+   if (valid_count == 1) {
+      //
+      // The ray hits the cylinder's curved surface only once. This can only happen under 
+      // two cases: the ray originates from inside the cylinder, and points outward; or 
+      // the ray passes through the bounded cylinder once and then through an endcap.
+      //
+      if (valid2) {
+         Hp1 = Hp2;
+         Ho1 = Ho2;
+         valid1   = true;
+         hit_near = hit_away;
+      }
+
+      float disc_near;
+      float disc_away;
+      bool  disc1 = ray_disc_intersection(ray_origin, ray_direction, cylinder_endcap_t, Ca, cylinder_radius, disc_near);
+      bool  disc2 = ray_disc_intersection(ray_origin, ray_direction, cylinder_endcap_b, Ca, cylinder_radius, disc_away);
+      if (disc1) {
+         if (disc2) {
+            if (disc_away < disc_near)
+               disc_near = disc_away;
+         }
+      } else if (disc2) {
+         disc_near = hit_away;
+         disc1 = disc2;
+      }
+
+      if (disc1) {
+         if (disc_near < hit_near) {
+            hit_distance = disc_near;
+            return true;
+         }
+      } else {
+         if (!hits_from_inside_count) {
+            //
+            // The ray only hits the finite cone's curved surface once, and never hits 
+            // the cone's base. This means that the ray must be originating from inside 
+            // of the cone.
+            //
+            return false;
+         }
+         hit_distance = hit_near;
+         return true;
+      }
+   }
+   hit_distance = std::min(hit_near, hit_away);
+   return true;
+}
+{% endhighlight %}
 </section>
