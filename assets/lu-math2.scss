@@ -604,6 +604,41 @@ lu-math m-solvestep {
       }
    }
 }
+
+/* this element allows you to wrap expressions in a square-root "radical" symbol 
+   with an appropriate overline. correct usage is as follows:
+   
+    - first children are...
+       - a m-rawcap with one whitespace as text cotnent
+       - a m-raw with "&radic;(" as text content
+    - last children are...
+        - a m-raw with ")" as text content
+        - a m-rawcap
+    
+    - HTML comments are used to ensure that there is NO WHITESPACE between the 
+      m-raw and m-rawcap elements, and between the raw elements and the actual 
+      meaningful content
+
+   */
+lu-math m-sqrt {
+   --radical-width:.5em;
+   
+   display:inline-block;
+   
+   background:
+      /* radical (bendy prefix line): */
+      no-repeat left top/var(--radical-width) calc(100% - 2px) url("data:image/svg+xml;charset=utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 100' width='50' height='100' preserveAspectRatio='none'>\
+   <line x1=' 0' y1=' 50' x2='25' y2='100' stroke='black' vector-effect='non-scaling-stroke' />\
+   <line x1='25' y1='100' x2='50' y2='0' stroke='black' vector-effect='non-scaling-stroke' />\
+</svg>"),
+      /* overline: */
+      no-repeat left top/100% 1px linear-gradient(to right, transparent var(--radical-width), black var(--radical-width), black);
+
+   padding-left:calc(var(--radical-width) + .5ch);
+   padding-right:.5ch;
+}
+
 lu-math m-therefore {
    &[data-block] {
       display: block;
@@ -710,114 +745,6 @@ lu-math {
    m-veclength>m-delim::after {
       background: no-repeat left top/var(--glyph-width) 100% make-big-glyph-background("||");
    }
-}
-
-
-/* this element allows you to display exponents, with appropriate copy-and-paste 
-   and screen reader behavior. here is a usage example; brace yourself:
-   
-      <lu-math-exp><span aria-hidden="true"><lu-math-raw>^</lu-math-raw>2</span><lu-math-raw data-screen-reader-only>&nbsp;squared</lu-math-raw></lu-math-exp>
-   
-   there are three ways this element can be viewed.
-   
-    - when seen by a sighted user, it is "x" adorned with a superscript "2".
-    - when copied into plaintext, it is "x^2".
-    - when read by a screen reader, it is "x squared".
-   
-   correct setup for most cases is as follows:
-   
-    - the element's first child should be a SPAN with aria-hidden="true", to 
-      define content for sighted users and plaintext. this element's contents 
-      will vary depending on whether the exponent is...
-      
-       - ...a monomial (single term).
-       
-          - the first child should be a lu-math-raw with "^" as text content.
-          
-          - after this, just write the bare exponent.
-       
-       - ...an expression.
-       
-          - the first child should be a lu-math-raw with "^(" as text content.
-          
-          - the last child should be a lu-math-raw with ")" as text content.
-      
-    - the element's second child should be a lu-math-raw containing an attribute 
-      named data-screen-reader-only; this element should contain a non-breaking 
-      space, followed by the content intended for screen readers, followed by an 
-      additional non-breaking space:
-      
-       - if the exponent is 2, use "squared"
-       - if the exponent is 3, use "cubed"
-       - if the exponent is any single number besides those, use "to the N-th 
-         power" substituting the number in for "N".
-   
-   if the exponent is anything more complex than a single number, then alter the 
-   above instructions as follows:
-   
-    - move the screen-reader-only content to the start of the lu-math-exp element.
-    - use "&nbsp;to the power of&nbsp;" as the screen-reader-only content.
-    - move the exponent content (i.e. everything but the caret) outside of, and 
-      after, the aria-hidden element.
-   
-   example, with whitespace added (strip it when doing this yourself):
-   
-      <lu-math-exp>
-         <lu-math-raw data-screen-reader-only>
-            &nbsp;
-            to the power of
-            &nbsp;
-         </lu-math-raw>
-         <span aria-hidden="true"><lu-math-raw>^</lu-math-raw></span>
-         <lu-math-raw>(</lu-math-raw>
-         2<var>x</var> + <var>y</var>
-         <lu-math-raw>)</lu-math-raw>
-      </lu-math-exp>
-   
-   some developer notes:
-
-    - we need the non-breaking spaces so that screen readers don't collapse the 
-      word "squared" into the variable. using the example at the top of this 
-      comment, if we replace the non-breaking space with a normal one, then NVDA 
-      reads the value as "xsquared" (which sounds like "ssssquared," like, with a 
-      hiss). NVDA can see caret symbols but won't read them (i tested with it 
-      outside of the aria-hidden content, obviously). */
-lu-math-exp {
-   font-size:smaller;
-   vertical-align:super;
-}
-
-/* this element allows you to wrap expressions in a square-root "radical" symbol 
-   with an appropriate overline. correct usage is as follows:
-   
-    - first children are...
-       - a lu-math-raw-endcap with one whitespace as text cotnent
-       - a lu-math-raw with "&radic;(" as text content
-    - last children are...
-        - a lu-math-raw with ")" as text content
-        - a lu-math-raw-endcap
-    
-    - HTML comments are used to ensure that there is NO WHITESPACE between the 
-      raw and raw-endcap elements, and between the raw elements and the actual 
-      meaningful content
-
-   */
-lu-math-sqrt {
-   --radical-width:.5em;
-   
-   background:
-      /* radical (bendy prefix line): */
-      no-repeat left center/var(--radical-width) 100% url("data:image/svg+xml;charset=utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 100' width='50' height='100' preserveAspectRatio='none'>\
-   <line x1=' 0' y1=' 50' x2='25' y2='100' stroke='black' vector-effect='non-scaling-stroke' />\
-   <line x1='25' y1='100' x2='50' y2='0' stroke='black' vector-effect='non-scaling-stroke' />\
-</svg>"),
-      /* overline: */
-      no-repeat left top/100% 1px linear-gradient(to right, transparent var(--radical-width), black var(--radical-width), black);
-
-   padding-top:.25em;
-   padding-left:calc(var(--radical-width) + .5ch);
-   padding-right:.5ch;
 }
 
 lu-math-big-parens,
