@@ -192,6 +192,15 @@ table:not(.no-default-styles) {
       color:#666;
    }
 }
+.table-wrapper {
+   max-width:  100%;
+   overflow-x: auto;
+   
+   >table {
+      width: max-content;
+      max-width: 150vw; /* or else cols word-wrap to the computed widths of headers' contents (width on TH can't enlarge) */
+   }
+}
 
 *:first-child{margin-top:0}
 *:last-child{margin-bottom:0}

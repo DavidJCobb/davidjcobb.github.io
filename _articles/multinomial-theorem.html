@@ -562,6 +562,7 @@ end</code></pre>
    {%- endfor -%}
    {%- assign possibilities      = possibilities | split: "," -%}
    {%- assign possible_set_count = possibilities.size | divided_by: 6 -%}
+   <div class="table-wrapper">
    <table class="fade-zeroes">
       <thead>
          <tr>
@@ -621,6 +622,7 @@ end</code></pre>
          {%- endfor -%}
       </tbody>
    </table>
+   </div>
    
    <h3>Dealing with the inner loop</h3>
    <p>
@@ -637,6 +639,7 @@ end</code></pre>
    <p>
       So let's start by substituting in our <lu-math data-inline><var>x<sub>i</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>i</sub></var>" %}</lu-math> values. We'll keep things simple: instead of using the actual terms from our multinomial (for <lu-math data-inline><var>x<sub>i</sub></var></lu-math>), we'll represent the whole multinomial as <lu-math data-inline>{{var_Asca}} + {{var_Bsca}} + {{var_Csca}} + {{var_Dsca}} + {{var_Esca}} + {{var_Fsca}}</lu-math>.
    </p>
+   <div class="table-wrapper">
    <table>
       <thead>
          <tr>
@@ -685,9 +688,11 @@ end</code></pre>
          {%- endfor -%}
       </tbody>
    </table>
+   </div>
    <p>
       Now, if you take any value to the zeroth power, then you get 1, so we can strike a lot of terms from that table and just replace them with ones. Similarly, a term to the first power is just itself, so we can strip the exponent.
    </p>
+   <div class="table-wrapper">
    <table>
       <thead>
          <tr>
@@ -745,9 +750,11 @@ end</code></pre>
          {%- endfor -%}
       </tbody>
    </table>
+   </div>
    <p>
       Now let's add the multinomial coefficients to the table:
    </p>
+   <div class="table-wrapper">
    <table>
       <thead>
          <tr>
@@ -822,6 +829,7 @@ end</code></pre>
          {%- endfor -%}
       </tbody>
    </table>
+   </div>
    
    <h3>Putting it all together</h3>
    <p>
@@ -866,6 +874,7 @@ end</code></pre>
    <p>
       If we multiply all the items in a row together, then we'll get the result of that expression for that given set of <lu-math data-inline><var>k<sub>i</sub></var></lu-math> values. Let's see what that looks like. We can skip every cell in the table that's just the number 1, so in practice, 90% of that table is gone:
    </p>
+   <div class="table-wrapper">
    <table>
       <thead>
          <tr>
@@ -958,6 +967,7 @@ end</code></pre>
          {%- endfor -%}
       </tbody>
    </table>
+   </div>
    <p>
       So those are all the possible values of that one expression. Where were we using it again?
    </p>

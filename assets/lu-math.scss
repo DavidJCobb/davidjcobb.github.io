@@ -773,40 +773,8 @@ lu-math :is(
    m-binomial-coefficient,
    m-veclength
 ) {
-   /*
-   >m-delim {
-      display: inline-block;
-      height:  100%;
-      vertical-align: top;
-      
-      --glyph-width:1ch;
-      
-      position:relative;
-      width:1px;
-      margin-right:var(--glyph-width);
-      
-      text-indent: -1000vw;
-      
-      &::after {
-         content: "";
-         display: block;
-         
-         position: absolute;
-         left: 0;
-         top:  0;
-      
-         width:  var(--glyph-width);
-         height: 100%;
-      }
-   }*/
-   /*
-      above code doesn't allow things like MARK or DEL to properly contain 
-      the full height of this element, unless those things are made into 
-      inline-blocks (which then breaks delim heights from the above code).
-   */
-   
    display:inline-grid;
-   grid-template: "l body r" / min-content fit-content(100%) min-content;
+   grid-template: "l body r" / min-content 1fr min-content;
    vertical-align:middle;
    
    >m-delim {

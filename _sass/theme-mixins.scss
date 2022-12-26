@@ -98,6 +98,9 @@ $content-card-shadow-max-size:36px;
    padding:1.5rem 2rem;
    @include content-card-shadow(false);
 }
+%content-card {
+   @include content-card;
+}
 @mixin content-card-cutout {
    @include theme-background();
    

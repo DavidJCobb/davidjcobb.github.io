@@ -35,6 +35,45 @@ mark {
 }
 
 lu-math {
+   &:not([data-inline]) {
+      /*
+         For certain especially complex elements, Chrome on mobile may scale adjacent 
+         pieces of text  by wildly  inconsistent amounts,  resulting in "ransom note" 
+         font sizing. The following influences, among others, are documented:
+         
+          - Explicit heights disable autosizing.
+          
+          - `white-space: nowrap` disables autosizing.
+          
+          - "Clusters" of text fewer than four lines are not autosized.
+         
+         Meanwhile, I have observed that  `display: inline-block`  affects autosizing 
+         in ways that are not straightforward.
+         
+         Chrome documents their text autosizing at:
+         
+            <http://tinyurl.com/TextAutosizer>
+            <https://docs.google.com/document/d/1PPcEwAhXJJ1TQShor29KWB17KJJq7UJOM34oHwYP3Zg/edit>
+         
+         Autosize  algorithms  rely on logic that we  can neither  directly check nor 
+         directly control  from CSS. The  `text-size-adjust` property can  be used to 
+         disable autosizing directly, or to "influence" it; however, the mechanism of 
+         influence is  comically inadequate. We can directly override  the multiplier 
+         applied to an element's font size,  but only with a fixed constant, which is 
+         completely inadequate: the whole *point* of autosizing is to  scale the font 
+         size based on  metrics that we can't measure from CSS;  we *can't know* what 
+         an appropriate override value would ever be.
+         
+         When an autosizing algorithm  malfunctions in spectacular fashion, then, the 
+         only recourse we have is to disable autosizing entirely; and if the unscaled 
+         font size ends up being too small for some users, they're just screwed.
+      */
+      text-size-adjust: none;
+      
+      .explanation>aside {
+         text-size-adjust: auto;
+      }
+   }
    
    $padding: .05em;
    $stripe-width: 6px;
@@ -219,7 +258,7 @@ section>aside {
    @include content-card-cutout;
 }
 figure.card-cutout>.wrap {
-   @include content-card;
+   @extend %content-card;
    width:min-content;
    margin:0 auto;
 }
@@ -253,7 +292,7 @@ figure.mathematical-graph {
       }
    }
    &.card-cutout>.graph {
-      @include content-card;
+      @extend %content-card;
       
       padding:1rem;
       border-radius:1rem;
