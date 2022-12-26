@@ -10,10 +10,25 @@ social_media:
    title: Cobb - Ray/disc intersections
    description: The math behind doing raycasts for 3D discs. Includes public-domain code.
 extra_css_files:
- - lu-math.css
+ - lu-math2.css
    
 ---
 {%- include lu-math/defines.html -%}
+
+{%- assign var_Do     = "<var data-type='vector'>D<sub>o</sub></var>" -%}
+{%- assign var_Dn     = "<var data-type='vector'>D<sub>n</sub></var>" -%}
+{%- assign var_Dr     = "<var>D<sub>r</sub></var>" -%}
+{%- assign var_Hd     = "<var>H<sub>d</sub></var>" -%}
+{%- assign var_Hp     = "<var data-type='vector'>H<sub>p</sub></var>" -%}
+{%- assign var_Rd     = "<var data-type='vector'>R<sub>d</sub></var>" -%}
+{%- assign var_Ro     = "<var data-type='vector'>R<sub>o</sub></var>" -%}
+{%- assign var_Do_inl = var_Do | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Dr_inl = var_Dr | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Hd_inl = var_Hd | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Hp_inl = var_Hp | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Rd_inl = var_Rd | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Ro_inl = var_Ro | prepend: math_inl_enter | append: math_inl_leave -%}
+
 <section>
    <p>
       A ray/disc intersection is just the combination of two other tests. We check for an 
@@ -33,81 +48,80 @@ extra_css_files:
       Let's review our ray/plane check:
    </p>
    <lu-math>
-      <lu-math-givens>
+      <m-givens>
          <label>Given:</label>
          <dl>
-            <lu-math-dfn>
-               <dt><var>D<sub>o</sub></var></dt>
+            <dt>{{var_Do}}</dt>
+            <m-sep> = </m-sep>
                <dd>origin of the disc</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>D<sub>n</sub></var></dt>
+            <dt>{{var_Dn}}</dt>
+            <m-sep> = </m-sep>
                <dd>disc surface normal</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>R<sub>o</sub></var></dt>
+            <dt>{{var_Ro}}</dt>
+            <m-sep> = </m-sep>
                <dd>the ray's origin</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>R<sub>d</sub></var></dt>
+            <dt>{{var_Rd}}</dt>
+            <m-sep> = </m-sep>
                <dd>the ray's direction</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>H<sub>p</sub></var></dt>
+            <dt>{{var_Hp}}</dt>
+            <m-sep> = </m-sep>
                <dd>the position at which the ray hits the infinite plane containing our disc</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>H<sub>d</sub></var></dt>
+            <dt>{{var_Hd}}</dt>
+            <m-sep> = </m-sep>
                <dd>the hit distance: the distance from the ray origin to the hit position</dd>
-            </lu-math-dfn>
          </dl>
-      </lu-math-givens>
-      <lu-math-row>
-         <var>H<sub>p</sub></var>
+      </m-givens>
+      <m-row>
+         {{var_Hp}}
           = 
-         <var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-      </lu-math-row>
-      <lu-math-row>
-         <var>H<sub>d</sub></var>
+         {{var_Ro}} + {{var_Rd}}{{var_Hd}}
+      </m-row>
+      <m-row>
+         {{var_Hd}}
          =
+         {% capture numerator -%}
+            ({{var_Do}} - {{var_Ro}}) &bullet; {{var_Dn}}
+         {%- endcapture -%}
+         {%- capture denominator -%}
+            {{var_Rd}} &bullet; {{var_Dn}}
+         {%- endcapture -%}
          {% include lu-math/fraction.html
-            numer="(<var>D<sub>o</sub></var> - <var>R<sub>o</sub></var>) &bullet; <var>D<sub>n</sub></var>"
-            denom="<var>R<sub>d</sub></var> &bullet; <var>D<sub>n</sub></var>"
+            numer=numerator
+            denom=denominator
             
             numer_is_expr=true
          -%}
-      </lu-math-row>
+      </m-row>
    </lu-math>
    <p>
       We'll supplement that with a distance check:
    </p>
    <lu-math>
-      <lu-math-givens>
+      <m-givens>
          <label>Given:</label>
          <dl>
-            <lu-math-dfn>
-               <dt><var>D<sub>r</sub></var></dt>
+            <dt>{{var_Dr}}</dt>
+            <m-sep> = </m-sep>
                <dd>radius of the disc</dd>
-            </lu-math-dfn>
          </dl>
-      </lu-math-givens>
-      <lu-math-row>
-         ||<var>H<sub>p</sub></var> - <var>D<sub>o</sub></var>|| &leq; <var>D<sub>r</sub></var>
-      </lu-math-row>
+      </m-givens>
+      <m-row>
+         {{lu_math_vec_start}}{{var_Hp}} - {{var_Do}}{{lu_math_vec_end}} &leq; {{var_Dr}}
+      </m-row>
    </lu-math>
    <p>
-      On its own, this is actually a check to see if the hit position lies inside of a sphere centered on <lu-math data-inline><var>D<sub>o</sub></var></lu-math> with radius <lu-math data-inline><var>D<sub>r</sub></var></lu-math>. If the hit position is inside of that sphere <em>and</em> on the infinite plane that contains our disc, then it must be on the disc.
+      On its own, this is actually a check to see if the hit position lies inside of a sphere centered on {{var_Do_inl}} with radius {{var_Dr_inl}}. If the hit position is inside of that sphere <em>and</em> on the infinite plane that contains our disc, then it must be on the disc.
    </p>
    <p>
       Sadly, there's no way to avoid having to do the math for the hit position. Ah, well. We can at least save a square root operation (good for computers) if we compute the check like this, remembering that the dot product of a vector with itself is the vector's length squared:
    </p>
    <lu-math>
-      <lu-math-row>
-         ||<var>H<sub>p</sub></var> - <var>D<sub>o</sub></var>||{% include lu-math/exponent.html exponent=2 %} &leq; <var>D<sub>r</sub></var>{% include lu-math/exponent.html exponent=2 %}
-      </lu-math-row>
-      <lu-math-row>
-         (<var>H<sub>p</sub></var> - <var>D<sub>o</sub></var>) &bullet; (<var>H<sub>p</sub></var> - <var>D<sub>o</sub></var>) &leq; <var>D<sub>r</sub></var>{% include lu-math/exponent.html exponent=2 %}
-      </lu-math-row>
+      <m-row>
+         ||{{var_Hp}} - {{var_Do}}||{{lu_math_sq}} &leq; {{var_Dr}}{{lu_math_sq}}
+      </m-row>
+      <m-row>
+         ({{var_Hp}} - {{var_Do}}) &bullet; ({{var_Hp}} - {{var_Do}}) &leq; {{var_Dr}}{{lu_math_sq}}
+      </m-row>
    </lu-math>
 </section>
 

@@ -7,16 +7,16 @@
    include.args
       Array of String. Arguments in the function.
 {%- endcomment -%}
-<lu-math-function-def><!--
---><lu-math-name>{{ include.name }}</lu-math-name><!--
---><lu-math-delim>(</lu-math-delim><!--
---><lu-math-function-args>
+<m-function-def><!--
+--><m-name>{{ include.name }}</m-name><!--
+--><m-args><!--
+   --><m-delim>(</m-delim>
       {%- for arg in include.args -%}
-         <li>{{ arg }}</li>
+         <m-arg>{{ arg }}</m-arg>
          {%- unless forloop.last -%}
-            <lu-math-raw>, </lu-math-raw>
+            <m-sep>, </m-sep>
          {%- endunless -%}
       {%- endfor -%}
-   </lu-math-function-args><!--
---><lu-math-delim>)</lu-math-delim>
-</lu-math-function-def>
+      <m-delim>)</m-delim><!--
+--></m-args><!--
+--></m-function-def>

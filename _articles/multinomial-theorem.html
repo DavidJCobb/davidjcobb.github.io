@@ -5,7 +5,7 @@ tags:
 social_media:
    description: "A walkthrough of the multinomial theorem: how do you expand the square of (a + b + c + d + e + f)? How do you do it for a different number of additions, or a different exponent?"
 extra_css_files:
- - lu-math.css
+ - lu-math2.css
 table_of_contents:
  - id:    begin
    title: Let's get started
@@ -18,7 +18,7 @@ table_of_contents:
 {%- include lu-math/defines.html -%}
 <section>
    <p>
-      Suppose you have an expression of the form <lu-math data-inline>(<var>a</var> + <var>b</var> + <var>c</var> + <var>d</var> + <var>e</var> + <var>f</var><nobr>){{lu_math_sq}}</nobr></lu-math>, and you need to expand the square in order to solve some larger equation. How do you actually do that? More generally, is there an approach we can use to expand any group of added-together terms with any exponent?
+      Suppose you have an expression of the form <lu-math data-inline>(<var>a</var> + <var>b</var> + <var>c</var> + <var>d</var> + <var>e</var> + <var>f</var><m-nobr>){{lu_math_sq}}</m-nobr></lu-math>, and you need to expand the square in order to solve some larger equation. How do you actually do that? More generally, is there an approach we can use to expand any group of added-together terms with any exponent?
    </p>
    <p>
       Yes. It's called <a href="https://en.wikipedia.org/wiki/Multinomial_theorem">the multinomial theorem</a>.
@@ -28,368 +28,348 @@ table_of_contents:
 <section>
    <h2><a name="begin"></a>Let's get started</h2>
    <p>
-      The multinomial theorem can be used to expand any expression of the form <lu-math data-inline>(<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + ... + <var>x<sub>m</sub></var>){% include lu-math/exponent.html exponent="<var>n</var>" %}</lu-math>. Let's take a look at the equation:
+      The multinomial theorem can be used to expand any expression of the form <lu-math data-inline>(<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + ... + <var>x<sub>m</sub></var>){% include lu-math/exponent.html exponent=var_Nsca %}</lu-math>. Let's take a look at the equation:
    </p>
    <lu-math>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + ... + <var>x<sub>m</sub></var>){% include lu-math/exponent.html exponent="<var>n</var>" %}<nobr>
-             =</nobr> 
-         </lu-math-part>
-         <lu-math-part>
-            <lu-math-sequence data-operation="+-">
-               <lu-math-seq-info>
-                  <lu-math-raw>&Sigma;</lu-math-raw>
-                  <lu-math-condition>
-                     <lu-math-raw> for all </lu-math-raw>
-                     <var>k<sub>1</sub></var> + <var>k<sub>2</sub></var> + ... + <var>k<sub>m</sub></var> = <var>n</var>; 
+      <m-row>
+         <span>
+            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + ... + <var>x<sub>m</sub></var>){% include lu-math/exponent.html exponent=var_Nsca %}<m-nobr>
+             =</m-nobr> 
+         </span>
+         <span>
+            <m-sequence data-operation="+-">
+               <m-info>
+                  <m-raw>&Sigma;</m-raw>
+                  <m-condition>
+                     <m-raw> for all </m-raw>
+                     <var>k<sub>1</sub></var> + <var>k<sub>2</sub></var> + ... + <var>k<sub>m</sub></var> = {{var_Nsca}}; 
                      <var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>m</sub></var> &geq; 0
-                     <lu-math-raw> do: </lu-math-raw>
-                  </lu-math-condition>
-               </lu-math-seq-info>
-               <lu-math-seq-body><!--
-               --><lu-math-raw>(</lu-math-raw><!--
+                     <m-raw> do: </m-raw>
+                  </m-condition>
+               </m-info>
+               <m-content><!--
+               --><m-raw>(</m-raw><!--
                         
-               --><lu-math-binomial-coefficient>
-                     <lu-math-raw>(</lu-math-raw>
-                     <li><var>n</var></li>
-                     <lu-math-raw> choose (</lu-math-raw>
-                     <li><var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>m</sub></var></li>
-                     <lu-math-raw>))</lu-math-raw>
-                  </lu-math-binomial-coefficient><!--
-               --><lu-math-raw> &times; </lu-math-raw><!--
-               --><lu-math-sequence data-operation="*">
-                     <lu-math-seq-info>
-                        <lu-math-raw>&Pi;</lu-math-raw>
-                        <lu-math-seq-bounds>
-                           <lu-math-raw> from </lu-math-raw>
-                           <lu-math-bound-lower><var>t</var> = 1</lu-math-bound-lower>
-                           <lu-math-raw> through </lu-math-raw>
-                           <lu-math-bound-upper><var>m</var></lu-math-bound-upper>
-                           <lu-math-raw> do: </lu-math-raw>
-                        </lu-math-seq-bounds>
-                     </lu-math-seq-info>
-                     <lu-math-seq-body><!--
-                     --><lu-math-raw>(</lu-math-raw><!--
+               -->{%-
+                     include lu-math/binomial-coefficient.html
+                     top=var_Nsca
+                     bottom="<var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>m</sub></var>"
+                  -%}<!--
+               --><m-raw> &times; </m-raw><!--
+               --><m-sequence data-operation="*">
+                     <m-info>
+                        <m-raw>&Pi;</m-raw>
+                        <m-bounds>
+                           <m-raw> from </m-raw>
+                           <m-bound-lower><var>t</var> = 1</m-bound-lower>
+                           <m-raw> through </m-raw>
+                           <m-bound-upper><var>m</var></m-bound-upper>
+                           <m-raw> do: </m-raw>
+                        </m-bounds>
+                     </m-info>
+                     <m-content><!--
+                     --><m-raw>(</m-raw><!--
                         
                      --><var>x<sub>t</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>t</sub></var>" %}<!--
                         
-                     --><lu-math-raw>)</lu-math-raw><!--
-                  --></lu-math-seq-body>
-                  </lu-math-sequence><!--
+                     --><m-raw>)</m-raw><!--
+                  --></m-content>
+                  </m-sequence><!--
                         
-               --><lu-math-raw>)</lu-math-raw><!--
-            --></lu-math-seq-body>
-            </lu-math-sequence>
+               --><m-raw>)</m-raw><!--
+            --></m-content>
+            </m-sequence>
          
-         </lu-math-part>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-      </lu-math-row>
+         </span>
+         <m-rawcap> </m-rawcap>
+      </m-row>
    </lu-math>
    <p>
       Oh. Uh...
    </p>
    <p>
-      Well, to start with, those values below the summation symbol (&Sigma;) represent conditions. We have <lu-math data-inline><var>m</var></lu-math> variables named <lu-math data-inline><var>k<sub>something</sub></var></lu-math>, named <lu-math data-inline><var>k<sub>1</sub></var></lu-math> through <lu-math data-inline><var>k<sub>m</sub></var></lu-math>, and we have two conditions that apply to the lot of them. We are going to take <em>every possible combination of values</em> that meets these conditions, feed those values into the summation "body," and then compute the results and sum them all.
+      Well, to start with, those values below the summation symbol (&Sigma;) represent conditions. We have {{var_Msca_inl}} variables named <lu-math data-inline><var>k<sub>something</sub></var></lu-math>, named <lu-math data-inline><var>k<sub>1</sub></var></lu-math> through <lu-math data-inline><var>k<sub>m</sub></var></lu-math>, and we have two conditions that apply to the lot of them. We are going to take <em>every possible combination of values</em> that meets these conditions, feed those values into the summation "body," and then compute the results and sum them all.
    </p>
    <p>
       The summation "body," meanwhile, has us multiply a collection of values &mdash; that's the capital-pi (&Pi;) symbol; it's the multiplication version of &Sigma; &mdash; and then multiply <em>that</em> by something else. The result is then added as part of the summation loop.
    </p>
    <p>
-      The first condition on our summation loop is that the values must all add up to <lu-math data-inline><var>n</var></lu-math>, and the second condition is that they must all be greater than or equal to zero. This in turn implies that no one single value can be greater than <lu-math data-inline><var>n</var></lu-math>, as otherwise we'd need at least one of the others to be negative in order for this to work.
+      The first condition on our summation loop is that the values must all add up to {{var_Nsca_inl}}, and the second condition is that they must all be greater than or equal to zero. This in turn implies that no one single value can be greater than {{var_Nsca_inl}}, as otherwise we'd need at least one of the others to be negative in order for this to work.
    </p>
    <p>
       <span class="different-wording-for-the-blind">
          <span class="sighted" aria-hidden="true">See the large parentheses, with the two rows and no symbol dividing them?</span>
          <span class="blind">Hear that one bit with the word "choose?" </span>
       </span>
-      That's the notation for <dfn>binomial coefficients</dfn>. If we call the top number <lu-math data-inline><var>n</var></lu-math> and the bottom number <lu-math data-inline><var>k</var></lu-math>, then given the expression <lu-math data-inline>(1 + <var>x</var>){% include lu-math/exponent.html exponent="<var>k</var>" %}</lu-math>, we can compute the coefficient of <lu-math data-inline><var>x</var>{% include lu-math/exponent.html exponent="<var>k</var>" %}</lu-math> as follows:
+      That's the notation for <dfn>binomial coefficients</dfn>. If we call the top number {{var_Nsca_inl}} and the bottom number {{var_Ksca_inl}}, then given the expression <lu-math data-inline>(1 + {{var_Xsca}}){% include lu-math/exponent.html exponent=var_Ksca %}</lu-math>, we can compute the coefficient of <lu-math data-inline>{{var_Xsca}}{% include lu-math/exponent.html exponent=var_Ksca %}</lu-math> as follows:
    </p>
    <lu-math>
-      <lu-math-row><!--
-      --><lu-math-fraction><!--
-         --><lu-math-numer><var>n</var>!</lu-math-numer><!--
-         --><lu-math-raw> &divide; (</lu-math-raw><!--
-         --><lu-math-denom><!--
-            --><var>k</var>!(<var>n</var> - <var>k</var>)!<!--
+      <m-row><!--
+      --><m-fraction><!--
+         --><m-numer>{{var_Nsca}}!</m-numer><!--
+         --><m-raw> &divide; (</m-raw><!--
+         --><m-denom><!--
+            -->{{var_Ksca}}!({{var_Nsca}} - {{var_Ksca}})!<!--
          --></lu-math-deom><!--
-         --><lu-math-raw>)</lu-math-raw><!--
-      --></lu-math-fraction>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-      </lu-math-row>
+         --><m-raw>)</m-raw><!--
+      --></m-fraction>
+         <m-rawcap> </m-rawcap>
+      </m-row>
    </lu-math>
    <p>
-      Wikipedia offers one example: <lu-math data-inline>(1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}</lu-math> is:
+      Wikipedia offers one example: <lu-math data-inline>(1 + {{var_Xsca}}){{lu_math_exps[4]}}</lu-math> is:
    </p>
    <lu-math>
-      <lu-math-aligned data-right>
-         <lu-math-row>
-            <lu-math-part>
-               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
+      <m-layout-left data-right>
+         <m-row>
+            <span>
+               (1 + {{var_Xsca}}){{lu_math_exps[4]}}
                 = 
-            </lu-math-part><!--
-         --><lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li>4</li>
-               <lu-math-raw> choose </lu-math-raw>
-               <li>0</li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=0 %}
+            </span><!--
+         -->{%-
+               include lu-math/binomial-coefficient.html
+               top="4"
+               bottom="0"
+            -%}<!--
+         --><span>
+               {{var_Xsca}}{% include lu-math/exponent.html exponent=0 %}
                 + 
-            </lu-math-part><!--
-         --><lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li>4</li>
-               <lu-math-raw> choose </lu-math-raw>
-               <li>1</li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=1 %}
+            </span><!--
+         -->{%-
+               include lu-math/binomial-coefficient.html
+               top="4"
+               bottom="1"
+            -%}<!--
+         --><span>
+               {{var_Xsca}}{% include lu-math/exponent.html exponent=1 %}
                 + 
-            </lu-math-part><!--
-         --><lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li>4</li>
-               <lu-math-raw> choose </lu-math-raw>
-               <li>2</li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient><!--
-         --><lu-math-part>
-               <var>x</var>{{ lu_math_sq }}
+            </span><!--
+         -->{%-
+               include lu-math/binomial-coefficient.html
+               top="4"
+               bottom="2"
+            -%}<!--
+         --><span>
+               {{var_Xsca}}{{ lu_math_sq }}
                 + 
-            </lu-math-part><!--
-         --><lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li>4</li>
-               <lu-math-raw> choose </lu-math-raw>
-               <li>3</li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=3 %}
+            </span><!--
+         -->{%-
+               include lu-math/binomial-coefficient.html
+               top="4"
+               bottom="3"
+            -%}<!--
+         --><span>
+               {{var_Xsca}}{{lu_math_exps[3]}}
                 + 
-            </lu-math-part><!--
-         --><lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li>4</li>
-               <lu-math-raw> choose </lu-math-raw>
-               <li>4</li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
-            </lu-math-part>
-         </lu-math-row>
-         <lu-math-row>
-            <lu-math-spacing>
-               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
-            </lu-math-spacing><!--
-         --><lu-math-part>&nbsp;=&nbsp;</lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>4!</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->0!(4 - 0)!<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=0 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>4!</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->1!(4 - 1)!<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=1 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>4!</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->2!(4 - 2)!<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{{ lu_math_sq }}
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>4!</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->3!(4 - 3)!<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=3 %}
-                + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>4!</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
-               -->4!(4 - 4)!<!--
-            --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
-            </lu-math-part>
-         </lu-math-row>
-         <lu-math-row>
-            <lu-math-spacing>
-               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
-            </lu-math-spacing><!--
-         --><lu-math-part>&nbsp;=&nbsp;</lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>24</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
+            </span><!--
+         -->{%-
+               include lu-math/binomial-coefficient.html
+               top="4"
+               bottom="4"
+            -%}<!--
+         --><span>
+               {{var_Xsca}}{{lu_math_exps[4]}}
+            </span>
+         </m-row>
+         <m-row>
+            
+               (1 + {{var_Xsca}}){{lu_math_exps[4]}}
+            
+            =
+            {{lu_math_big_parens_start}}
+            <m-fraction><!--
+               --><m-numer>4!</m-numer><!--
+               --><m-raw> &divide; (</m-raw><!--
+               --><m-denom><!--
+                  -->0!(4 - 0)!<!--
+               --></lu-math-deom><!--
+               --><m-raw>)</m-raw><!--
+            --></m-fraction><!--
+         -->{{lu_math_big_parens_end}}<!--
+         -->{{var_Xsca}}{% include lu-math/exponent.html exponent=0 %}
+            + 
+            {{lu_math_big_parens_start}}
+               <m-fraction><!--
+               --><m-numer>4!</m-numer><!--
+               --><m-raw> &divide; (</m-raw><!--
+               --><m-denom><!--
+                  -->1!(4 - 1)!<!--
+               --></lu-math-deom><!--
+               --><m-raw>)</m-raw><!--
+            --></m-fraction><!--
+         -->{{lu_math_big_parens_end}}<!--
+         -->{{var_Xsca}}{% include lu-math/exponent.html exponent=1 %}
+            + 
+            {{lu_math_big_parens_start}}
+               <m-fraction><!--
+               --><m-numer>4!</m-numer><!--
+               --><m-raw> &divide; (</m-raw><!--
+               --><m-denom><!--
+                  -->2!(4 - 2)!<!--
+               --></lu-math-deom><!--
+               --><m-raw>)</m-raw><!--
+            --></m-fraction><!--
+         -->{{lu_math_big_parens_end}}<!--
+         -->{{var_Xsca}}{{ lu_math_sq }}
+            + 
+            {{lu_math_big_parens_start}}
+               <m-fraction><!--
+               --><m-numer>4!</m-numer><!--
+               --><m-raw> &divide; (</m-raw><!--
+               --><m-denom><!--
+                  -->3!(4 - 3)!<!--
+               --></lu-math-deom><!--
+               --><m-raw>)</m-raw><!--
+            --></m-fraction><!--
+         -->{{lu_math_big_parens_end}}<!--
+         -->{{var_Xsca}}{{lu_math_exps[3]}}
+            +
+            {{lu_math_big_parens_start}}
+               <m-fraction><!--
+               --><m-numer>4!</m-numer><!--
+               --><m-raw> &divide; (</m-raw><!--
+               --><m-denom><!--
+                  -->4!(4 - 4)!<!--
+               --></lu-math-deom><!--
+               --><m-raw>)</m-raw><!--
+            --></m-fraction><!--
+         -->{{lu_math_big_parens_end}}<!--
+         -->{{var_Xsca}}{{lu_math_exps[4]}}
+         </m-row>
+         <m-row>
+            (1 + {{var_Xsca}}){{lu_math_exps[4]}}
+            =
+            {{lu_math_big_parens_start}}<m-fraction><!--
+            --><m-numer>24</m-numer><!--
+            --><m-raw> &divide; (</m-raw><!--
+            --><m-denom><!--
                -->24<!--
             --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
+            --><m-raw>)</m-raw><!--
+         --></m-fraction>{{lu_math_big_parens_end}}<!--
+         -->
                 &times; 1
                 + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>24</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
+            <!--
+         -->{{lu_math_big_parens_start}}<m-fraction><!--
+            --><m-numer>24</m-numer><!--
+            --><m-raw> &divide; (</m-raw><!--
+            --><m-denom><!--
                -->6<!--
             --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=1 %}
+            --><m-raw>)</m-raw><!--
+         --></m-fraction>{{lu_math_big_parens_end}}<!--
+         -->
+               {{var_Xsca}}{% include lu-math/exponent.html exponent=1 %}
                 + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>24</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
+            <!--
+         -->{{lu_math_big_parens_start}}<m-fraction><!--
+            --><m-numer>24</m-numer><!--
+            --><m-raw> &divide; (</m-raw><!--
+            --><m-denom><!--
                -->2 &times; 2<!--
             --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{{ lu_math_sq }}
+            --><m-raw>)</m-raw><!--
+         --></m-fraction>{{lu_math_big_parens_end}}<!--
+         -->
+               {{var_Xsca}}{{ lu_math_sq }}
                 + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>24</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
+            <!--
+         -->{{lu_math_big_parens_start}}<m-fraction><!--
+            --><m-numer>24</m-numer><!--
+            --><m-raw> &divide; (</m-raw><!--
+            --><m-denom><!--
                -->6<!--
             --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=3 %}
+            --><m-raw>)</m-raw><!--
+         --></m-fraction>{{lu_math_big_parens_end}}<!--
+         -->
+               {{var_Xsca}}{{lu_math_exps[3]}}
                 + 
-            </lu-math-part><!--
-         --><lu-math-fraction class="big-parens"><!--
-            --><lu-math-numer>24</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
+            <!--
+         -->{{lu_math_big_parens_start}}<m-fraction><!--
+            --><m-numer>24</m-numer><!--
+            --><m-raw> &divide; (</m-raw><!--
+            --><m-denom><!--
                -->24<!--
             --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-part>
-               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
-            </lu-math-part>
-         </lu-math-row>
-         <lu-math-row>
-            <lu-math-spacing>
-               (1 + <var>x</var>){% include lu-math/exponent.html exponent=4 %}
-            </lu-math-spacing><!--
-         --><lu-math-part>&nbsp;=&nbsp;</lu-math-part>
-            <lu-math-part>
-               1
-                + 
-               4<var>x</var>{% include lu-math/exponent.html exponent=1 %}
-                + 
-               6<var>x</var>{{ lu_math_sq }}
-                + 
-               4<var>x</var>{% include lu-math/exponent.html exponent=3 %}
-                + 
-               <var>x</var>{% include lu-math/exponent.html exponent=4 %}
-            </lu-math-part>
-         </lu-math-row>
-      </lu-math-aligned>
+            --><m-raw>)</m-raw><!--
+         --></m-fraction>{{lu_math_big_parens_end}}<!--
+         -->
+               {{var_Xsca}}{{lu_math_exps[4]}}
+            
+         </m-row>
+         <m-row>
+            (1 + {{var_Xsca}}){{lu_math_exps[4]}}
+            =
+            1
+            + 
+            4{{var_Xsca}}{{lu_math_exps[1]}}
+            + 
+            6{{var_Xsca}}{{ lu_math_sq }}
+            + 
+            4{{var_Xsca}}{{lu_math_exps[3]}}
+            + 
+            {{var_Xsca}}{{lu_math_exps[4]}}
+         </m-row>
+      </m-layout-left>
    </lu-math>
    <p>
-      Apparently, that generalizes to larger "multinomials;" if your multinomial has <lu-math data-inline><var>r</var></lu-math> terms in it, then you'd do:
+      Apparently, that generalizes to larger "multinomials;" if your multinomial has {{var_Rsca_inl}} terms in it, then you'd do:
    </p>
    <lu-math>
-      <lu-math-row><!--
-      --><lu-math-part>
-            <lu-math-raw-endcap> </lu-math-raw-endcap>
-            <lu-math-binomial-coefficient>
-               <lu-math-raw>(</lu-math-raw>
-               <li><var>n</var></li>
-               <lu-math-raw> and (</lu-math-raw>
-               <li><var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>r</sub></var></li>
-               <lu-math-raw>)</lu-math-raw>
-            </lu-math-binomial-coefficient>
-         </lu-math-part>
+      <m-row><!--
+      --><span>
+            <m-rawcap> </m-rawcap>
+            {%-
+               include lu-math/binomial-coefficient.html
+               top=var_Nsca
+               bottom="<var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>r</sub></var>"
+            -%}
+         </span>
           = <!--
-      --><lu-math-fraction><!--
-         --><lu-math-numer><var>n</var>!</lu-math-numer><!--
-         --><lu-math-raw> &divide; (</lu-math-raw><!--
-         --><lu-math-denom><!--
+      --><m-fraction><!--
+         --><m-numer>{{var_Nsca}}!</m-numer><!--
+         --><m-raw> &divide; (</m-raw><!--
+         --><m-denom><!--
             --><var>k<sub>1</sub></var>!<var>k<sub>2</sub></var>!...<var>k<sub>r</sub></var>!<!--
          --></lu-math-deom><!--
-         --><lu-math-raw>)</lu-math-raw><!--
-      --></lu-math-fraction>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-      </lu-math-row>
+         --><m-raw>)</m-raw><!--
+      --></m-fraction>
+         <m-rawcap> </m-rawcap>
+      </m-row>
    </lu-math>
    <p>
-      Given a multinomial with <lu-math data-inline><var>r</var></lu-math> terms, the variable <lu-math data-inline><var>k<sub>i</sub></var></lu-math> is defined below &mdash; and as a reminder, this is summation, not a single variable:
+      Given a multinomial with {{var_Rsca_inl}} terms, the variable <lu-math data-inline><var>k<sub>i</sub></var></lu-math> is defined below &mdash; and as a reminder, this is summation, not a single variable:
    </p>
    <lu-math>
-      <lu-math-row>
-         <lu-math-part>
-            <lu-math-sequence data-operation="+-">
-               <lu-math-seq-info>
-                  <lu-math-raw>&Sigma;</lu-math-raw>
-                  <lu-math-seq-bounds>
-                     <lu-math-raw> from </lu-math-raw>
-                     <lu-math-bound-lower><var>i</var> = 1</lu-math-bound-lower>
-                     <lu-math-raw> through </lu-math-raw>
-                     <lu-math-bound-upper><var>r</var></lu-math-bound-upper>
-                     <lu-math-raw> do: </lu-math-raw>
-                  </lu-math-seq-bounds>
-               </lu-math-seq-info>
-               <lu-math-seq-body><!--
-               --><lu-math-raw>(</lu-math-raw><!--
+      <m-row>
+         <span>
+            <m-sequence data-operation="+-">
+               <m-info>
+                  <m-raw>&Sigma;</m-raw>
+                  <m-bounds>
+                     <m-raw> from </m-raw>
+                     <m-bound-lower><var>i</var> = 1</m-bound-lower>
+                     <m-raw> through </m-raw>
+                     <m-bound-upper><var>r</var></m-bound-upper>
+                     <m-raw> do: </m-raw>
+                  </m-bounds>
+               </m-info>
+               <m-content><!--
+               --><m-raw>(</m-raw><!--
                   
                --><var>k<sub>i</sub></var><!--
                   
-               --><lu-math-raw>)</lu-math-raw><!--
-            --></lu-math-seq-body>
-            </lu-math-sequence>
-         </lu-math-part>
-         <lu-math-part>
+               --><m-raw>)</m-raw><!--
+            --></m-content>
+            </m-sequence>
+         </span>
+         <span>
              = 
-            <var>n</var>
-         </lu-math-part>
-      </lu-math-row>
+            {{var_Nsca}}
+         </span>
+      </m-row>
    </lu-math>
    <p>
       This is all getting pretty out-there, so let's come back to Earth by actually using this.
@@ -399,118 +379,116 @@ table_of_contents:
 <section>
    <h2><a name="example"></a>An example</h2>
    <p>
-      We'll go with the example I led in with: <lu-math data-inline>(<var>a</var> + <var>b</var> + <var>c</var> + <var>d</var> + <var>e</var> + <var>f</var><nobr>){{lu_math_sq}}</nobr></lu-math>. We have a multinomial that we want to square, so <lu-math data-inline><var>n</var></lu-math> is 2. Our multinomial has six terms, so <lu-math data-inline><var>m</var></lu-math> is 6.
+      We'll go with the example I led in with: <lu-math data-inline>({{var_Asca}} + {{var_Bsca}} + {{var_Csca}} + {{var_Dsca}} + {{var_Esca}} + {{var_Fsca}}<m-nobr>){{lu_math_sq}}</m-nobr></lu-math>. We have a multinomial that we want to square, so {{var_Nsca_inl}} is 2. Our multinomial has six terms, so {{var_Msca_inl}} is 6.
    </p>
    <lu-math>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + <var>x<sub>3</sub></var> + <var>x<sub>4</sub></var> + <var>x<sub>5</sub></var> + <var>x<sub>6</sub></var>){{ lu_math_sq }}<nobr>
-             =</nobr> 
-         </lu-math-part>
-         <lu-math-part>
-            <lu-math-sequence data-operation="+-">
-               <lu-math-seq-info>
-                  <lu-math-raw>&Sigma;</lu-math-raw>
-                  <lu-math-condition>
-                     <lu-math-raw> for all </lu-math-raw>
+      <m-row>
+         <span>
+            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + <var>x<sub>3</sub></var> + <var>x<sub>4</sub></var> + <var>x<sub>5</sub></var> + <var>x<sub>6</sub></var>){{ lu_math_sq }}<m-nobr>
+             =</m-nobr> 
+         </span>
+         <span>
+            <m-sequence data-operation="+-">
+               <m-info>
+                  <m-raw>&Sigma;</m-raw>
+                  <m-condition>
+                     <m-raw> for all </m-raw>
                      <var>k<sub>1</sub></var> + <var>k<sub>2</sub></var> + ... + <var>k<sub>6</sub></var> = 2; 
                      <var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>6</sub></var> &geq; 0
-                     <lu-math-raw> do: </lu-math-raw>
-                  </lu-math-condition>
-               </lu-math-seq-info>
-               <lu-math-seq-body><!--
-               --><lu-math-raw>(</lu-math-raw><!--
+                     <m-raw> do: </m-raw>
+                  </m-condition>
+               </m-info>
+               <m-content><!--
+               --><m-raw>(</m-raw><!--
                         
-               --><lu-math-binomial-coefficient>
-                     <lu-math-raw>(</lu-math-raw>
-                     <li>2</li>
-                     <lu-math-raw> and (</lu-math-raw>
-                     <li><var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>6</sub></var></li>
-                     <lu-math-raw>)</lu-math-raw>
-                  </lu-math-binomial-coefficient><!--
-               --><lu-math-raw> &times; </lu-math-raw><!--
-               --><lu-math-sequence data-operation="*">
-                     <lu-math-seq-info>
-                        <lu-math-raw>&Pi;</lu-math-raw>
-                        <lu-math-seq-bounds>
-                           <lu-math-raw> from </lu-math-raw>
-                           <lu-math-bound-lower><var>t</var> = 1</lu-math-bound-lower>
-                           <lu-math-raw> through </lu-math-raw>
-                           <lu-math-bound-upper>6</lu-math-bound-upper>
-                           <lu-math-raw> do: </lu-math-raw>
-                        </lu-math-seq-bounds>
-                     </lu-math-seq-info>
-                     <lu-math-seq-body><!--
-                     --><lu-math-raw>(</lu-math-raw><!--
+               -->{%-
+                     include lu-math/binomial-coefficient.html
+                     top="2"
+                     bottom="<var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>6</sub></var>"
+                  -%}<!--
+               --><m-raw> &times; </m-raw><!--
+               --><m-sequence data-operation="*">
+                     <m-info>
+                        <m-raw>&Pi;</m-raw>
+                        <m-bounds>
+                           <m-raw> from </m-raw>
+                           <m-bound-lower>{{var_Tsca}} = 1</m-bound-lower>
+                           <m-raw> through </m-raw>
+                           <m-bound-upper>6</m-bound-upper>
+                           <m-raw> do: </m-raw>
+                        </m-bounds>
+                     </m-info>
+                     <m-content><!--
+                     --><m-raw>(</m-raw><!--
                         
                      --><var>x<sub>t</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>t</sub></var>" %}<!--
                         
-                     --><lu-math-raw>)</lu-math-raw><!--
-                  --></lu-math-seq-body>
-                  </lu-math-sequence><!--
+                     --><m-raw>)</m-raw><!--
+                  --></m-content>
+                  </m-sequence><!--
                         
-               --><lu-math-raw>)</lu-math-raw><!--
-            --></lu-math-seq-body>
-            </lu-math-sequence>
+               --><m-raw>)</m-raw><!--
+            --></m-content>
+            </m-sequence>
          
-         </lu-math-part>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-      </lu-math-row>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + <var>x<sub>3</sub></var> + <var>x<sub>4</sub></var> + <var>x<sub>5</sub></var> + <var>x<sub>6</sub></var>){{ lu_math_sq }}<nobr>
-             =</nobr> 
-         </lu-math-part>
-         <lu-math-part>
-            <lu-math-sequence data-operation="+-">
-               <lu-math-seq-info>
-                  <lu-math-raw>&Sigma;</lu-math-raw>
-                  <lu-math-condition>
-                     <lu-math-raw> for all </lu-math-raw>
+         </span>
+         <m-rawcap> </m-rawcap>
+      </m-row>
+      <m-row>
+         <span>
+            (<var>x<sub>1</sub></var> + <var>x<sub>2</sub></var> + <var>x<sub>3</sub></var> + <var>x<sub>4</sub></var> + <var>x<sub>5</sub></var> + <var>x<sub>6</sub></var>){{ lu_math_sq }}<m-nobr>
+             =</m-nobr> 
+         </span>
+         <span>
+            <m-sequence data-operation="+-">
+               <m-info>
+                  <m-raw>&Sigma;</m-raw>
+                  <m-condition>
+                     <m-raw> for all </m-raw>
                      <var>k<sub>1</sub></var> + <var>k<sub>2</sub></var> + ... + <var>k<sub>6</sub></var> = 2; 
                      <var>k<sub>1</sub></var>,<var>k<sub>2</sub></var>,...,<var>k<sub>6</sub></var> &geq; 0
-                     <lu-math-raw> do: </lu-math-raw>
-                  </lu-math-condition>
-               </lu-math-seq-info>
-               <lu-math-seq-body><!--
-               --><lu-math-raw>(</lu-math-raw><!--
+                     <m-raw> do: </m-raw>
+                  </m-condition>
+               </m-info>
+               <m-content><!--
+               --><m-raw>(</m-raw><!--
                         
-               --><lu-math-fraction><!--
-                  --><lu-math-numer>2!</lu-math-numer><!--
-                  --><lu-math-raw> &divide; (</lu-math-raw><!--
-                  --><lu-math-denom><!--
+               --><m-fraction><!--
+                  --><m-numer>2!</m-numer><!--
+                  --><m-raw> &divide; (</m-raw><!--
+                  --><m-denom><!--
                      --><var>k<sub>1</sub></var>!<var>k<sub>2</sub></var>!...<var>k<sub>6</sub></var>!<!--
                   --></lu-math-deom><!--
-                  --><lu-math-raw>)</lu-math-raw><!--
-               --></lu-math-fraction><!--
-               --><lu-math-raw> &times; </lu-math-raw><!--
-               --><lu-math-sequence data-operation="*">
-                     <lu-math-seq-info>
-                        <lu-math-raw>&Pi;</lu-math-raw>
-                        <lu-math-seq-bounds>
-                           <lu-math-raw> from </lu-math-raw>
-                           <lu-math-bound-lower><var>t</var> = 1</lu-math-bound-lower>
-                           <lu-math-raw> through </lu-math-raw>
-                           <lu-math-bound-upper>6</lu-math-bound-upper>
-                           <lu-math-raw> do: </lu-math-raw>
-                        </lu-math-seq-bounds>
-                     </lu-math-seq-info>
-                     <lu-math-seq-body><!--
-                     --><lu-math-raw>(</lu-math-raw><!--
+                  --><m-raw>)</m-raw><!--
+               --></m-fraction><!--
+               --><m-raw> &times; </m-raw><!--
+               --><m-sequence data-operation="*">
+                     <m-info>
+                        <m-raw>&Pi;</m-raw>
+                        <m-bounds>
+                           <m-raw> from </m-raw>
+                           <m-bound-lower>{{var_Tsca}} = 1</m-bound-lower>
+                           <m-raw> through </m-raw>
+                           <m-bound-upper>6</m-bound-upper>
+                           <m-raw> do: </m-raw>
+                        </m-bounds>
+                     </m-info>
+                     <m-content><!--
+                     --><m-raw>(</m-raw><!--
                         
                      --><var>x<sub>t</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>t</sub></var>" %}<!--
                         
-                     --><lu-math-raw>)</lu-math-raw><!--
-                  --></lu-math-seq-body>
-                  </lu-math-sequence><!--
+                     --><m-raw>)</m-raw><!--
+                  --></m-content>
+                  </m-sequence><!--
                         
-               --><lu-math-raw>)</lu-math-raw><!--
-            --></lu-math-seq-body>
-            </lu-math-sequence>
+               --><m-raw>)</m-raw><!--
+            --></m-content>
+            </m-sequence>
          
-         </lu-math-part>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-      </lu-math-row>
+         </span>
+         <m-rawcap> </m-rawcap>
+      </m-row>
    </lu-math>
    <p>
       This equation is a nested loop. The outermost loop has six iterator variables, and the innermost loop just goes over those. It's a bit like this:
@@ -657,7 +635,7 @@ end</code></pre>
       </li>
    </ul>
    <p>
-      So let's start by substituting in our <lu-math data-inline><var>x<sub>i</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>i</sub></var>" %}</lu-math> values. We'll keep things simple: instead of using the actual terms from our multinomial (for <lu-math data-inline><var>x<sub>i</sub></var></lu-math>), we'll represent the whole multinomial as <lu-math data-inline><var>a</var> + <var>b</var> + <var>c</var> + <var>d</var> + <var>e</var> + <var>f</var></lu-math>.
+      So let's start by substituting in our <lu-math data-inline><var>x<sub>i</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>i</sub></var>" %}</lu-math> values. We'll keep things simple: instead of using the actual terms from our multinomial (for <lu-math data-inline><var>x<sub>i</sub></var></lu-math>), we'll represent the whole multinomial as <lu-math data-inline>{{var_Asca}} + {{var_Bsca}} + {{var_Csca}} + {{var_Dsca}} + {{var_Esca}} + {{var_Fsca}}</lu-math>.
    </p>
    <table>
       <thead>
@@ -700,7 +678,7 @@ end</code></pre>
                   {%- assign td-classes = td-classes | append: " deemphasize" -%}
                {%- endif -%}
             <td class="{{ td-classes }}">
-               <var>{{ vars[forloop.index0] }}</var>{%- include lu-math/exponent.html exponent=item %}
+               <lu-math data-inline><var>{{ vars[forloop.index0] }}</var>{%- include lu-math/exponent.html exponent=item %}</lu-math>
             </td>
             {%- endfor -%}
          </tr>
@@ -754,10 +732,12 @@ end</code></pre>
                {%- if item == "0" -%}
                   1
                {%- else -%}
-                  <var>{{ vars[forloop.index0] }}</var>
-                  {%- if item != "1" -%}
-                     {%- include lu-math/exponent.html exponent=item %}
-                  {%- endif -%}
+                  <lu-math data-inline>
+                     <var>{{ vars[forloop.index0] }}</var>
+                     {%- if item != "1" -%}
+                        {%- include lu-math/exponent.html exponent=item %}
+                     {%- endif -%}
+                  </lu-math>
                {%- endif -%}
             </td>
             {%- endfor -%}
@@ -776,7 +756,7 @@ end</code></pre>
             </th>
             {%- for i in (1..6) -%}
                <th>
-                  <lu-math data-inline><var>i = {{ i }}</var></lu-math>
+                  <lu-math data-inline>{{var_Isca}} = {{ i }}</lu-math>
                </th>
             {%- endfor -%}
             <th><abbr title="Multinomial Coefficients">MCs</abbr></th>
@@ -813,10 +793,12 @@ end</code></pre>
                {%- if item == "0" -%}
                   1
                {%- else -%}
-                  <var>{{ vars[forloop.index0] }}</var>
-                  {%- if item != "1" -%}
-                     {%- include lu-math/exponent.html exponent=item %}
-                  {%- endif -%}
+                  <lu-math data-inline>
+                     <var>{{ vars[forloop.index0] }}</var>
+                     {%- if item != "1" -%}
+                        {%- include lu-math/exponent.html exponent=item %}
+                     {%- endif -%}
+                  </lu-math>
                {%- endif -%}
             </td>
             {%- endfor -%}
@@ -846,40 +828,40 @@ end</code></pre>
       Remember that each row represents a valid set of possible values for the <lu-math data-inline><var>k<sub>1</sub></var></lu-math> through <lu-math data-inline><var>k<sub>6</sub></var></lu-math> variables. Each row represents the values we'll use in this part of the formula:
    </p>
    <lu-math>
-      <lu-math-row>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-         <lu-math-part>
-            <lu-math-fraction><!--
-            --><lu-math-numer>2!</lu-math-numer><!--
-            --><lu-math-raw> &divide; (</lu-math-raw><!--
-            --><lu-math-denom><!--
+      <m-row>
+         <m-rawcap> </m-rawcap>
+         <span>
+            <m-fraction><!--
+            --><m-numer>2!</m-numer><!--
+            --><m-raw> &divide; (</m-raw><!--
+            --><m-denom><!--
                --><var>k<sub>1</sub></var>!<var>k<sub>2</sub></var>!...<var>k<sub>6</sub></var>!<!--
             --></lu-math-deom><!--
-            --><lu-math-raw>)</lu-math-raw><!--
-         --></lu-math-fraction><!--
-         --><lu-math-raw> &times; </lu-math-raw><!--
-         --><lu-math-sequence data-operation="*">
-               <lu-math-seq-info>
-                  <lu-math-raw>&Pi;</lu-math-raw>
-                  <lu-math-seq-bounds>
-                     <lu-math-raw> from </lu-math-raw>
-                     <lu-math-bound-lower><var>t</var> = 1</lu-math-bound-lower>
-                     <lu-math-raw> through </lu-math-raw>
-                     <lu-math-bound-upper>6</lu-math-bound-upper>
-                     <lu-math-raw> do: </lu-math-raw>
-                  </lu-math-seq-bounds>
-               </lu-math-seq-info>
-               <lu-math-seq-body><!--
-               --><lu-math-raw>(</lu-math-raw><!--
+            --><m-raw>)</m-raw><!--
+         --></m-fraction><!--
+         --><m-raw> &times; </m-raw><!--
+         --><m-sequence data-operation="*">
+               <m-info>
+                  <m-raw>&Pi;</m-raw>
+                  <m-bounds>
+                     <m-raw> from </m-raw>
+                     <m-bound-lower>{{var_Tsca}} = 1</m-bound-lower>
+                     <m-raw> through </m-raw>
+                     <m-bound-upper>6</m-bound-upper>
+                     <m-raw> do: </m-raw>
+                  </m-bounds>
+               </m-info>
+               <m-content><!--
+               --><m-raw>(</m-raw><!--
                   
                --><var>x<sub>t</sub></var>{% include lu-math/exponent.html exponent="<var>k<sub>t</sub></var>" %}<!--
                   
-               --><lu-math-raw>)</lu-math-raw><!--
-            --></lu-math-seq-body>
-            </lu-math-sequence>
-         </lu-math-part>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-      </lu-math-row>
+               --><m-raw>)</m-raw><!--
+            --></m-content>
+            </m-sequence>
+         </span>
+         <m-rawcap> </m-rawcap>
+      </m-row>
    </lu-math>
    <p>
       If we multiply all the items in a row together, then we'll get the result of that expression for that given set of <lu-math data-inline><var>k<sub>i</sub></var></lu-math> values. Let's see what that looks like. We can skip every cell in the table that's just the number 1, so in practice, 90% of that table is gone:
@@ -931,10 +913,12 @@ end</code></pre>
                   {%- for item in current_set -%}
                      {%- unless forloop.first %} &times; {% endunless -%}
                      {%- if item != "0" -%}
-                        <var>{{ vars[forloop.index0] }}</var>
-                        {%- if item != "1" -%}
-                           {%- include lu-math/exponent.html exponent=item %}
-                        {%- endif -%}
+                        <lu-math data-inline>
+                           <var>{{ vars[forloop.index0] }}</var>
+                           {%- if item != "1" -%}
+                              {%- include lu-math/exponent.html exponent=item %}
+                           {%- endif -%}
+                        </lu-math>
                      {%- else -%}
                         1
                      {%- endif -%}
@@ -946,10 +930,12 @@ end</code></pre>
                      {%- if item != "0" -%}
                         {%- unless wrote_any == false %} &times; {% endunless -%}
                         {%- assign wrote_any = true -%}
-                        <var>{{ vars[forloop.index0] }}</var>
-                        {%- if item != "1" -%}
-                           {%- include lu-math/exponent.html exponent=item %}
-                        {%- endif -%}
+                        <lu-math data-inline>
+                           <var>{{ vars[forloop.index0] }}</var>
+                           {%- if item != "1" -%}
+                              {%- include lu-math/exponent.html exponent=item %}
+                           {%- endif -%}
+                        </lu-math>
                      {%- endif -%}
                   {%- endfor %} &times; {{frac}}
                </td>
@@ -957,14 +943,16 @@ end</code></pre>
                   {%- if frac != 1 -%}
                      {{ frac }}
                   {%- endif -%}
+                  <lu-math data-inline>
                   {%- for item in current_set -%}
                      {%- if item != "0" -%}
-                        <var>{{ vars[forloop.index0] }}</var>
-                        {%- if item != "1" -%}
-                           {%- include lu-math/exponent.html exponent=item %}
-                        {%- endif -%}
+                           <var>{{ vars[forloop.index0] }}</var>
+                           {%- if item != "1" -%}
+                              {%- include lu-math/exponent.html exponent=item %}
+                           {%- endif -%}
                      {%- endif -%}
                   {%- endfor -%}
+                  </lu-math>
                </td>
             </tr>
          {%- endfor -%}
@@ -974,40 +962,40 @@ end</code></pre>
       So those are all the possible values of that one expression. Where were we using it again?
    </p>
    <lu-math>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>a</var> + <var>b</var> + <var>c</var> + <var>d</var> + <var>e</var> + <var>f</var>){{ lu_math_sq }}<nobr>
-             =</nobr> 
-         </lu-math-part>
-         <lu-math-part>
-            <lu-math-sequence data-operation="+-">
-               <lu-math-seq-info data-no-params>
-                  <lu-math-raw>&Sigma;</lu-math-raw>
-                  <lu-math-condition> </lu-math-condition>
-               </lu-math-seq-info>
-               <lu-math-seq-body><!--
-               --><lu-math-raw>(</lu-math-raw><!--
+      <m-row>
+         <span>
+            ({{var_Asca}} + {{var_Bsca}} + {{var_Csca}} + {{var_Dsca}} + {{var_Esca}} + {{var_Fsca}}){{lu_math_sq}}<m-nobr>
+             =</m-nobr> 
+         </span>
+         <span>
+            <m-sequence data-operation="+-">
+               <m-info data-no-params>
+                  <m-raw>&Sigma;</m-raw>
+                  <m-condition> </m-condition>
+               </m-info>
+               <m-content><!--
+               --><m-raw>(</m-raw><!--
                         
                --><label>It all goes here.</label><!--
                         
-               --><lu-math-raw>)</lu-math-raw><!--
-            --></lu-math-seq-body>
-            </lu-math-sequence>
+               --><m-raw>)</m-raw><!--
+            --></m-content>
+            </m-sequence>
          
-         </lu-math-part>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-      </lu-math-row>
+         </span>
+         <m-rawcap> </m-rawcap>
+      </m-row>
    </lu-math>
    <p>
       Right! We were going to add those final items together. Let's see what that looks like:
    </p>
    <lu-math>
-      <lu-math-row>
-         <lu-math-part>
-            (<var>a</var> + <var>b</var> + <var>c</var> + <var>d</var> + <var>e</var> + <var>f</var>){{ lu_math_sq }}<nobr>
-             =</nobr> 
-         </lu-math-part>
-         <lu-math-part>
+      <m-row>
+         <span>
+            ({{var_Asca}} + {{var_Bsca}} + {{var_Csca}} + {{var_Dsca}} + {{var_Esca}} + {{var_Fsca}}){{ lu_math_sq }}<m-nobr>
+             =</m-nobr> 
+         </span>
+         <span>
             {%- assign vars = "a,b,c,d,e,f" | split: "," -%}
             {%- for i in (1..possible_set_count) -%}
                {%- assign start = i | minus: 1 | times: count -%}
@@ -1041,15 +1029,15 @@ end</code></pre>
                   {%- endif -%}
                {%- endfor -%}
             {%- endfor -%}
-         </lu-math-part>
-         <lu-math-raw-endcap> </lu-math-raw-endcap>
-      </lu-math-row>
+         </span>
+         <m-rawcap> </m-rawcap>
+      </m-row>
    </lu-math>
 </section>
 
 <section>
    <h2><a name="conclusion"></a>Conclusion</h2>
    <p>
-      This overall process can be followed for a multinomial of any size <lu-math data-inline><var>m</var></lu-math>, being raised to any exponent <lu-math data-inline><var>n</var></lu-math>. You want to create a table like the ones above, listing out every combination of <lu-math data-inline><var>m</var></lu-math> many numbers (each between 0 and <lu-math data-inline><var>n</var></lu-math>) that add up to <lu-math data-inline><var>n</var></lu-math>. You can then mimic the process above, and get your result.
+      This overall process can be followed for a multinomial of any size {{var_Msca_inl}}, being raised to any exponent {{var_Nsca_inl}}. You want to create a table like the ones above, listing out every combination of {{var_Msca_inl}} many numbers (each between 0 and {{var_Nsca_inl}}) that add up to {{var_Nsca_inl}}. You can then mimic the process above, and get your result.
    </p>
 </section>

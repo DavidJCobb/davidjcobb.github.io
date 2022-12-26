@@ -10,7 +10,7 @@ social_media:
    title: Cobb - Ray/plane intersections
    description: The math behind doing raycasts for 3D planes, with the mathematical derivation fully explained step, by step. Includes public-domain code.
 extra_css_files:
- - lu-math.css
+ - lu-math2.css
 table_of_contents:
  - id:    defining
    title: Defining our shapes
@@ -21,189 +21,228 @@ table_of_contents:
    
 ---
 {%- include lu-math/defines.html -%}
+
+{%- assign var_Po     = "<var data-type='vector'>P<sub>o</sub></var>" -%}
+{%- assign var_Pox    = "<var>P<sub>ox</sub></var>" -%}
+{%- assign var_Poy    = "<var>P<sub>oy</sub></var>" -%}
+{%- assign var_Poz    = "<var>P<sub>oz</sub></var>" -%}
+{%- assign var_Pn     = "<var data-type='vector'>P<sub>n</sub></var>" -%}
+{%- assign var_Pnx    = "<var>P<sub>nx</sub></var>" -%}
+{%- assign var_Pny    = "<var>P<sub>ny</sub></var>" -%}
+{%- assign var_Pnz    = "<var>P<sub>nz</sub></var>" -%}
+{%- assign var_Hd     = "<var>H<sub>d</sub></var>" -%}
+{%- assign var_Hp     = "<var data-type='vector'>H<sub>p</sub></var>" -%}
+{%- assign var_Rd     = "<var data-type='vector'>R<sub>d</sub></var>" -%}
+{%- assign var_Rdx    = "<var>R<sub>dx</sub></var>" -%}
+{%- assign var_Rdy    = "<var>R<sub>dy</sub></var>" -%}
+{%- assign var_Rdz    = "<var>R<sub>dz</sub></var>" -%}
+{%- assign var_Ro     = "<var data-type='vector'>R<sub>o</sub></var>" -%}
+{%- assign var_Rox    = "<var>R<sub>ox</sub></var>" -%}
+{%- assign var_Roy    = "<var>R<sub>oy</sub></var>" -%}
+{%- assign var_Roz    = "<var>R<sub>oz</sub></var>" -%}
+{%- assign var_Po_inl = var_Do | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Pn_inl = var_Pn | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Hd_inl = var_Hd | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Hp_inl = var_Hp | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Rd_inl = var_Rd | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Ro_inl = var_Ro | prepend: math_inl_enter | append: math_inl_leave -%}
+
 <section>
    <p>
-      Here, I'll go over how to test for the intersection between a ray and a plane. 
-      I've also provided code at the bottom as a public domain work.
+      Here, I'll go over how to test for the intersection between a ray and a plane. I've also provided code at the bottom as a public domain work.
    </p>
 </section>
 
 <section>
    <h2><a name="defining"></a>Defining our shapes</h2>
    <p>
-      If you take the dot product of two vectors that are perpendicular, then the result is 
-      zero. This means that we can define our plane as follows:
+      If you take the dot product of two vectors that are perpendicular, then the result is zero. This means that we can define our plane as follows:
    </p>
    <lu-math>
-      <lu-math-givens>
+      <m-givens>
          <label>Given:</label>
          <dl>
-            <lu-math-dfn>
-               <dt><var>P<sub>o</sub></var></dt>
+            <dt>{{var_Po}}</dt>
+            <m-sep> = </m-sep>
                <dd>origin of the plane</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>P<sub>n</sub></var></dt>
+            <dt>{{var_Pn}}</dt>
+            <m-sep> = </m-sep>
                <dd>plane surface normal</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>V</var></dt>
+            <dt>{{var_Vvec}}</dt>
+            <m-sep> = </m-sep>
                <dd>any point on the plane</dd>
-            </lu-math-dfn>
          </dl>
-      </lu-math-givens>
-      <lu-math-row data-equation-number="1">
-         (<var>V</var> - <var>P<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var>
+      </m-givens>
+      <m-row>
+         {{lu_math_eq_numbers[1]}}
+         
+         ({{var_Vvec}} - {{var_Po}}) &bullet; {{var_Pn}}
          =
          0
-      </lu-math-row>
+      </m-row>
    </lu-math>
    <p>
-      The above equation imposes a simple requirement: the vector from any point on the plane 
-      to any other point on the plane must be perpendicular to the plane's normal. The "plane 
-      origin" is just a point that we already know is on the plane; it doesn't have to be at 
-      any specific part of the plane (e.g. a centerpoint), and it isn't otherwise "special."
+      The above equation imposes a simple requirement: the vector from any point on the plane to any other point on the plane must be perpendicular to the plane's normal. The "plane origin" is just a point that we already know is on the plane; it doesn't have to be at any specific part of the plane (e.g. a centerpoint), and it isn't otherwise "special."
    </p>
    <p>
       Our ray, meanwhile, is most usefully defined as:
    </p>
    <lu-math>
-      <lu-math-givens>
+      <m-givens>
          <label>Given:</label>
          <dl>
-            <lu-math-dfn>
-               <dt><var>R<sub>o</sub></var></dt>
+            <dt>{{var_Ro}}</dt>
+            <m-sep> = </m-sep>
                <dd>the ray's origin</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>R<sub>d</sub></var></dt>
+            <dt>{{var_Rd}}</dt>
+            <m-sep> = </m-sep>
                <dd>the ray's direction</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>H<sub>p</sub></var></dt>
+            <dt>{{var_Hp}}</dt>
+            <m-sep> = </m-sep>
                <dd>the position at which the ray hits some surface</dd>
-            </lu-math-dfn>
-            <lu-math-dfn>
-               <dt><var>H<sub>d</sub></var></dt>
+            <dt>{{var_Hd}}</dt>
+            <m-sep> = </m-sep>
                <dd>the hit distance: the distance from the ray origin to the hit position</dd>
-            </lu-math-dfn>
          </dl>
-      </lu-math-givens>
-      <lu-math-row>
-         <var>H<sub>p</sub></var><!--
-      -->&nbsp;=&nbsp;<!--
-      --><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var>
-      </lu-math-row>
+      </m-givens>
+      <m-row>
+         {{var_Hp}}
+         =
+         {{var_Ro}} + {{var_Rd}}{{var_Hd}}
+      </m-row>
    </lu-math>
 </section>
 
 <section>
-   <h2><a name="solving">Solving for the ray</a></h2>
+   <h2><a name="solving"></a>Solving for the ray</h2>
    <p>
       We check for intersections by substituting our ray equation into our plane equation:
    </p>
    <lu-math>
-      <lu-math-row>
-         (<mark><var>R<sub>o</sub></var> + <var>R<sub>d</sub></var><var>H<sub>d</sub></var></mark> - <var>P<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var>
+      <m-row>
+         (<mark>{{var_Ro}} + {{var_Rd}}{{var_Hd}}</mark> - {{var_Po}}) &bullet; {{var_Pn}}
          =
          0
-      </lu-math-row>
+      </m-row>
    </lu-math>
    <p>
-      We want to solve for <var>H<sub>d</sub></var>. Let's start by expanding that dot product operation:
+      We want to solve for {{var_Hd_inl}}. Let's start by expanding that dot product operation:
    </p>
    <lu-math>
-      <lu-math-row>
-         (<var>R<sub>ox</sub></var> + <var>R<sub>dx</sub></var><var>H<sub>d</sub></var> - <var>P<sub>ox</sub></var>)<var>P<sub>nx</sub></var>
-          + 
-         (<var>R<sub>oy</sub></var> + <var>R<sub>dy</sub></var><var>H<sub>d</sub></var> - <var>P<sub>oy</sub></var>)<var>P<sub>ny</sub></var>
-          + 
-         (<var>R<sub>oz</sub></var> + <var>R<sub>dz</sub></var><var>H<sub>d</sub></var> - <var>P<sub>oz</sub></var>)<var>P<sub>nz</sub></var>
-         =
-         0
-      </lu-math-row>
-      <lu-math-row>
-         (<var>R<sub>ox</sub></var><mark><var>P<sub>nx</sub></var></mark> + <var>R<sub>dx</sub></var><mark><var>P<sub>nx</sub></var></mark><var>H<sub>d</sub></var> - <var>P<sub>ox</sub></var><mark><var>P<sub>nx</sub></var></mark>)
-          + 
-         (<var>R<sub>oy</sub></var><mark><var>P<sub>ny</sub></var></mark> + <var>R<sub>dy</sub></var><mark><var>P<sub>ny</sub></var></mark><var>H<sub>d</sub></var> - <var>P<sub>oy</sub></var><mark><var>P<sub>ny</sub></var></mark>)
-          + 
-         (<var>R<sub>oz</sub></var><mark><var>P<sub>nz</sub></var></mark> + <var>R<sub>dz</sub></var><mark><var>P<sub>nz</sub></var></mark><var>H<sub>d</sub></var> - <var>P<sub>oz</sub></var><mark><var>P<sub>nz</sub></var></mark>)
-         =
-         0
-      </lu-math-row>
+      <m-solvestep>
+         <m-content>
+            ({{var_Rox}} + {{var_Rdx}}{{var_Hd}} - {{var_Pox}}){{var_Pnx}}
+             + 
+            ({{var_Roy}} + {{var_Rdy}}{{var_Hd}} - {{var_Poy}}){{var_Pny}}
+             + 
+            ({{var_Roz}} + {{var_Rdz}}{{var_Hd}} - {{var_Poz}}){{var_Pnz}}
+            =
+            0
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            ({{var_Rox}}<mark>{{var_Pnx}}</mark> + {{var_Rdx}}<mark>{{var_Pnx}}</mark>{{var_Hd}} - {{var_Pox}}<mark>{{var_Pnx}}</mark>)
+             + 
+            ({{var_Roy}}<mark>{{var_Pny}}</mark> + {{var_Rdy}}<mark>{{var_Pny}}</mark>{{var_Hd}} - {{var_Poy}}<mark>{{var_Pny}}</mark>)
+             + 
+            ({{var_Roz}}<mark>{{var_Pnz}}</mark> + {{var_Rdz}}<mark>{{var_Pnz}}</mark>{{var_Hd}} - {{var_Poz}}<mark>{{var_Pnz}}</mark>)
+            =
+            0
+         </m-content>
+      </m-solvestep>
    </lu-math>
    <p>
-      Let's group the terms that are multiplied by <var>H<sub>d</sub></var>:
+      Let's group the terms that are multiplied by {{var_Hd_inl}}:
    </p>
    <lu-math>
-      <lu-math-row>
-         (<var>R<sub>dx</sub></var><var>P<sub>nx</sub></var> + <var>R<sub>dy</sub></var><var>P<sub>ny</sub></var> + <var>R<sub>dz</sub></var><var>P<sub>nz</sub></var>)<var>H<sub>d</sub></var>
-          + 
-         <var>R<sub>ox</sub></var><var>P<sub>nx</sub></var> - <var>P<sub>ox</sub></var><var>P<sub>nx</sub></var>
-          + 
-         <var>R<sub>oy</sub></var><var>P<sub>ny</sub></var> - <var>P<sub>oy</sub></var><var>P<sub>ny</sub></var>
-          + 
-         <var>R<sub>oz</sub></var><var>P<sub>nz</sub></var> - <var>P<sub>oz</sub></var><var>P<sub>nz</sub></var>
-         =
-         0
-      </lu-math-row>
+      <m-solvestep>
+         <m-content>
+            ({{var_Rdx}}{{var_Pnx}} + {{var_Rdy}}{{var_Pny}} + {{var_Rdz}}{{var_Pnz}}){{var_Hd}}
+             + 
+            {{var_Rox}}{{var_Pnx}} - {{var_Pox}}{{var_Pnx}}
+             + 
+            {{var_Roy}}{{var_Pny}} - {{var_Poy}}{{var_Pny}}
+             + 
+            {{var_Roz}}{{var_Pnz}} - {{var_Poz}}{{var_Pnz}}
+            =
+            0
+         </m-content>
+      </m-solvestep>
    </lu-math>
    <p>
       Now, we can recombine some of these multiplications-and-additions back into dot products:
    </p>
    <lu-math>
-      <lu-math-row>
-         (<var>R<sub>dx</sub></var><var>P<sub>nx</sub></var> + <var>R<sub>dy</sub></var><var>P<sub>ny</sub></var> + <var>R<sub>dz</sub></var><var>P<sub>nz</sub></var>)<var>H<sub>d</sub></var>
-          +
-         <mark>(<var>R<sub>o</sub></var> - <var>P<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var></mark>
-         =
-         0
-      </lu-math-row>
-      <lu-math-row>
-         (<mark><var>R<sub>d</sub></var> &bullet; <var>P<sub>n</sub></var></mark>)<var>H<sub>d</sub></var>
-          +
-         (<var>R<sub>o</sub></var> - <var>P<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var>
-         =
-         0
-      </lu-math-row>
+      <m-solvestep>
+         <m-content>
+            ({{var_Rdx}}{{var_Pnx}} + {{var_Rdy}}{{var_Pny}} + {{var_Rdz}}{{var_Pnz}}){{var_Hd}}
+             +
+            <mark>({{var_Ro}} - {{var_Po}}) &bullet; {{var_Pn}}</mark>
+            =
+            0
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            (<mark>{{var_Rd}} &bullet; {{var_Pn}}</mark>){{var_Hd}}
+             +
+            ({{var_Ro}} - {{var_Po}}) &bullet; {{var_Pn}}
+            =
+            0
+         </m-content>
+      </m-solvestep>
    </lu-math>
    <p>
-      Of course, we want to get <var>H<sub>d</sub></var> onto one side of the equation, by itself:
+      Of course, we want to get {{var_Hd_inl}} onto one side of the equation, by itself:
    </p>
    <lu-math>
-      <lu-math-row>
-         (<var>R<sub>d</sub></var> &bullet; <var>P<sub>n</sub></var>)<var>H<sub>d</sub></var>
-         =
-         <mark>-(<var>R<sub>o</sub></var> - <var>P<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var></mark>
-      </lu-math-row>
-      <lu-math-row>
-         (<var>R<sub>d</sub></var> &bullet; <var>P<sub>n</sub></var>)<var>H<sub>d</sub></var>
-         =
-         <mark>(<var>P<sub>o</sub></var> - <var>R<sub>o</sub></var>)</mark> &bullet; <var>P<sub>n</sub></var>
-      </lu-math-row>
-      <lu-math-row data-equation-number="2">
-         <var>H<sub>d</sub></var>
-         =
-         {% include lu-math/fraction.html
-            numer="(<var>P<sub>o</sub></var> - <var>R<sub>o</sub></var>) &bullet; <var>P<sub>n</sub></var>"
-            denom="<mark><var>R<sub>d</sub></var> &bullet; <var>P<sub>n</sub></var></mark>"
-            
-            numer_is_expr=true
-         -%}
-      </lu-math-row>
+      <m-solvestep>
+         <m-content>
+            ({{var_Rd}} &bullet; {{var_Pn}}){{var_Hd}}
+            =
+            <mark>-({{var_Ro}} - {{var_Po}}) &bullet; {{var_Pn}}</mark>
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            ({{var_Rd}} &bullet; {{var_Pn}}){{var_Hd}}
+            =
+            <mark>({{var_Po}} - {{var_Ro}})</mark> &bullet; {{var_Pn}}
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         {{lu_math_eq_numbers[2]}}
+         
+         <m-content>
+            {{var_Hd}}
+            =
+            {% capture numerator -%}
+               ({{var_Po}} - {{var_Ro}}) &bullet; {{var_Pn}}
+            {%- endcapture -%}
+            {%- capture denominator -%}
+               <mark>{{var_Rd}} &bullet; {{var_Pn}}</mark>
+            {%- endcapture -%}
+            {% include lu-math/fraction.html
+               numer=numerator
+               denom=denominator
+               
+               numer_is_expr=true
+               denom_is_expr=true
+            -%}
+         </m-content>
+      </m-solvestep>
    </lu-math>
    <p>
-      Voila! Every ray that intersects the plane will have a solution for the above equation, which means 
-      that if the above equation is unsolveable &mdash; that is, if it would involve a division by zero &mdash; 
-      then the ray doesn't intersect the plane.
+      Voila! Every ray that intersects the plane will have a solution for the above equation, which means that if the above equation is unsolveable &mdash; that is, if it would involve a division by zero &mdash; then the ray doesn't intersect the plane.
    </p>
    <p>
       That said, we also need to double-check one more condition:
    </p>
    <lu-math>
-      <lu-math-row>
-         <var>H<sub>d</sub></var> &geq; 0
-      </lu-math-row>
+      <m-row>
+         {{var_Hd}} &geq; 0
+      </m-row>
    </lu-math>
    <p>
       We need to make sure that the hit distance isn't negative &mdash; that our hit position isn't <em>behind</em> 
@@ -230,7 +269,7 @@ bool ray_plane_intersection(
    const glm::vec3& plane_origin,
    const glm::vec3& plane_normal,
 
-   float& hit_distance // undefined (may be trashed) if there's no hit
+   float& hit_distance
 ) {
    constexpr float EPSILON = 1e-8;
    //
@@ -239,8 +278,9 @@ bool ray_plane_intersection(
    // Non-zero check (accounting for floating-point imprecision):
    //
    if (denom > EPSILON || denom < -EPSILON) {
-      auto hit_distance = glm::dot(plane_origin - ray_origin, plane_normal) / denom;
-      if (hit_distance >= 0) {
+      auto Hd = glm::dot(plane_origin - ray_origin, plane_normal) / denom;
+      if (Hd >= 0) {
+         hit_distance = Hd;
          return true;
       }
    }

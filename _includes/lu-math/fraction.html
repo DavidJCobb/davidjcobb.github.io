@@ -1,17 +1,17 @@
-<lu-math-fraction>
+<m-fraction>
    {%- if include.numer_is_expr -%}
-      <lu-math-raw>(</lu-math-raw>
+      <m-raw>(</m-raw>
    {%- endif -%}
-   <lu-math-numer>{{ include.numer }}</lu-math-numer><!--
---><lu-math-raw>
+   <m-numer>{{ include.numer }}</m-numer><!--
+--><m-raw>
    {%- if include.numer_is_expr -%}
       )
    {%- endif %} &divide; {% if include.denom_is_expr -%}
    (
    {%- endif -%}
-   </lu-math-raw><!--
---><lu-math-denom>{{ include.denom }}</lu-math-denom>
+   </m-raw><!--
+--><m-denom>{{ include.denom }}</m-denom>
    {%- if include.denom_is_expr -%}
-      <lu-math-raw>)</lu-math-raw>
+      <m-raw>)</m-raw>
    {%- endif -%}
-</lu-math-fraction>
+</m-fraction>

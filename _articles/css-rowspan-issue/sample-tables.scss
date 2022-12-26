@@ -13,6 +13,8 @@
    
    &.vintage {
       border:1px outset #CCC;
+      color-scheme: light dark;
+      /* prevent auto dark mode. text makes reference to the light background color, among other things */
       
       td {
          border:1px inset #CCC;

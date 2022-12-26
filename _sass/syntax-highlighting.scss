@@ -32,3 +32,29 @@
       font-weight:bold;
    }
 }
+
+.highlight .language-css {
+   .c { /* comment */
+      color:#958;
+   }
+   .cp { /* !important */
+      color:#FF7400;
+   }
+   
+   .m  { /* value? */
+   }
+   .nd { /* name: pseudoclass */
+      color:#339053;
+   }
+   .nl { /* name: property */
+      color:#225070;
+   }
+   .nt { /* name: tag */
+      color:#C62;
+   }
+   
+   .p { /* punctuation (parens, braces) */
+      color:#666;
+      font-weight:bold;
+   }
+}

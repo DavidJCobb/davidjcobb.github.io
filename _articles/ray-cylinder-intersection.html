@@ -25,120 +25,6 @@ table_of_contents:
 ---
 {%- include lu-math/defines.html -%}
 
-{%- comment -%}
-
-   HTML's whitespace handling works well for prose documents, but falls apart completely when we are, in 
-   essence, designing our own markup, as we have for lu-math. Sometimes, we need to be able to GUARANTEE 
-   that a given space WON'T be collapsed, without making it a non-breaking space.
-   
-   One example: having a leading space inside of an inline-block element.  Leading whitespace'll usually 
-   be collapsed (y'know, except when it isn't), so using  this variable will slip a dummy element before 
-   it so that it's not "leading" anymore.
-   
-{%- endcomment -%}
-{%- assign dont_eat_this_space = "<span></span>" -%}
-{%- assign print_one_space = "<span></span>&#32;" -%}
-
-{%- assign lu_math_exps = "" | split: "," -%}
-{%- for i in (0..5) -%}
-   {%- capture temporary -%}
-      <m-exp><span aria-hidden="true"><m-raw>^</m-raw>{{ i }}</span><m-raw data-screen-reader-only>&nbsp;
-         {%- case i %}
-            {%- when "0", 0 -%}
-               to the zeroth power
-            {%- when "1", 1 -%}
-               to the first power
-            {%- when "2", 2 -%}
-               squared
-            {%- when "3", 3 -%}
-               cubed
-            {%- else -%}
-               to the {{i}}th power
-         {%- endcase -%}&nbsp;</m-raw></m-exp>
-   {%- endcapture -%}
-   {%- assign temporary = temporary | append: "NEVEROCCURRINGSTRING" | split: "NEVEROCCURRINGSTRING" | slice: 0, 1 -%}
-   {%- assign lu_math_exps = lu_math_exps | concat: temporary -%}
-{%- endfor -%}
-{%- assign lu_math_sq = lu_math_exps[2] -%}
-
-{%- comment -%}
-   
-   Generate convenience variables for lu-math equation numbers. To display equation number 5, for example:
-   {{lu_math_eq_numbers[5]}}
-   
-{%- endcomment -%}
-{%- assign lu_math_eq_numbers = "" -%}
-{%- for i in (1..20) -%}
-   {%- capture temporary -%}
-      <m-equation-number>
-         <m-rawcap> </m-rawcap>
-         <m-raw>[Equation </m-raw><m-value>{{i}}</m-value><m-raw>:]</m-raw>
-         <m-rawcap> </m-rawcap>
-      </m-equation-number>
-   {%- endcapture -%}
-   {%- assign temporary = temporary | prepend: "SPLITTER" -%}
-   {%- assign lu_math_eq_numbers = lu_math_eq_numbers | append: temporary -%}
-{%- endfor -%}
-{%- assign lu_math_eq_numbers = lu_math_eq_numbers | split: "SPLITTER" -%}
-
-{%- comment -%}
-
-   Generate convenience variables for the start and end of a solvestep explanation.
-
-{%- endcomment -%}
-{%- capture temporary -%}
-   <details class="explanation">
-      <summary class="toggle-explanation">info</summary>
-      <aside>
-         %CONTENT%
-      </aside>
-   </details>
-{%- endcapture -%}
-{%- assign temporary = temporary | split: "%CONTENT%" -%}
-{%- assign lu_math_expl_start = temporary[0] -%}
-{%- assign lu_math_expl_end   = temporary[1] -%}
-
-{%- comment -%}
-   
-   Generate convenience variables for vector-length start and end tags. It is imperative that no whitespace 
-   be present in these variables.
-   
-{%- endcomment -%}
-{%- capture temporary -%}
-   <m-veclength>
-      <m-delim>||</m-delim>
-      <m-content>%CONTENT%</m-content>
-      <m-delim>||</m-delim>
-   </m-veclength>
-{%- endcapture -%}
-{%- assign temporary  = temporary | strip_newlines | strip | split: " " -%}
-{%- assign temporary2 = "" -%}
-{%- assign temporary3 = false -%} {%- comment -%} In tag? {%- endcomment -%}
-{%- assign temporary4 = false -%}
-{%-comment-%}
-   Comments so Notepad++'s syntax highlighter doesn't choke.
-   <!--
-{%-endcomment-%}
-{%- for item in temporary -%}
-   {%- assign temporary2 = temporary2 | append: item -%}
-{%- endfor -%}
-{%-comment-%}
-   -->
-   End of syntax highlighter comment.
-{%-endcomment-%}
-{%- assign temporary = temporary2 | split: "%CONTENT%" -%}
-{%- assign lu_math_vec_start = temporary[0] -%}
-{%- assign lu_math_vec_end = temporary[1] -%}
-
-{%- capture lu_math_therefore_block -%}
-   <m-therefore data-block>
-      <span aria-hidden="true" title="therefore">&therefore;</span>
-      <m-raw data-screen-reader-only>&therefore;</m-raw>
-   </m-therefore>
-{%- endcapture -%}
-
-{%- assign math_inl_enter = "<lu-math data-inline>" -%}
-{%- assign math_inl_leave = "</lu-math>" -%}
 {%- assign var_Ca     = "<var data-type='vector'>C<sub>a</sub></var>" -%}
 {%- assign var_Cb     = "<var data-type='vector'>C<sub>b</sub></var>" -%}
 {%- assign var_Ch     = "<var>C<sub>h</sub></var>" -%}
@@ -167,44 +53,6 @@ table_of_contents:
 {%- assign var_Rd_inl = var_Rd | prepend: math_inl_enter | append: math_inl_leave -%}
 {%- assign var_Rl_inl = var_Rl | prepend: math_inl_enter | append: math_inl_leave -%}
 {%- assign var_Ro_inl = var_Ro | prepend: math_inl_enter | append: math_inl_leave -%}
-{%- assign var_Avec     = "<var data-type='vector'>A</var>" -%}
-{%- assign var_Bvec     = "<var data-type='vector'>B</var>" -%}
-{%- assign var_Cvec     = "<var data-type='vector'>C</var>" -%}
-{%- assign var_Dvec     = "<var data-type='vector'>D</var>" -%}
-{%- assign var_Asca     = "<var>a</var>" -%}
-{%- assign var_Bsca     = "<var>b</var>" -%}
-{%- assign var_Csca     = "<var>c</var>" -%}
-{%- assign var_Dsca     = "<var>d</var>" -%}
-{%- assign var_Avec_inl = var_Avec | prepend: math_inl_enter | append: math_inl_leave -%}
-{%- assign var_Bvec_inl = var_Bvec | prepend: math_inl_enter | append: math_inl_leave -%}
-{%- assign var_Cvec_inl = var_Cvec | prepend: math_inl_enter | append: math_inl_leave -%}
-{%- assign var_Csca_inl = var_Csca | prepend: math_inl_enter | append: math_inl_leave -%}
-{%- assign var_Dsca_inl = var_Dsca | prepend: math_inl_enter | append: math_inl_leave -%}
-{%- assign var_Asca_inl = var_Asca | prepend: math_inl_enter | append: math_inl_leave -%}
-{%- assign var_Bsca_inl = var_Bsca | prepend: math_inl_enter | append: math_inl_leave -%}
-{%- assign var_Csca_inl = var_Csca | prepend: math_inl_enter | append: math_inl_leave -%}
-{%- assign var_Dsca_inl = var_Dsca | prepend: math_inl_enter | append: math_inl_leave -%}
-
-{%- capture graph_rel_url -%}
-   {%- comment -%}
-      We want to strip the file extension off of the path to this current article, if it 
-      has one (this will depend on the permalink).
-   {%- endcomment -%}
-   {%- assign temporary = page.url | split: "." -%}
-   {{- page.dir -}}
-   {%- if temporary.size > 1 -%}
-      {%- for item in temporary -%}
-         {%- unless forloop.last -%}{{ item }}{%- endunless -%}
-      {%- endfor -%}
-   {%- else -%}
-      {{ temporary[0] }}
-   {%- endif -%}
-   {%- comment -%}
-      Next, we add the name of the asset file we want.
-   {%- endcomment -%}
-   /line-graph-utils.svg
-{%- endcapture -%}
-{%- assign graph_rel_url = graph_rel_url -%}
 
 <section>
    <p>
@@ -244,6 +92,7 @@ table_of_contents:
       </m-givens>
       <m-layout-left>
          {{lu_math_eq_numbers[1]}}
+         
          <m-row>
             <m-function-def>
                <m-name>f<sub>x</sub></m-name><!--
@@ -307,7 +156,7 @@ table_of_contents:
    <lu-math>
       {{lu_math_eq_numbers[2]}}
       
-     {{lu_math_vec_start}}<var data-type="vector">P<sub>2D</sub></var>{{lu_math_vec_end}}
+      {{lu_math_vec_start}}<var data-type="vector">P<sub>2D</sub></var>{{lu_math_vec_end}}
       =
       <var>C<sub>r</sub></var>
    </lu-math>
