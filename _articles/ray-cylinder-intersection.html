@@ -647,158 +647,6 @@ extra_css_files:
             </m-layout-snake>
          </m-content>
       </m-solvestep>
-      
-      <hr />
-      <hr />
-      <hr />
-      <!-- TRY 3 START -->
-      
-      <m-solvestep>
-         {{lu_math_expl_start}}
-            <p>
-               Given vectors {{var_Avec_inl}} and {{var_Bvec_inl}} and scalars {{var_Csca_inl}} and {{var_Dsca_inl}}, it's true that
-               <lu-math data-inline>
-                  {{var_Avec}}{{var_Csca}} &bullet; {{var_Bvec}}{{var_Dsca}}
-                  =
-                  ({{var_Avec}} &bullet; {{var_Bvec}}){{var_Csca}}{{var_Dsca}}
-               </lu-math>. 
-               In this case, we're pulling {{var_Hd_inl}} out of dot product operations. It's tempting to pull the entirety of 
-               <lu-math>
-                  (({{var_Rl}} + {{var_Rd}}{{var_Hd}}) &bullet; {{var_Ca}})
-               </lu-math>
-               out as our scalar, but that doesn't seem to actually work...
-            </p>
-         {{lu_math_expl_end}}
-         <m-content>
-            <m-layout-snake>
-               <m-body>
-                  <m-layout-v-segments>
-                     <m-segment>
-                        ({{var_Rl}} &bullet; {{var_Rl}})
-                     </m-segment>
-                     <m-sep> + </m-sep>
-                     <m-segment>
-                        ({{var_Rd}} &bullet; {{var_Rd}})<mark>{{var_Hd}}{{lu_math_sq}}</mark>
-                     </m-segment>
-                     <m-sep> + </m-sep>
-                     <m-segment>
-                        <m-raw>(</m-raw><!--
-                        -->(<!--
-                           -->({{var_Rl}} + {{var_Rd}}{{var_Hd}}) &bullet; {{var_Ca}}<!--
-                        -->){{lu_math_sq}}<!--
-                     --><m-raw>)</m-raw>
-                     </m-segment>
-                     <m-sep> + </m-sep>
-                     <m-segment>
-                        2({{var_Rd}} &bullet; {{var_Rl}})<mark>{{var_Hd}}</mark>
-                     </m-segment>
-                     <m-sep> - </m-sep>
-                     <m-segment>
-                        2({{var_Rl}} &bullet; (<!--
-                        -->({{var_Rl}} + {{var_Rd}}{{var_Hd}}) &bullet; {{var_Ca}}<!--
-                     -->){{var_Ca}})
-                     </m-segment>
-                     <m-sep> - </m-sep>
-                     <m-segment>
-                        2({{var_Rd}} &bullet; (<!--
-                        -->({{var_Rl}} + {{var_Rd}}{{var_Hd}}) &bullet; {{var_Ca}}<!--
-                     -->){{var_Ca}})<mark>{{var_Hd}}</mark>
-                     </m-segment>
-                  </m-layout-v-segments>
-               </m-body>
-               <m-tail>
-                  = {{var_Cr}}{{lu_math_sq}}
-               </m-tail>
-            </m-layout-snake>
-         </m-content>
-      </m-solvestep>
-      <m-solvestep>
-         {{lu_math_expl_start}}
-            <lu-math>
-               <m-row>
-                  {{var_Avec}} &bullet; ({{var_Bvec}} + {{var_Cvec}}{{var_Dsca}})
-                  =
-                  ({{var_Avec}} &bullet; {{var_Bvec}})
-                  +
-                  ({{var_Avec}} &bullet; {{var_Cvec}}){{var_Dsca}}
-               </m-row>
-               <m-row>
-                  {{var_Avec}}{{var_Csca}} &bullet; {{var_Bvec}}{{var_Dsca}}
-                  =
-                  ({{var_Avec}} &bullet; {{var_Bvec}}){{var_Csca}}{{var_Dsca}}
-               </m-row>
-               {{lu_math_therefore_block}}
-               <m-row>
-                  ({{var_Rl}} + {{var_Rd}}{{var_Hd}}) &bullet; {{var_Ca}}
-                  =
-                  ({{var_Ca}} &bullet; {{var_Rl}})
-                  +
-                  ({{var_Ca}} &bullet; {{var_Rd}}{{var_Hd}})
-               </m-row>
-               <m-row>
-                  ({{var_Rl}} + {{var_Rd}}{{var_Hd}}) &bullet; {{var_Ca}}
-                  =
-                  ({{var_Ca}} &bullet; {{var_Rl}})
-                  +
-                  ({{var_Ca}} &bullet; {{var_Rd}}){{var_Hd}}
-               </m-row>
-               <m-row>
-                  ({{var_Rl}} + {{var_Rd}}{{var_Hd}}) &bullet; {{var_Ca}}
-                  =
-                  ({{var_Ca}} &bullet; {{var_Rl}})
-                  +
-                  ({{var_Ca}} &bullet; {{var_Rd}}){{var_Hd}}
-               </m-row>
-            </lu-math>
-         {{lu_math_expl_end}}
-         <m-content>
-            <m-layout-snake>
-               <m-body>
-                  <m-layout-v-segments>
-                     <m-segment>
-                        ({{var_Rl}} &bullet; {{var_Rl}})
-                     </m-segment>
-                     <m-sep> + </m-sep>
-                     <m-segment>
-                        ({{var_Rd}} &bullet; {{var_Rd}}){{var_Hd}}{{lu_math_sq}}
-                     </m-segment>
-                     <m-sep> + </m-sep>
-                     <m-segment>
-                        (<!--
-                        -->({{var_Rl}} + {{var_Rd}}{{var_Hd}}) &bullet; {{var_Ca}}<!--
-                     -->){{lu_math_sq}}
-                     </m-segment>
-                     <m-sep> + </m-sep>
-                     <m-segment>
-                        2({{var_Rd}} &bullet; {{var_Rl}}){{var_Hd}}
-                     </m-segment>
-                     <m-sep> - </m-sep>
-                     <m-segment>
-                        2({{var_Rl}} &bullet; (<!--
-                        -->({{var_Rl}} + {{var_Rd}}{{var_Hd}}) &bullet; {{var_Ca}}<!--
-                     -->){{var_Ca}})
-                     </m-segment>
-                     <m-sep> - </m-sep>
-                     <m-segment>
-                        2({{var_Rd}} &bullet; (<!--
-                        -->({{var_Rl}} + {{var_Rd}}{{var_Hd}}) &bullet; {{var_Ca}}<!--
-                     -->){{var_Ca}}){{var_Hd}}
-                     </m-segment>
-                  </m-layout-v-segments>
-               </m-body>
-               <m-tail>
-                  = {{var_Cr}}{{lu_math_sq}}
-               </m-tail>
-            </m-layout-snake>
-         </m-content>
-      </m-solvestep>
-      
-      <!-- TRY 3 END -->
-      <hr />
-      <hr />
-      <hr />
-      
-      
       <m-solvestep>
          {{lu_math_expl_start}}
             <p>
@@ -1306,6 +1154,93 @@ extra_css_files:
       </m-solvestep>
       <m-solvestep>
          {{lu_math_expl_start}}
+            <p>
+               Consider the following: the squared dot product of {{var_Avec_inl}} and {{var_Bvec_inl}} is equal to the dot product of: {{var_Avec_inl}} projected onto {{var_Bvec_inl}}; and {{var_Avec_inl}}.
+            </p>
+            <lu-math>
+               <m-solvestep>
+                  <m-content>
+                     ({{var_Avec}} &bullet; {{var_Bvec}}){{lu_math_sq}}
+                     =
+                     (({{var_Avec}} &bullet; {{var_Bvec}}) &bullet; {{var_Bvec}}) &bullet; {{var_Avec}}
+                  </m-content>
+               </m-solvestep>
+            </lu-math>
+            <p>
+               We can prove it by expanding the righthand expression.
+            </p>
+            <lu-math>
+               <m-solvestep>
+                  <m-content>
+                     <m-layout-snake>
+                        <m-head>
+                           ({{var_Avec}} &bullet; {{var_Bvec}}){{lu_math_sq}}
+                           =
+                           (
+                        </m-head>
+                        <m-body>
+                           <m-layout-v-segments>
+                              <m-segment>
+                                 (({{var_Avec}} &bullet; {{var_Bvec}})<var>B<sub>x</sub></var>
+                              </m-segment>
+                              <m-sep> + </m-sep>
+                              <m-segment>
+                                 (({{var_Avec}} &bullet; {{var_Bvec}})<var>B<sub>y</sub></var>
+                              </m-segment>
+                              <m-sep> + </m-sep>
+                              <m-segment>
+                                 (({{var_Avec}} &bullet; {{var_Bvec}})<var>B<sub>z</sub></var>
+                              </m-segment>
+                           </m-layout-v-segments>
+                        </m-body>
+                        <m-tail>
+                           ) &bullet; {{var_Avec}}
+                        </m-tail>
+                     </m-layout-snake>
+                  </m-content>
+               </m-solvestep>
+               <m-solvestep>
+                  <m-content>
+                     <m-layout-snake>
+                        <m-head>
+                           ({{var_Avec}} &bullet; {{var_Bvec}}){{lu_math_sq}}
+                           =
+                        </m-head>
+                        <m-body>
+                           <m-layout-v-segments>
+                              <m-segment>
+                                 ({{var_Avec}} &bullet; {{var_Bvec}})<var>A<sub>x</sub></var><var>B<sub>x</sub></var>
+                              </m-segment>
+                              <m-sep> + </m-sep>
+                              <m-segment>
+                                 ({{var_Avec}} &bullet; {{var_Bvec}})<var>A<sub>y</sub></var><var>B<sub>y</sub></var>
+                              </m-segment>
+                              <m-sep> + </m-sep>
+                              <m-segment>
+                                 ({{var_Avec}} &bullet; {{var_Bvec}})<var>A<sub>z</sub></var><var>B<sub>z</sub></var>
+                              </m-segment>
+                           </m-layout-v-segments>
+                        </m-body>
+                     </m-layout-snake>
+                  </m-content>
+               </m-solvestep>
+               <m-solvestep>
+                  <m-content>
+                     ({{var_Avec}} &bullet; {{var_Bvec}})({{var_Avec}} &bullet; {{var_Bvec}})
+                     =
+                     (({{var_Avec}} &bullet; {{var_Bvec}})({{var_Avec}} &bullet; {{var_Bvec}})
+                  </m-content>
+               </m-solvestep>
+               {{lu_math_therefore_block}}
+               <m-row>
+                  ({{var_Ca}} &bullet; {{var_Rd}}){{lu_math_sq}}
+                  =
+                  (({{var_Ca}} &bullet; {{var_Rd}}) &bullet; {{var_Ca}}) &bullet; {{var_Rd}}
+               </m-row>
+            </lu-math>
+            <p>
+               Additionally, we know that when we project {{var_Avec_inl}} onto {{var_Bvec_inl}}, the dot product used in that operation (<lu-math data-inline>{{var_Avec}} &bullet; {{var_Bvec}}</lu-math>) is the length of the projected vector.
+            </p>
          {{lu_math_expl_end}}
          <m-content>
             <m-layout-snake>
