@@ -271,10 +271,27 @@ figure.multi-figure {
    
    >.wrap {
       margin:0;
+      
+      &.bulky-image {
+         padding:1rem;
+      }
    }
 }
 
-figure.mathematical-graph {
+figure.multi-figure.mathematical-graph {
+   gap: 1rem;
+   flex-flow: row wrap;
+   
+   >.wrap {
+      padding:1rem;
+      
+      >.graph {
+         display: block;
+      }
+   }
+}
+
+figure.mathematical-graph:not(.multi-figure) {
    margin:1em 0;
    text-align:center;
    
@@ -287,7 +304,7 @@ figure.mathematical-graph {
       margin:0 1em;
       
       &:first-child:last-child {
-         display:block;
+         display: block;
          margin:0 auto;
       }
    }

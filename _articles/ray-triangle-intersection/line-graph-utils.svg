@@ -1,0 +1,35 @@
+<svg viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg">
+   <defs>
+      <line id="gridline-v" x1="0" y1="-5" x2="0" y2="5" stroke="#A0A0A0" vector-effect="non-scaling-stroke" />
+      
+      <g id="gridlines-axis" x="0" y="0" style="shape-rendering:crispEdges;">
+         <use x="-4" y="0" href="#gridline-v" />
+         <use x="-3" y="0" href="#gridline-v" />
+         <use x="-2" y="0" href="#gridline-v" />
+         <use x="-1" y="0" href="#gridline-v" />
+         <line x1="0" y1="-5" x2="0" y2="5" stroke="#000000FF" vector-effect="non-scaling-stroke" />
+         <use x="1" y="0" href="#gridline-v" />
+         <use x="2" y="0" href="#gridline-v" />
+         <use x="3" y="0" href="#gridline-v" />
+         <use x="4" y="0" href="#gridline-v" />
+      </g>
+      
+      <rect id="grid-border-layer" x="-5" y="-5" width="10" height="10" stroke="#A0A0A0" vector-effect="non-scaling-stroke" fill="transparent" />
+      <g id="grid-border" x="0" y="0">
+         <!-- "crisp edges" rendering works by shifting lines onto the nearest whole pixel... clumsily. 
+              lines can be knocked out of bounds and lost entirely. just abuse stacking instead, to 
+              have pixel-misaligned lines blend to close to the proper opacity. -->
+         <use href="#grid-border-layer" />
+         <use href="#grid-border-layer" />
+         <use href="#grid-border-layer" />
+         <use href="#grid-border-layer" />
+         <use href="#grid-border-layer" />
+      </g>
+      
+      <g id="ready-made-grid" x="0" y="0" viewBox="-5 -5 10 10">
+         <use href="#grid-border" x="0" y="0" />
+         <use href="#gridlines-axis" x="0" y="0" />
+         <use href="#gridlines-axis" x="0" y="0" transform="rotate(90)" />
+      </g>
+   </defs>
+</svg>

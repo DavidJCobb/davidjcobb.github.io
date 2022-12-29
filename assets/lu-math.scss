@@ -95,6 +95,10 @@ lu-math{
 }
 
 lu-math {
+   .to-lower {
+      text-transform: lowercase;
+   }
+   
    mark {
       /*display:inline-block;*/
       
@@ -805,6 +809,37 @@ lu-math :is(
       
          width:  var(--glyph-width);
          height: 100%;
+      }
+   }
+   
+   >m-content {
+      >m-big-sep {
+         --glyph-width:1.5ch;
+         
+         display:inline-block;
+         position:relative;
+         width:1px;
+         height:100%;
+         vertical-align:bottom;
+         margin-right:var(--glyph-width);
+         
+         text-indent: -1000vw;
+         
+         &::after {
+            content: "";
+            display: block;
+            
+            position: absolute;
+            left: 0;
+            top:  0;
+         
+            width:  var(--glyph-width);
+            height: 100%;
+         }
+         &.comma::after {
+            background: no-repeat center top/var(--glyph-width) 100% make-big-glyph-background(",");
+            transform:translate(0, 0.25em);
+         }
       }
    }
 }

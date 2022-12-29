@@ -15,6 +15,10 @@ $code-block-back-color: #F8F8F8;
    color-scheme: light;
 }
 
+[hidden] {
+   display: none;
+}
+
 a:link { color:#0066cc; }
 a:link:visited,
 a:visited { color:#801490; }

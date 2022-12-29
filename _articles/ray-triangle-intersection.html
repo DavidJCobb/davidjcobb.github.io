@@ -1,0 +1,1111 @@
+---
+title: Ray/triangle intersections
+tags:
+ - 3D
+ - geometry
+ - intersection
+ - math
+ - raycasting
+social_media:
+   title: Cobb - Ray/triangle intersections
+   description: The math behind doing raycasts for triangles in 3D space, with the mathematical derivation fully explained step, by step. Includes public-domain code.
+extra_css_files:
+ - lu-math.css
+table_of_contents:
+ - id:    defining
+   title: Defining our shapes
+ - id:    solving
+   title: Solving for the ray
+ - id:    free-code
+   title: Free code!
+   
+---
+{%- include lu-math/defines.html -%}
+
+{%- assign var_Hd     = "<var>H<sub>d</sub></var>" -%}
+{%- assign var_Hp     = "<var data-type='vector'>H<sub>p</sub></var>" -%}
+{%- assign var_Rd     = "<var data-type='vector'>R<sub>d</sub></var>" -%}
+{%- assign var_Ro     = "<var data-type='vector'>R<sub>o</sub></var>" -%}
+{%- assign var_Ta     = "<var data-type='vector'>T<sub>a</sub></var>" -%}
+{%- assign var_Tb     = "<var data-type='vector'>T<sub>b</sub></var>" -%}
+{%- assign var_Tc     = "<var data-type='vector'>T<sub>c</sub></var>" -%}
+{%- assign var_Tn     = "<var data-type='vector'>T<sub>n</sub></var>" -%}
+{%- assign var_Hd_inl = var_Hd | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Hp_inl = var_Hp | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Rd_inl = var_Rd | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Ro_inl = var_Ro | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Ta_inl = var_Ta | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Tb_inl = var_Tb | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Tc_inl = var_Tc | prepend: math_inl_enter | append: math_inl_leave -%}
+{%- assign var_Tn_inl = var_Tn | prepend: math_inl_enter | append: math_inl_leave -%}
+
+{%- capture graph_rel_url -%}
+   {%- comment -%}
+      We want to strip the file extension off of the path to this current article, if it 
+      has one (this will depend on the permalink).
+   {%- endcomment -%}
+   {%- assign temporary = page.url | split: "." -%}
+   {{- page.dir -}}
+   {%- if temporary.size > 1 -%}
+      {%- for item in temporary -%}
+         {%- unless forloop.last -%}{{ item }}{%- endunless -%}
+      {%- endfor -%}
+   {%- else -%}
+      {{ temporary[0] }}
+   {%- endif -%}
+   {%- comment -%}
+      Next, we add the name of the asset file we want.
+   {%- endcomment -%}
+   /line-graph-utils.svg
+{%- endcapture -%}
+{%- assign graph_rel_url = graph_rel_url -%}
+
+<section>
+   <p>
+      Here, I'll go over how to test for the intersection between a ray and a triangle in 3D space. I've also provided code at the bottom as a public domain work.
+   </p>
+</section>
+
+<section>
+   <h2><a name="defining"></a>Defining our shapes</h2>
+   <p>
+      Our triangle is defined as three points in space: {{var_Ta_inl}}, {{var_Tb_inl}}, and {{var_Tc_inl}}. A triangle is a flat shape, so all of these points belong to a common plane. That plane's normal {{var_Tn_inl}} can be defined using the cross product. However, the cross product is sensitive to the <dfn>handedness</dfn> of our coordinate system and axes of rotation. Specifically, the cross product is right-handed: if you align your right index finger with the first vector, and your right middle finger with the second, then your right thumb will point in the same direction as the cross product. If you want a lefthanded cross product, then you need to swap the order of the vectors.
+   </p>
+   <p>
+      In the triangle shown below, the edge drawn in red is {{var_Avec_inl}} vector, the edge drawn in blue is {{var_Bvec_inl}}, and we want to take the cross product of the two vectors. If we perform <lu-math data-inline>{{var_Avec}} &times; {{var_Bvec}}</lu-math>, then we'll get the righthanded cross product, which will point "out of the screen" toward us. If we perform <lu-math data-inline>{{var_Bvec}} &times; {{var_Avec}}</lu-math>, then we'll get the lefthanded cross product, which will point "into the screen" away from us.
+   </p>
+   <figure class="card-cutout mathematical-graph multi-figure">
+      <div class="wrap">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" />
+            1,-2!4,2.5!-3,1
+            <line
+               x1="1" y1="-2"
+               x2="4" y2="2.5"
+               stroke="#FF0000" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke"
+            />
+            <line
+               x1="4" y1="2.5"
+               x2="-3" y2="1"
+               stroke="#0000FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke"
+            />
+            <line
+               x1="-3" y1="1"
+               x2="1" y2="-2"
+               stroke="#705070" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke"
+            />
+         </svg>
+      </div>
+   </figure>
+   <p>
+      Of course, it's a bit awkward to twist one's hands to check every possible combination of cross products for a triangle with a given handedness, so here's a more general rule. To get a triangle's surface normal, we must take the cross product of two vectors, and these vectors will share one vertex. The vertex that is unique to the first operand is our <dfn>leading vertex</dfn>, and the vertex that is unique to the second operand is the <dfn>trailing vertex</dfn>. If movement from the trailing vertex through the shared vertex to the leading vertex would be clockwise, then the system is lefthanded; otherwise, righthanded.
+   </p>
+   <p>
+      For my purposes, I need the lefthanded normal with a counterclockwise <dfn>winding order</dfn> &mdash; that is, the order in which the triangle's vertices are named &mdash; so I can use any of the following arrangements:
+   </p>
+   <ul>
+      <li>
+         <lu-math data-inline>
+            ({{var_Ta}} - {{var_Tb}}) &times; ({{var_Tb}} - {{var_Tc}})
+         </lu-math>
+      </li>
+      <li>
+         <lu-math data-inline>
+            ({{var_Tb}} - {{var_Tc}}) &times; ({{var_Tc}} - {{var_Ta}})
+         </lu-math>
+      </li>
+      <li>
+         <lu-math data-inline>
+            ({{var_Tc}} - {{var_Ta}}) &times; ({{var_Ta}} - {{var_Tb}})
+         </lu-math>
+      </li>
+   </ul>
+   <p>
+      For now, let's go with the first one. If we find ourselves with a reason to switch later, we'll switch.
+   </p>
+   <lu-math>
+      <m-row>
+         {{lu_math_eq_numbers[1]}}
+         
+         {{var_Tn}}
+         =
+         <m-fraction>
+            <m-raw>(</m-raw>
+            <m-numer>
+               ({{var_Ta}} - {{var_Tb}}) &times; ({{var_Tb}} - {{var_Tc}})
+            </m-numer>
+            <m-raw>) &divide; </m-raw>
+            <m-denom>
+               {{lu_math_vec_start}}({{var_Ta}} - {{var_Tb}}) &times; ({{var_Tb}} - {{var_Tc}}){{lu_math_vec_end}}
+            </m-denom>
+         </m-fraction>
+      </m-row>
+   </lu-math>
+   <p>
+      We're just taking the triangle's two edges, obtaining their cross product, and normalizing it.
+   </p>
+   <p>
+      Our ray, meanwhile, is most usefully defined as:
+   </p>
+   <lu-math>
+      <m-givens>
+         <label>Given:</label>
+         <dl>
+            <dt>{{var_Ro}}</dt>
+            <m-sep> = </m-sep>
+               <dd>the ray's origin</dd>
+            <dt>{{var_Rd}}</dt>
+            <m-sep> = </m-sep>
+               <dd>the ray's direction</dd>
+            <dt>{{var_Hp}}</dt>
+            <m-sep> = </m-sep>
+               <dd>the position at which the ray hits some surface</dd>
+            <dt>{{var_Hd}}</dt>
+            <m-sep> = </m-sep>
+               <dd>the hit distance: the distance from the ray origin to the hit position</dd>
+         </dl>
+      </m-givens>
+      <m-row>
+         {{var_Hp}}
+         =
+         {{var_Ro}} + {{var_Rd}}{{var_Hd}}
+      </m-row>
+   </lu-math>
+</section>
+
+<section>
+   <h2><a name="solving"></a>Solving for the ray</h2>
+   <p>
+      As with <a href="{% link _articles/ray-disc-intersection.html %}">other flat shapes</a>, the first step to computing the intersection of a ray with a triangle is to <a href="{% link _articles/ray-plane-intersection.html %}">compute the intersection of the ray with the infinite plane that contains the triangle</a>. If there's no intersection there, then we can rule out a ray/triangle intersection immediately. If there <em>is</em> a ray/plane intersection, then we have our hit distance, and we just need to confirm that that intersection is actually within our triangle &mdash; a 2D test.
+   </p>
+</section>
+
+<section>
+   <h2><a name="sat"></a>Separating axis theorem</h2>
+   <p>
+      If you need to test whether a point is inside of any <dfn>convex</dfn> 2D shape &mdash; that is, any shape that doesn't cave in on itself &mdash; or if any two convex shapes overlap, you use the <dfn>separating axis theorem</dfn>. A triangle meets those criteria, so let's explore the idea using a triangle.
+   </p>
+   {%- assign temporary    = "1,-2!4,2.5!-3,1" | split: "!" -%}
+   {%- assign poly_verts_x = "" -%}
+   {%- assign poly_verts_y = "" -%}
+   {%- for item in temporary -%}
+      {%- assign v = item | split: "," -%}
+      {%- unless forloop.first -%}
+         {%- assign poly_verts_x = poly_verts_x | append: "," -%}
+         {%- assign poly_verts_y = poly_verts_y | append: "," -%}
+      {%- endunless -%}
+      {%- assign poly_verts_x = poly_verts_x | append: v[0] -%}
+      {%- assign poly_verts_y = poly_verts_y | append: v[1] -%}
+   {%- endfor -%}
+   {%- assign poly_verts_x = poly_verts_x | split: "," -%}
+   {%- assign poly_verts_y = poly_verts_y | split: "," -%}
+   
+   {%- assign poly_verts_last_index = poly_verts_x.size | minus: 1 -%}
+   {%- assign poly_line_color = "#8000FF" -%}
+   {%- assign poly_line_style = 'stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke"' -%}
+   
+   {%- assign temporary    = "1,1!-3,2" | split: "!" -%}
+   {%- assign lone_verts_x = "" -%}
+   {%- assign lone_verts_y = "" -%}
+   {%- for item in temporary -%}
+      {%- assign v = item | split: "," -%}
+      {%- unless forloop.first -%}
+         {%- assign lone_verts_x = lone_verts_x | append: "," -%}
+         {%- assign lone_verts_y = lone_verts_y | append: "," -%}
+      {%- endunless -%}
+      {%- assign lone_verts_x = lone_verts_x | append: v[0] -%}
+      {%- assign lone_verts_y = lone_verts_y | append: v[1] -%}
+   {%- endfor -%}
+   {%- assign lone_verts_x = lone_verts_x | split: "," -%}
+   {%- assign lone_verts_y = lone_verts_y | split: "," -%}
+   
+   {%- assign lone_verts_last_index = lone_verts_x.size | minus: 1 -%}
+   {%- assign lone_verts_colors = "#FF0000,#008000" | split: "," -%}
+   
+   <figure class="card-cutout mathematical-graph multi-figure">
+      <div class="wrap">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" />
+            
+            {%- for i in (0..poly_verts_last_index) -%}
+               {%- assign j = i | plus: 1 | modulo: poly_verts_x.size -%}
+               <line
+                  x1="{{poly_verts_x[i]}}" y1="{{poly_verts_y[i]}}"
+                  x2="{{poly_verts_x[j]}}" y2="{{poly_verts_y[j]}}"
+                  stroke="{{poly_line_color}}" {{poly_line_style}}
+               />
+            {%- endfor -%}
+            
+            {%- for i in (0..lone_verts_last_index) -%}
+               <circle cx="{{lone_verts_x[i]}}" cy="{{lone_verts_y[i]}}" r="0.25" fill="{{lone_verts_colors[i]}}" />
+            {%- endfor -%}
+         </svg>
+      </div>
+   </figure>
+   <p>
+      The simplest way is to use the <dfn>separating axis theorem</dfn>: we perform a series of 
+      one-dimensional queries &mdash; that is, we flatten the entire graph from 2D into 1D, and 
+      check for overlap that way. The question is this: which <em>way</em> do we flatten the graph?
+   </p>
+   <p>
+      We could flatten the graph along the <var>x</var>-axis:
+   </p>
+   <figure class="card-cutout mathematical-graph multi-figure">
+      <div class="wrap">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" />
+            
+            {%- for i in (0..poly_verts_last_index) -%}
+               {%- assign j = i | plus: 1 | modulo: poly_verts_x.size -%}
+               <line
+                  x1="0" y1="{{poly_verts_y[i]}}"
+                  x2="0" y2="{{poly_verts_y[j]}}"
+                  stroke="{{poly_line_color}}" {{poly_line_style}}
+               />
+            {%- endfor -%}
+            
+            {%- for i in (0..lone_verts_last_index) -%}
+               <circle cx="0" cy="{{lone_verts_y[i]}}" r="0.25" fill="{{lone_verts_colors[i]}}" />
+            {%- endfor -%}
+         </svg>
+      </div>
+   </figure>
+   <p>
+      If we do that, and then treat the <var>y</var>-axis as a number line, then we see that the 
+      red point lies on the part of the line that "belongs" to the triangle. However, so does the 
+      green point, even though the green point wasn't inside the triangle. Okay, then: what if we 
+      flatten the graph along the <var>y</var>-axis, instead?
+   </p>
+   <figure class="card-cutout mathematical-graph multi-figure">
+      <div class="wrap">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" />
+            
+            {%- for i in (0..poly_verts_last_index) -%}
+               {%- assign j = i | plus: 1 | modulo: poly_verts_x.size -%}
+               <line
+                  x1="{{poly_verts_x[i]}}" y1="0"
+                  x2="{{poly_verts_x[j]}}" y2="0"
+                  stroke="{{poly_line_color}}" {{poly_line_style}}
+               />
+            {%- endfor -%}
+            
+            {%- for i in (0..lone_verts_last_index) -%}
+               <circle cx="{{lone_verts_x[i]}}" cy="0" r="0.25" fill="{{lone_verts_colors[i]}}" />
+            {%- endfor -%}
+         </svg>
+      </div>
+   </figure>
+   <p>
+      Nope, that doesn't help either.
+   </p>
+   <p>
+      What we need to do is take the <dfn>surface normals</dfn> of each edge on the triangle &mdash; 
+      that is, vectors perpendicular to the edges, pointing outward &mdash; and flatten the graph 
+      three times, along those vectors. If a point lies outside of the triangle in <em>any</em> 
+      flattened graph, then it's outside the triangle in the full 2D graph.
+   </p>
+   <p>
+      Let's first look at our normals, shown in blue:
+   </p>
+   <figure class="card-cutout mathematical-graph multi-figure">
+      <svg hidden>
+         <defs>
+            <g id="svg-SAT-faded-geom">
+               {%- for i in (0..poly_verts_last_index) -%}
+                  {%- assign j = i | plus: 1 | modulo: poly_verts_x.size -%}
+                  <line
+                     x1="{{poly_verts_x[i]}}" y1="{{poly_verts_y[i]}}"
+                     x2="{{poly_verts_x[j]}}" y2="{{poly_verts_y[j]}}"
+                     stroke="{{poly_line_color}}40" {{poly_line_style}}
+                  />
+               {%- endfor -%}
+               
+               {%- for i in (0..lone_verts_last_index) -%}
+                  <circle cx="{{lone_verts_x[i]}}" cy="{{lone_verts_y[i]}}" r="0.25" fill="{{lone_verts_colors[i]}}40" />
+               {%- endfor -%}
+            </g>
+         </defs>
+      </svg>
+      
+      <div class="wrap">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" />
+            
+            <!-- equations here use SVG coordinates -->
+            
+            <!-- surface: y = 1.5x      //  midpoint at (2.5, 0.25) -->
+            <!-- normal:  y = x / 1.5 -->
+            <line x1="1" y1="-2" x2="4" y2="2.5" stroke="#8000FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            <!-- surface: y = -(1.5/7)x // midpoint at (0.5, 1.75) -->
+            <!-- normal:  y = -7x / 1.5 -->
+            <line x1="4" y1="2.5" x2="-3" y2="1" stroke="#8000FF80" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            <!-- surface: y = -0.75x    // midpoint at (-1, -0.5) -->
+            <!-- normal:  y = -x / 0.75 -->
+            <line x1="-3" y1="1" x2="1" y2="-2" stroke="#8000FF80" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            
+            <circle cx="1" cy="1" r="0.25" fill="#FF0000" />
+            <circle cx="-3" cy="2" r="0.25" fill="#008000" />
+            
+            <g transform="translate(2.5, -0.25)">
+               <line x1="-10" y1="7.5" x2="10" y2="-7.5" stroke="#40A0FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            </g>
+         </svg>
+      </div>
+      <div class="wrap">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" />
+            
+            <line x1="1" y1="-2" x2="4" y2="2.5" stroke="#8000FF80" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            <line x1="4" y1="2.5" x2="-3" y2="1" stroke="#8000FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            <line x1="-3" y1="1" x2="1" y2="-2" stroke="#8000FF80" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            
+            <circle cx="1" cy="1" r="0.25" fill="#FF0000" />
+            <circle cx="-3" cy="2" r="0.25" fill="#008000" />
+            
+            <g transform="translate(0.5, 1.75)">
+               <line x1="-10" y1="46.666" x2="10" y2="-46.666" stroke="#40A0FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            </g>
+         </svg>
+      </div>
+      <div class="wrap">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" />
+            
+            <line x1="1" y1="-2" x2="4" y2="2.5" stroke="#8000FF80" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            <line x1="4" y1="2.5" x2="-3" y2="1" stroke="#8000FF80" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            <line x1="-3" y1="1" x2="1" y2="-2" stroke="#8000FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            
+            <circle cx="1" cy="1" r="0.25" fill="#FF0000" />
+            <circle cx="-3" cy="2" r="0.25" fill="#008000" />
+            
+            <g transform="translate(-1, -0.5)">
+               <line x1="-7.5" y1="-10" x2="7.5" y2="10" stroke="#40A0FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            </g>
+         </svg>
+      </div>
+   </figure>
+   <p>
+      Now let's see these graphs flattened along the normals:
+   </p>
+   <figure class="card-cutout multi-figure mathematical-graph">
+      <svg hidden>
+         <defs>
+            <g id="svg-SAT-faded-geom">
+               <line x1="1" y1="-2" x2="4" y2="2.5" stroke="#8000FF40" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+               <line x1="4" y1="2.5" x2="-3" y2="1" stroke="#8000FF40" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+               <line x1="-3" y1="1" x2="1" y2="-2" stroke="#8000FF40" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+         
+               <circle cx="1" cy="1" r="0.25" fill="#FF000040" />
+               <circle cx="-3" cy="2" r="0.25" fill="#00800040" />
+            </g>
+         </defs>
+      </svg>
+      <div class="wrap">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" width="200" height="200" />
+            <use href="#svg-SAT-faded-geom" />
+            
+            <line x1="-10" y1="7.5" x2="10" y2="-7.5" stroke="#00000050" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            
+            <!-- projected triangle: -->
+            <line x1="1.6" y1="-1.2" x2="-2.4" y2="1.799999" stroke="#8000FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            
+            <!-- projected points: -->
+            <circle cx="0.16" cy="-0.12" r="0.25" fill="#FF0000" />
+            <circle cx="-2.88" cy="2.15999999" r="0.25" fill="#008000" />
+         </svg>
+      </div>
+      <div class="wrap">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" />
+            <use href="#svg-SAT-faded-geom" />
+            
+            <line x1="-10" y1="46.666" x2="10" y2="-46.666" stroke="#00000050" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            
+            <!-- projected triangle: -->
+            <line x1="-0.336585" y1="1.570731" x2="0.453658" y2="-2.117073" stroke="#8000FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            
+            <!-- projected points: -->
+            <circle cx="-0.160975" cy="0.751219" r="0.25" fill="#FF0000" />
+            <circle cx="-0.541463" cy="2.526829" r="0.25" fill="#008000" />
+         </svg>
+      </div>
+      <div class="wrap">
+         <svg class="graph" viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <use href="{{graph_rel_url}}#ready-made-grid" x="0" y="0" />
+            <use href="#svg-SAT-faded-geom" />
+            
+            <line x1="-7.5" y1="-10" x2="7.5" y2="10" stroke="#00000040" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            
+            <!-- projected triangle: -->
+            <line x1="-0.6" y1="-0.8" x2="2.63999999" y2="3.51999999" stroke="#8000FF" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            
+            <!-- projected points: -->
+            <circle cx="0.84" cy="1.12" r="0.25" fill="#FF0000" />
+            <circle cx="-0.12" cy="-0.16" r="0.25" fill="#008000" />
+         </svg>
+      </div>
+   </figure>
+   <p>
+      We can see that the red dot overlaps the flattened triangle for all three normals, while the green 
+      dot overlaps in only one case. Therefore, the red dot is inside the triangle, while the green dot 
+      is not. This approach works for any convex polygon &mdash; that is, any shape that doesn't curve 
+      in on itself.
+   </p>
+   <p>
+      This flattening operation is what <dfn>vector projection</dfn> does; we are <dfn>projecting</dfn> 
+      each point onto the surface normal vectors.
+   </p>
+</section>
+
+<section>
+   <h2><a name="applying-sat"></a>Applying the separating axis theorem</h2>
+   <p>
+      Remember: our triangle's points are {{var_Ta_inl}}, {{var_Tb_inl}}, and {{var_Tc_inl}}, and the hit position we want to test against it is {{var_Hp_inl}}. We can get an edge normal by taking its cross vector with the triangle's containing plane normal {{var_Tn_inl}}. Now, one property we'll want to take advantage of to keep the equations small is this: if you flatten a triangle against the edge normal for any two vertices &mdash; say, {{var_Avec}} and {{var_Bvec}} &mdash; then both of those vertices will project to the same place on the vector. This means that we only need to test against one of them. So:
+   </p>
+   
+   <lu-math>
+      {%- capture var_Nab -%}<var>N<sub class="to-lower">AB</sub></var>{%- endcapture -%}
+      {%- capture var_Nbc -%}<var>N<sub class="to-lower">BC</sub></var>{%- endcapture -%}
+      {%- assign var_Nab_inl = var_Nab | prepend: math_inl_enter | append: math_inl_leave -%}
+      {%- assign var_Nbc_inl = var_Nbc | prepend: math_inl_enter | append: math_inl_leave -%}
+      {%- capture proj_sym -%}
+         <span aria-hidden="true">&rarr;</span><m-raw data-screen-reader-only>&nbsp;onto&nbsp;</m-raw>
+      {%- endcapture -%}
+      {%- capture Ta_to_ab -%}<var>T<sub class="to-lower">a{{proj_sym}}AB</sub></var>{%- endcapture -%}
+      {%- capture Tc_to_ab -%}<var>T<sub class="to-lower">c{{proj_sym}}AB</sub></var>{%- endcapture -%}
+      {%- capture Ta_to_bc -%}<var>T<sub class="to-lower">a{{proj_sym}}BC</sub></var>{%- endcapture -%}
+      {%- capture Tb_to_bc -%}<var>T<sub class="to-lower">b{{proj_sym}}BC</sub></var>{%- endcapture -%}
+      <m-row>
+         {{var_Nab}}
+         =
+         ({{var_Ta}} - {{var_Tb}}) &times; {{var_Tn}}
+      </m-row>
+      <m-row>
+         {{var_Nbc}}
+         =
+         ({{var_Tb}} - {{var_Tc}}) &times; {{var_Tn}}
+      </m-row>
+      <m-row>
+         min<!--
+      --><m-big-parens><!--
+         --><m-delim>(</m-delim><!--
+         --><m-content>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Ta}} &bullet; {{var_Nab}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nab}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+               <m-big-sep class="comma">,</m-big-sep>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Tc}} &bullet; {{var_Nab}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nab}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+            </m-content><!--
+         --><m-delim>)</m-delim><!--
+      --></m-big-parens>
+         &leq;
+         <m-fraction>
+            <m-raw>(</m-raw>
+            <m-numer>{{var_Hp}} &bullet; {{var_Nab}}</m-numer>
+            <m-raw>) &divide; </m-raw>
+            <m-denom>{{lu_math_vec_start}}{{var_Nab}}{{lu_math_vec_end}}</m-denom>
+         </m-fraction>
+         &leq;
+         max<!--
+      --><m-big-parens><!--
+         --><m-delim>(</m-delim><!--
+         --><m-content>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Ta}} &bullet; {{var_Nab}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nab}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+               <m-big-sep class="comma">,</m-big-sep>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Tc}} &bullet; {{var_Nab}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nab}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+            </m-content><!--
+         --><m-delim>)</m-delim><!--
+      --></m-big-parens>
+      </m-row>
+      <m-row>
+         min<!--
+      --><m-big-parens><!--
+         --><m-delim>(</m-delim><!--
+         --><m-content>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Ta}} &bullet; {{var_Nbc}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nbc}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+               <m-big-sep class="comma">,</m-big-sep>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Tb}} &bullet; {{var_Nbc}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nbc}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+            </m-content><!--
+         --><m-delim>)</m-delim><!--
+      --></m-big-parens>
+         &leq;
+         <m-fraction>
+            <m-raw>(</m-raw>
+            <m-numer>{{var_Hp}} &bullet; {{var_Nbc}}</m-numer>
+            <m-raw>) &divide; </m-raw>
+            <m-denom>{{lu_math_vec_start}}{{var_Nbc}}{{lu_math_vec_end}}</m-denom>
+         </m-fraction>
+         &leq;
+         max<!--
+      --><m-big-parens><!--
+         --><m-delim>(</m-delim><!--
+         --><m-content>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Ta}} &bullet; {{var_Nbc}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nbc}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+               <m-big-sep class="comma">,</m-big-sep>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Tb}} &bullet; {{var_Nbc}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nbc}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+            </m-content><!--
+         --><m-delim>)</m-delim><!--
+      --></m-big-parens>
+      </m-row>
+   </lu-math>
+   <p>
+      One simple change we can make right now is to remove the length divisions that we would use to normalize the lengths of projected vectors. The lengths we're all comparing are unequal to 1, but they're unequal by the same proportion; they're all divided by the same thing. Let's skip the division.
+   </p>
+   <lu-math>
+      {{lu_math_eq_numbers[2]}}
+      
+      <m-row>
+         min({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tc}} &bullet; {{var_Nab}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nab}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tc}} &bullet; {{var_Nab}})
+      </m-row>
+      <m-row>
+         min({{var_Ta}} &bullet; {{var_Nbc}}, {{var_Tb}} &bullet; {{var_Nbc}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nbc}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nbc}}, {{var_Tb}} &bullet; {{var_Nbc}})
+      </m-row>
+   </lu-math>
+   <p>
+      So this is the most basic form of our triangle-intersection problem. There's one more step we can omit, though &mdash; not here, but when computing {{var_Tn}}.
+   </p>
+   <p>
+      We go to the trouble of normalizing {{var_Tn}}, which is to say: multiplying it by a scalar, in order to force its length to 1. When you're working with the cross product of two vectors {{var_Avec_inl}} and {{var_Bvec_inl}} and some scalar {{var_Csca_inl}}, it's always true that 
+      <lu-math data-inline>
+         {{var_Avec}} &times; {{var_Bvec}}{{var_Csca}}
+         =
+         ({{var_Avec}} &times; {{var_Bvec}}){{var_Csca}}<!--
+   --></lu-math>.
+      This means that if we <em>don't</em> perform a division to get the triangle's plane normal &mdash; if we just use a raw vector with an unpredictable length &mdash; then we can save on a division here. All of the values that we're comparing as part of our separating axis theorem check will be scaled by the same amount: the amount we <em>didn't</em> divide. As such, we can redefine {{var_Nab_inl}} and {{var_Nbc_inl}}.
+   </p>
+   <lu-math>
+      <m-row>
+         {{var_Nab}}
+         =
+         ({{var_Ta}} - {{var_Tb}}) &times; (({{var_Ta}} - {{var_Tb}}) &times; ({{var_Tb}} - {{var_Tc}}))
+      </m-row>
+      <m-row>
+         {{var_Nbc}}
+         =
+         ({{var_Tb}} - {{var_Tc}}) &times; (({{var_Ta}} - {{var_Tb}}) &times; ({{var_Tb}} - {{var_Tc}}))
+      </m-row>
+   </lu-math>
+   <p>
+      This operation &mdash; the cross product of a vector and another cross product &mdash; is the <dfn>vector triple product</dfn>. A useful identity to know here is:
+   </p>
+   <lu-math>
+      <m-row>
+         {{var_Avec}} &times; ({{var_Bvec}} &times; {{var_Cvec}})
+         =
+         ({{var_Avec}} &bullet; {{var_Cvec}}){{var_Bvec}} - ({{var_Avec}} &bullet; {{var_Bvec}}){{var_Cvec}}
+      </m-row>
+      <m-row>
+         {{var_Avec}} &times; ({{var_Avec}} &times; {{var_Bvec}})
+         =
+         ({{var_Avec}} &bullet; {{var_Bvec}}){{var_Avec}} - ({{var_Avec}} &bullet; {{var_Avec}}){{var_Bvec}}
+      </m-row>
+      <m-row>
+         {{var_Avec}} &times; ({{var_Bvec}} &times; {{var_Avec}})
+         =
+         ({{var_Avec}} &bullet; {{var_Avec}}){{var_Bvec}} - ({{var_Avec}} &bullet; {{var_Bvec}}){{var_Avec}}
+      </m-row>
+   </lu-math>
+   <p>
+      We can therefore redefine our variables again using this identity:
+   </p>
+   <lu-math>
+      <m-row>
+         {{var_Nab}}
+         =
+         (({{var_Ta}} - {{var_Tb}}) &bullet; ({{var_Tb}} - {{var_Tc}}))({{var_Ta}} - {{var_Tb}})
+         -
+         (({{var_Ta}} - {{var_Tb}}) &bullet; ({{var_Ta}} - {{var_Tb}}))({{var_Tb}} - {{var_Tc}})
+      </m-row>
+      <m-row>
+         {{var_Nbc}}
+         =
+         -{{var_Nab}}
+      </m-row>
+   </lu-math>
+   <p>
+      There's an expression in there with the form <lu-math data-inline>({{var_Avec}} - {{var_Bvec}}) &bullet; ({{var_Avec}} - {{var_Bvec}})</lu-math>. Can we get that in terms of single vectors?
+   </p>
+   <lu-math>
+      <m-solvestep>
+         <m-content>
+            ({{var_Avec}} - {{var_Bvec}})
+            &bullet;
+            ({{var_Avec}} - {{var_Bvec}})
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            ({{var_Ax}} - {{var_Bx}}){{lu_math_sq}}
+            +
+            ({{var_Ay}} - {{var_By}}){{lu_math_sq}}
+            +
+            ({{var_Az}} - {{var_Bz}}){{lu_math_sq}}
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            {{var_Ax}}{{lu_math_sq}} - 2{{var_Ax}}{{var_Bx}} + {{var_Bx}}{{lu_math_sq}}
+            +
+            {{var_Ay}}{{lu_math_sq}} - 2{{var_Ay}}{{var_By}} + {{var_By}}{{lu_math_sq}}
+            +
+            {{var_Az}}{{lu_math_sq}} - 2{{var_Az}}{{var_Bz}} + {{var_Bz}}{{lu_math_sq}}
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            ({{var_Avec}} &bullet; {{var_Avec}})
+            -
+            2({{var_Avec}} &bullet; {{var_Bvec}})
+            +
+            ({{var_Bvec}} &bullet; {{var_Bvec}})
+         </m-content>
+      </m-solvestep>
+      {{lu_math_therefore_block}}
+      <m-row>
+         {{var_Nab}}
+         =
+         (({{var_Ta}} - {{var_Tb}}) &bullet; ({{var_Tb}} - {{var_Tc}}))({{var_Ta}} - {{var_Tb}})
+         -
+         (<!--
+         --><mark>({{var_Ta}} &bullet; {{var_Ta}})
+            -
+            2({{var_Ta}} &bullet; {{var_Tb}})
+            +
+            ({{var_Tb}} &bullet; {{var_Tb}})</mark><!--
+      -->)({{var_Tb}} - {{var_Tc}})
+      </m-row>
+      <m-row>
+         {{var_Nbc}}
+         =
+         -{{var_Nab}}
+      </m-row>
+   </lu-math>
+   <p>
+      We can expand the other dot product similarly, and then take advantage of scalar multiplication being an <dfn>additive</dfn> function &mdash; that is:
+      <lu-math data-inline>({{var_Asca}} + {{var_Bsca}}){{var_Cvec}} = {{var_Asca}}{{var_Cvec}} + {{var_Bsca}}{{var_Cvec}}</lu-math> and 
+      <lu-math data-inline>({{var_Avec}} + {{var_Bvec}}){{var_Csca}} = {{var_Avec}}{{var_Csca}} + {{var_Bvec}}{{var_Csca}}</lu-math>.
+      The result of the dot product is a scalar.
+   </p>
+   <lu-math>
+      <m-solvestep>
+         <m-content>
+            {{var_Nab}}
+            =
+            (<!--
+            --><mark>({{var_Ta}} &bullet; {{var_Tb}})
+             - ({{var_Ta}} &bullet; {{var_Tc}})
+             - ({{var_Tb}} &bullet; {{var_Tb}})
+             + ({{var_Tb}} &bullet; {{var_Tc}})</mark><!--
+         -->)({{var_Ta}} - {{var_Tb}})
+            -
+            (<!--
+            -->({{var_Ta}} &bullet; {{var_Ta}})
+               -
+               2({{var_Ta}} &bullet; {{var_Tb}})
+               +
+               ({{var_Tb}} &bullet; {{var_Tb}})<!--
+         -->)({{var_Tb}} - {{var_Tc}})
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            {{var_Nab}}
+            =
+            <mark class="mark-1">(<!--
+            -->({{var_Ta}} &bullet; {{var_Tb}})
+             - ({{var_Ta}} &bullet; {{var_Tc}})
+             - ({{var_Tb}} &bullet; {{var_Tb}})
+             + ({{var_Tb}} &bullet; {{var_Tc}})<!--
+         -->)</mark>{{var_Ta}}
+            -
+            <mark class="mark-1">(<!--
+            -->({{var_Ta}} &bullet; {{var_Tb}})
+             - ({{var_Ta}} &bullet; {{var_Tc}})
+             - ({{var_Tb}} &bullet; {{var_Tb}})
+             + ({{var_Tb}} &bullet; {{var_Tc}})<!--
+         -->)</mark>{{var_Tb}}
+            -
+            <mark class="mark-2">(<!--
+            -->({{var_Ta}} &bullet; {{var_Ta}})
+               -
+               2({{var_Ta}} &bullet; {{var_Tb}})
+               +
+               ({{var_Tb}} &bullet; {{var_Tb}})<!--
+         -->)</mark>{{var_Tb}}
+            +
+            <mark class="mark-2">(<!--
+            -->({{var_Ta}} &bullet; {{var_Ta}})
+               -
+               2({{var_Ta}} &bullet; {{var_Tb}})
+               +
+               ({{var_Tb}} &bullet; {{var_Tb}})<!--
+         -->)</mark>{{var_Tc}}
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-layout-snake>
+            <m-head>
+               {{var_Nab}} = 
+            </m-head>
+            <m-body>
+               <m-layout-v-segments>
+                  <m-segment>
+                     <mark class="mark-1">({{var_Ta}} &bullet; {{var_Tb}})</mark>{{var_Ta}}
+                   - <mark class="mark-1">({{var_Ta}} &bullet; {{var_Tc}})</mark>{{var_Ta}}
+                   - <mark class="mark-1">({{var_Tb}} &bullet; {{var_Tb}})</mark>{{var_Ta}}
+                   + <mark class="mark-1">({{var_Tb}} &bullet; {{var_Tc}})</mark>{{var_Ta}}
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     <mark class="mark-1">({{var_Ta}} &bullet; {{var_Tb}})</mark>{{var_Tb}}
+                   + <mark class="mark-1">({{var_Ta}} &bullet; {{var_Tc}})</mark>{{var_Tb}}
+                   + <mark class="mark-1">({{var_Tb}} &bullet; {{var_Tb}})</mark>{{var_Tb}}
+                   - <mark class="mark-1">({{var_Tb}} &bullet; {{var_Tc}})</mark>{{var_Tb}}
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     <mark class="mark-2">({{var_Ta}} &bullet; {{var_Ta}})</mark>{{var_Tb}}
+                   + <mark class="mark-2">2({{var_Ta}} &bullet; {{var_Tb}})</mark>{{var_Tb}}
+                   - <mark class="mark-2">({{var_Tb}} &bullet; {{var_Tb}})</mark>{{var_Tb}}
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     <mark class="mark-2">({{var_Ta}} &bullet; {{var_Ta}})</mark>{{var_Tc}}
+                   - <mark class="mark-2">2({{var_Ta}} &bullet; {{var_Tb}})</mark>{{var_Tc}}
+                   + <mark class="mark-2">({{var_Tb}} &bullet; {{var_Tb}})</mark>{{var_Tc}}
+                  </m-segment>
+               </m-layout-v-segments>
+            </m-body>
+         </m-layout-snake>
+      </m-solvestep>
+      <m-solvestep>
+         {{lu_math_expl_start}}
+            Some terms cancel each other out.
+         {{lu_math_expl_end}}
+         <m-layout-snake>
+            <m-head>
+               {{var_Nab}} = 
+            </m-head>
+            <m-body>
+               <m-layout-v-segments>
+                  <m-segment>
+                     ({{var_Ta}} &bullet; {{var_Tb}}){{var_Ta}}
+                   - ({{var_Ta}} &bullet; {{var_Tc}}){{var_Ta}}
+                   - ({{var_Tb}} &bullet; {{var_Tb}}){{var_Ta}}
+                   + ({{var_Tb}} &bullet; {{var_Tc}}){{var_Ta}}
+                  </m-segment>
+                  <m-sep><mark> + </mark></m-sep>
+                  <m-segment>
+                     ({{var_Ta}} &bullet; {{var_Tb}}){{var_Tb}}
+                   + ({{var_Ta}} &bullet; {{var_Tc}}){{var_Tb}}<!--
+               --><del>{{dont_eat_this_space}} + ({{var_Tb}} &bullet; {{var_Tb}}){{var_Tb}}</del>
+                   - ({{var_Tb}} &bullet; {{var_Tc}}){{var_Tb}}
+                  </m-segment>
+                  <m-sep> - </m-sep>
+                  <m-segment>
+                     ({{var_Ta}} &bullet; {{var_Ta}}){{var_Tb}}<!--
+               --><del>{{dont_eat_this_space}} + 2({{var_Ta}} &bullet; {{var_Tb}}){{var_Tb}}
+                   - ({{var_Tb}} &bullet; {{var_Tb}}){{var_Tb}}</del>
+                  </m-segment>
+                  <m-sep> + </m-sep>
+                  <m-segment>
+                     ({{var_Ta}} &bullet; {{var_Ta}}){{var_Tc}}
+                   - 2({{var_Ta}} &bullet; {{var_Tb}}){{var_Tc}}
+                   + ({{var_Tb}} &bullet; {{var_Tb}}){{var_Tc}}
+                  </m-segment>
+               </m-layout-v-segments>
+            </m-body>
+         </m-layout-snake>
+      </m-solvestep>
+      <m-solvestep>
+         <m-content>
+            {{var_Nab}}
+            =
+            ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tc}} - {{var_Tb}})
+            +
+            ({{var_Ta}} &bullet; {{var_Tb}})(<!--
+            -->{{var_Ta}} + {{var_Tb}} - 2{{var_Tc}}<!--
+         -->)
+            +
+            ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tb}} - {{var_Ta}})
+            +
+            ({{var_Tb}} &bullet; {{var_Tb}})({{var_Tc}} - {{var_Ta}})
+            +
+            ({{var_Tb}} &bullet; {{var_Tc}})({{var_Ta}} - {{var_Tb}})
+         </m-content>
+      </m-solvestep>
+   </lu-math>
+   
+   <p>
+      Let's focus on the dot product of each vertex with {{var_Nab_inl}}. Their dot products with {{var_Nbc_inl}} will be the same values but negated.
+   </p>
+   <lu-math>
+      {%- assign var_Tany = "<var data-type='vector'>T<sub>any</sub></var>" -%}
+      <m-solvestep>
+         <m-content>
+            {{var_Tany}}
+            &bullet;
+            (({{var_Ta}} &bullet; {{var_Ta}})({{var_Tc}} - {{var_Tb}})
+            +
+            ({{var_Ta}} &bullet; {{var_Tb}})(<!--
+            -->{{var_Ta}} + {{var_Tb}} - 2{{var_Tc}}<!--
+         -->)
+            +
+            ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tb}} - {{var_Ta}})
+            +
+            ({{var_Tb}} &bullet; {{var_Tb}})({{var_Tc}} - {{var_Ta}})
+            +
+            ({{var_Tb}} &bullet; {{var_Tc}})({{var_Ta}} - {{var_Tb}}))
+         </m-content>
+      </m-solvestep>
+      <m-solvestep>
+         <m-layout-v-segments>
+            <m-segment>
+               {{var_Tany}} &bullet; (({{var_Ta}} &bullet; {{var_Ta}})({{var_Tc}} - {{var_Tb}}))
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               {{var_Tany}} &bullet; (({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} + {{var_Tb}} - 2{{var_Tc}}))
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               {{var_Tany}} &bullet; (({{var_Ta}} &bullet; {{var_Tc}})({{var_Tb}} - {{var_Ta}}))
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               {{var_Tany}} &bullet; (({{var_Tb}} &bullet; {{var_Tb}})({{var_Tc}} - {{var_Ta}}))
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               {{var_Tany}} &bullet; (({{var_Tb}} &bullet; {{var_Tc}})({{var_Ta}} - {{var_Tb}}))
+            </m-segment>
+         </m-layout-v-segments>
+      </m-solvestep>
+      <m-solvestep>
+         {{lu_math_expl_start}}
+            The vector dot product is distributive over scalar multiplication.
+         {{lu_math_expl_end}}
+         <m-layout-v-segments>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tany}} &bullet; ({{var_Tc}} - {{var_Tb}}))
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; ({{var_Ta}} + {{var_Tb}} - 2{{var_Tc}}))
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; ({{var_Tb}} - {{var_Ta}}))
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Tb}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; ({{var_Tc}} - {{var_Ta}}))
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Tb}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; ({{var_Ta}} - {{var_Tb}}))
+            </m-segment>
+         </m-layout-v-segments>
+      </m-solvestep>
+      <m-solvestep>
+         {{lu_math_expl_start}}
+            The vector dot product is distributive over vector addition and subtraction.
+         {{lu_math_expl_end}}
+         <m-layout-v-segments>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Ta}})(<!--
+               -->({{var_Tany}} &bullet; {{var_Tc}})
+                - ({{var_Tany}} &bullet; {{var_Tb}})<!--
+            -->)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Tb}})(<!--
+               -->({{var_Tany}} &bullet; {{var_Ta}})
+                + ({{var_Tany}} &bullet; {{var_Tb}})
+                - 2({{var_Tany}} &bullet; {{var_Tc}})<!--
+            -->)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Tc}})(<!--
+               -->({{var_Tany}} &bullet; {{var_Tb}})
+                - ({{var_Tany}} &bullet; {{var_Ta}})<!--
+            -->)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Tb}} &bullet; {{var_Tb}})(<!--
+               -->({{var_Tany}} &bullet; {{var_Tc}})
+                - ({{var_Tany}} &bullet; {{var_Ta}})<!--
+            -->)
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Tb}} &bullet; {{var_Tc}})(<!--
+               -->({{var_Tany}} &bullet; {{var_Ta}})
+                - ({{var_Tany}} &bullet; {{var_Tb}})<!--
+            -->)
+            </m-segment>
+         </m-layout-v-segments>
+      </m-solvestep>
+      <m-solvestep>
+         <m-layout-v-segments>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tany}} &bullet; {{var_Tc}})
+             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tany}} &bullet; {{var_Tb}})
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; {{var_Ta}})
+             + ({{var_Ta}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; {{var_Tb}})
+             - 2({{var_Ta}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; {{var_Tc}})
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; {{var_Tb}})
+             - ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; {{var_Ta}})
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Tb}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; {{var_Tc}})
+             - ({{var_Tb}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; {{var_Ta}})
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Tb}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; {{var_Ta}})
+             - ({{var_Tb}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; {{var_Tb}})
+            </m-segment>
+         </m-layout-v-segments>
+      </m-solvestep>
+   </lu-math>
+   <p>
+      Now, let's try and simplify that down with {{var_Ta_inl}} first.
+   </p>
+   <lu-math>
+      <m-solvestep>
+         <m-layout-v-segments>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tc}})
+             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tb}})
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tb}})
+             + ({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tb}})
+             - 2({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tc}})
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tc}})
+             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tc}})
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tb}} &bullet; {{var_Tb}})
+             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tb}} &bullet; {{var_Tb}})
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tb}} &bullet; {{var_Tc}})
+             - ({{var_Ta}} &bullet; {{var_Tb}})({{var_Tb}} &bullet; {{var_Tc}})
+            </m-segment>
+         </m-layout-v-segments>
+      </m-solvestep>
+      <m-solvestep>
+         {{lu_math_expl_start}}
+            Some terms cancel each other out; others can be combined.
+         {{lu_math_expl_end}}
+         <m-layout-v-segments>
+            <m-segment>
+               <ins>2</ins>({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tc}})<del>
+             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tb}})</del>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               <del>({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tb}})
+             + </del>({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tb}})
+             - <del>2</del>({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tc}})
+            </m-segment>
+            <m-segment class="del">
+               <del class="invis">{{dont_eat_this_space}} + ({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tc}})
+             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tc}})</del>
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tb}} &bullet; {{var_Tb}})
+             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tb}} &bullet; {{var_Tb}})
+            </m-segment>
+            <m-sep> + </m-sep>
+            <m-segment>
+               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tb}} &bullet; {{var_Tc}})
+             - ({{var_Ta}} &bullet; {{var_Tb}})({{var_Tb}} &bullet; {{var_Tc}})
+            </m-segment>
+         </m-layout-v-segments>
+      </m-solvestep>
+   </lu-math>
+</section>
