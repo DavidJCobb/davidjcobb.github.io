@@ -468,8 +468,10 @@ table_of_contents:
    <lu-math>
       {%- capture var_Nab -%}<var>N<sub class="to-lower">AB</sub></var>{%- endcapture -%}
       {%- capture var_Nbc -%}<var>N<sub class="to-lower">BC</sub></var>{%- endcapture -%}
+      {%- capture var_Nca -%}<var>N<sub class="to-lower">CA</sub></var>{%- endcapture -%}
       {%- assign var_Nab_inl = var_Nab | prepend: math_inl_enter | append: math_inl_leave -%}
       {%- assign var_Nbc_inl = var_Nbc | prepend: math_inl_enter | append: math_inl_leave -%}
+      {%- assign var_Nca_inl = var_Nca | prepend: math_inl_enter | append: math_inl_leave -%}
       {%- capture proj_sym -%}
          <span aria-hidden="true">&rarr;</span><m-raw data-screen-reader-only>&nbsp;onto&nbsp;</m-raw>
       {%- endcapture -%}
@@ -486,6 +488,11 @@ table_of_contents:
          {{var_Nbc}}
          =
          ({{var_Tb}} - {{var_Tc}}) &times; {{var_Tn}}
+      </m-row>
+      <m-row>
+         {{var_Nca}}
+         =
+         ({{var_Tc}} - {{var_Ta}}) &times; {{var_Tn}}
       </m-row>
       <m-row>
          min<!--
@@ -603,6 +610,64 @@ table_of_contents:
          --><m-delim>)</m-delim><!--
       --></m-big-parens>
       </m-row>
+      <m-row>
+         min<!--
+      --><m-big-parens><!--
+         --><m-delim>(</m-delim><!--
+         --><m-content>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Ta}} &bullet; {{var_Nca}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nca}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+               <m-big-sep class="comma">,</m-big-sep>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Tb}} &bullet; {{var_Nca}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nca}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+            </m-content><!--
+         --><m-delim>)</m-delim><!--
+      --></m-big-parens>
+         &leq;
+         <m-fraction>
+            <m-raw>(</m-raw>
+            <m-numer>{{var_Hp}} &bullet; {{var_Nca}}</m-numer>
+            <m-raw>) &divide; </m-raw>
+            <m-denom>{{lu_math_vec_start}}{{var_Nca}}{{lu_math_vec_end}}</m-denom>
+         </m-fraction>
+         &leq;
+         max<!--
+      --><m-big-parens><!--
+         --><m-delim>(</m-delim><!--
+         --><m-content>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Ta}} &bullet; {{var_Nca}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nca}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+               <m-big-sep class="comma">,</m-big-sep>
+            
+               <m-fraction>
+                  <m-raw>(</m-raw>
+                  <m-numer>{{var_Tb}} &bullet; {{var_Nca}}</m-numer>
+                  <m-raw>) &divide; </m-raw>
+                  <m-denom>{{lu_math_vec_start}}{{var_Nca}}{{lu_math_vec_end}}</m-denom>
+               </m-fraction>
+               
+            </m-content><!--
+         --><m-delim>)</m-delim><!--
+      --></m-big-parens>
+      </m-row>
    </lu-math>
    <p>
       One simple change we can make right now is to remove the length divisions that we would use to normalize the lengths of projected vectors. The lengths we're all comparing are unequal to 1, but they're unequal by the same proportion; they're all divided by the same thing. Let's skip the division.
@@ -623,6 +688,13 @@ table_of_contents:
          {{var_Hp}} &bullet; {{var_Nbc}}
          &leq;
          max({{var_Ta}} &bullet; {{var_Nbc}}, {{var_Tb}} &bullet; {{var_Nbc}})
+      </m-row>
+      <m-row>
+         min({{var_Ta}} &bullet; {{var_Nca}}, {{var_Tb}} &bullet; {{var_Nca}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nca}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nca}}, {{var_Tb}} &bullet; {{var_Nca}})
       </m-row>
    </lu-math>
    <p>
@@ -648,6 +720,11 @@ table_of_contents:
          =
          ({{var_Tb}} - {{var_Tc}}) &times; (({{var_Ta}} - {{var_Tb}}) &times; ({{var_Tb}} - {{var_Tc}}))
       </m-row>
+      <m-row>
+         {{var_Nca}}
+         =
+         ({{var_Tc}} - {{var_Ta}}) &times; (({{var_Ta}} - {{var_Tb}}) &times; ({{var_Tb}} - {{var_Tc}}))
+      </m-row>
    </lu-math>
    <p>
       This operation &mdash; the cross product of a vector and another cross product &mdash; is the <dfn>vector triple product</dfn>. A useful identity to know here is:
@@ -670,442 +747,104 @@ table_of_contents:
       </m-row>
    </lu-math>
    <p>
-      We can therefore redefine our variables again using this identity:
+      It's tempting to try and expand {{var_Nab_inl}} and {{var_Nbc_inl}} to see if we can find some optimal shortcut for taking their dot products with {{var_Ta_inl}}, {{var_Tb_inl}}, and {{var_Tc_inl}}. However, I tried that, and it just didn't pan out. What the above identities tell us, though, is that <lu-math data-inline>{{var_Nbc}} = -{{var_Nab}}</lu-math>. That allows us to save on a lot of math.
+   </p>
+   <p>
+      Let's modify our separating axis theorem checks &mdash; Equations 2.
    </p>
    <lu-math>
       <m-row>
-         {{var_Nab}}
-         =
-         (({{var_Ta}} - {{var_Tb}}) &bullet; ({{var_Tb}} - {{var_Tc}}))({{var_Ta}} - {{var_Tb}})
-         -
-         (({{var_Ta}} - {{var_Tb}}) &bullet; ({{var_Ta}} - {{var_Tb}}))({{var_Tb}} - {{var_Tc}})
+         min({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tc}} &bullet; {{var_Nab}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nab}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tc}} &bullet; {{var_Nab}})
       </m-row>
       <m-row>
-         {{var_Nbc}}
-         =
-         -{{var_Nab}}
+         min({{var_Ta}} &bullet; -{{var_Nab}}, {{var_Tb}} &bullet; -{{var_Nab}})
+         &leq;
+         {{var_Hp}} &bullet; -{{var_Nab}}
+         &leq;
+         max({{var_Ta}} &bullet; -{{var_Nab}}, {{var_Tb}} &bullet; -{{var_Nab}})
+      </m-row>
+      <m-row>
+         min({{var_Ta}} &bullet; {{var_Nca}}, {{var_Tb}} &bullet; {{var_Nca}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nca}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nca}}, {{var_Tb}} &bullet; {{var_Nca}})
       </m-row>
    </lu-math>
    <p>
-      There's an expression in there with the form <lu-math data-inline>({{var_Avec}} - {{var_Bvec}}) &bullet; ({{var_Avec}} - {{var_Bvec}})</lu-math>. Can we get that in terms of single vectors?
+      So, a sign flip. If we negate the lower expression and flip the comparison operators, then we get...
    </p>
    <lu-math>
-      <m-solvestep>
-         <m-content>
-            ({{var_Avec}} - {{var_Bvec}})
-            &bullet;
-            ({{var_Avec}} - {{var_Bvec}})
-         </m-content>
-      </m-solvestep>
-      <m-solvestep>
-         <m-content>
-            ({{var_Ax}} - {{var_Bx}}){{lu_math_sq}}
-            +
-            ({{var_Ay}} - {{var_By}}){{lu_math_sq}}
-            +
-            ({{var_Az}} - {{var_Bz}}){{lu_math_sq}}
-         </m-content>
-      </m-solvestep>
-      <m-solvestep>
-         <m-content>
-            {{var_Ax}}{{lu_math_sq}} - 2{{var_Ax}}{{var_Bx}} + {{var_Bx}}{{lu_math_sq}}
-            +
-            {{var_Ay}}{{lu_math_sq}} - 2{{var_Ay}}{{var_By}} + {{var_By}}{{lu_math_sq}}
-            +
-            {{var_Az}}{{lu_math_sq}} - 2{{var_Az}}{{var_Bz}} + {{var_Bz}}{{lu_math_sq}}
-         </m-content>
-      </m-solvestep>
-      <m-solvestep>
-         <m-content>
-            ({{var_Avec}} &bullet; {{var_Avec}})
-            -
-            2({{var_Avec}} &bullet; {{var_Bvec}})
-            +
-            ({{var_Bvec}} &bullet; {{var_Bvec}})
-         </m-content>
-      </m-solvestep>
-      {{lu_math_therefore_block}}
       <m-row>
-         {{var_Nab}}
-         =
-         (({{var_Ta}} - {{var_Tb}}) &bullet; ({{var_Tb}} - {{var_Tc}}))({{var_Ta}} - {{var_Tb}})
-         -
-         (<!--
-         --><mark>({{var_Ta}} &bullet; {{var_Ta}})
-            -
-            2({{var_Ta}} &bullet; {{var_Tb}})
-            +
-            ({{var_Tb}} &bullet; {{var_Tb}})</mark><!--
-      -->)({{var_Tb}} - {{var_Tc}})
+         min({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tc}} &bullet; {{var_Nab}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nab}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tc}} &bullet; {{var_Nab}})
       </m-row>
       <m-row>
-         {{var_Nbc}}
-         =
-         -{{var_Nab}}
+         max({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tb}} &bullet; {{var_Nab}})
+         &geq;
+         {{var_Hp}} &bullet; {{var_Nab}}
+         &geq;
+         min({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tb}} &bullet; {{var_Nab}})
+      </m-row>
+      <m-row>
+         min({{var_Ta}} &bullet; {{var_Nca}}, {{var_Tb}} &bullet; {{var_Nca}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nca}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nca}}, {{var_Tb}} &bullet; {{var_Nca}})
       </m-row>
    </lu-math>
    <p>
-      We can expand the other dot product similarly, and then take advantage of scalar multiplication being an <dfn>additive</dfn> function &mdash; that is:
-      <lu-math data-inline>({{var_Asca}} + {{var_Bsca}}){{var_Cvec}} = {{var_Asca}}{{var_Cvec}} + {{var_Bsca}}{{var_Cvec}}</lu-math> and 
-      <lu-math data-inline>({{var_Avec}} + {{var_Bvec}}){{var_Csca}} = {{var_Avec}}{{var_Csca}} + {{var_Bvec}}{{var_Csca}}</lu-math>.
-      The result of the dot product is a scalar.
+      Flip it back around...
    </p>
    <lu-math>
-      <m-solvestep>
-         <m-content>
-            {{var_Nab}}
-            =
-            (<!--
-            --><mark>({{var_Ta}} &bullet; {{var_Tb}})
-             - ({{var_Ta}} &bullet; {{var_Tc}})
-             - ({{var_Tb}} &bullet; {{var_Tb}})
-             + ({{var_Tb}} &bullet; {{var_Tc}})</mark><!--
-         -->)({{var_Ta}} - {{var_Tb}})
-            -
-            (<!--
-            -->({{var_Ta}} &bullet; {{var_Ta}})
-               -
-               2({{var_Ta}} &bullet; {{var_Tb}})
-               +
-               ({{var_Tb}} &bullet; {{var_Tb}})<!--
-         -->)({{var_Tb}} - {{var_Tc}})
-         </m-content>
-      </m-solvestep>
-      <m-solvestep>
-         <m-content>
-            {{var_Nab}}
-            =
-            <mark class="mark-1">(<!--
-            -->({{var_Ta}} &bullet; {{var_Tb}})
-             - ({{var_Ta}} &bullet; {{var_Tc}})
-             - ({{var_Tb}} &bullet; {{var_Tb}})
-             + ({{var_Tb}} &bullet; {{var_Tc}})<!--
-         -->)</mark>{{var_Ta}}
-            -
-            <mark class="mark-1">(<!--
-            -->({{var_Ta}} &bullet; {{var_Tb}})
-             - ({{var_Ta}} &bullet; {{var_Tc}})
-             - ({{var_Tb}} &bullet; {{var_Tb}})
-             + ({{var_Tb}} &bullet; {{var_Tc}})<!--
-         -->)</mark>{{var_Tb}}
-            -
-            <mark class="mark-2">(<!--
-            -->({{var_Ta}} &bullet; {{var_Ta}})
-               -
-               2({{var_Ta}} &bullet; {{var_Tb}})
-               +
-               ({{var_Tb}} &bullet; {{var_Tb}})<!--
-         -->)</mark>{{var_Tb}}
-            +
-            <mark class="mark-2">(<!--
-            -->({{var_Ta}} &bullet; {{var_Ta}})
-               -
-               2({{var_Ta}} &bullet; {{var_Tb}})
-               +
-               ({{var_Tb}} &bullet; {{var_Tb}})<!--
-         -->)</mark>{{var_Tc}}
-         </m-content>
-      </m-solvestep>
-      <m-solvestep>
-         <m-layout-snake>
-            <m-head>
-               {{var_Nab}} = 
-            </m-head>
-            <m-body>
-               <m-layout-v-segments>
-                  <m-segment>
-                     <mark class="mark-1">({{var_Ta}} &bullet; {{var_Tb}})</mark>{{var_Ta}}
-                   - <mark class="mark-1">({{var_Ta}} &bullet; {{var_Tc}})</mark>{{var_Ta}}
-                   - <mark class="mark-1">({{var_Tb}} &bullet; {{var_Tb}})</mark>{{var_Ta}}
-                   + <mark class="mark-1">({{var_Tb}} &bullet; {{var_Tc}})</mark>{{var_Ta}}
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     <mark class="mark-1">({{var_Ta}} &bullet; {{var_Tb}})</mark>{{var_Tb}}
-                   + <mark class="mark-1">({{var_Ta}} &bullet; {{var_Tc}})</mark>{{var_Tb}}
-                   + <mark class="mark-1">({{var_Tb}} &bullet; {{var_Tb}})</mark>{{var_Tb}}
-                   - <mark class="mark-1">({{var_Tb}} &bullet; {{var_Tc}})</mark>{{var_Tb}}
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     <mark class="mark-2">({{var_Ta}} &bullet; {{var_Ta}})</mark>{{var_Tb}}
-                   + <mark class="mark-2">2({{var_Ta}} &bullet; {{var_Tb}})</mark>{{var_Tb}}
-                   - <mark class="mark-2">({{var_Tb}} &bullet; {{var_Tb}})</mark>{{var_Tb}}
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     <mark class="mark-2">({{var_Ta}} &bullet; {{var_Ta}})</mark>{{var_Tc}}
-                   - <mark class="mark-2">2({{var_Ta}} &bullet; {{var_Tb}})</mark>{{var_Tc}}
-                   + <mark class="mark-2">({{var_Tb}} &bullet; {{var_Tb}})</mark>{{var_Tc}}
-                  </m-segment>
-               </m-layout-v-segments>
-            </m-body>
-         </m-layout-snake>
-      </m-solvestep>
-      <m-solvestep>
-         {{lu_math_expl_start}}
-            Some terms cancel each other out.
-         {{lu_math_expl_end}}
-         <m-layout-snake>
-            <m-head>
-               {{var_Nab}} = 
-            </m-head>
-            <m-body>
-               <m-layout-v-segments>
-                  <m-segment>
-                     ({{var_Ta}} &bullet; {{var_Tb}}){{var_Ta}}
-                   - ({{var_Ta}} &bullet; {{var_Tc}}){{var_Ta}}
-                   - ({{var_Tb}} &bullet; {{var_Tb}}){{var_Ta}}
-                   + ({{var_Tb}} &bullet; {{var_Tc}}){{var_Ta}}
-                  </m-segment>
-                  <m-sep><mark> + </mark></m-sep>
-                  <m-segment>
-                     ({{var_Ta}} &bullet; {{var_Tb}}){{var_Tb}}
-                   + ({{var_Ta}} &bullet; {{var_Tc}}){{var_Tb}}<!--
-               --><del>{{dont_eat_this_space}} + ({{var_Tb}} &bullet; {{var_Tb}}){{var_Tb}}</del>
-                   - ({{var_Tb}} &bullet; {{var_Tc}}){{var_Tb}}
-                  </m-segment>
-                  <m-sep> - </m-sep>
-                  <m-segment>
-                     ({{var_Ta}} &bullet; {{var_Ta}}){{var_Tb}}<!--
-               --><del>{{dont_eat_this_space}} + 2({{var_Ta}} &bullet; {{var_Tb}}){{var_Tb}}
-                   - ({{var_Tb}} &bullet; {{var_Tb}}){{var_Tb}}</del>
-                  </m-segment>
-                  <m-sep> + </m-sep>
-                  <m-segment>
-                     ({{var_Ta}} &bullet; {{var_Ta}}){{var_Tc}}
-                   - 2({{var_Ta}} &bullet; {{var_Tb}}){{var_Tc}}
-                   + ({{var_Tb}} &bullet; {{var_Tb}}){{var_Tc}}
-                  </m-segment>
-               </m-layout-v-segments>
-            </m-body>
-         </m-layout-snake>
-      </m-solvestep>
-      <m-solvestep>
-         <m-content>
-            {{var_Nab}}
-            =
-            ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tc}} - {{var_Tb}})
-            +
-            ({{var_Ta}} &bullet; {{var_Tb}})(<!--
-            -->{{var_Ta}} + {{var_Tb}} - 2{{var_Tc}}<!--
-         -->)
-            +
-            ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tb}} - {{var_Ta}})
-            +
-            ({{var_Tb}} &bullet; {{var_Tb}})({{var_Tc}} - {{var_Ta}})
-            +
-            ({{var_Tb}} &bullet; {{var_Tc}})({{var_Ta}} - {{var_Tb}})
-         </m-content>
-      </m-solvestep>
+      <m-row>
+         min({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tc}} &bullet; {{var_Nab}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nab}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tc}} &bullet; {{var_Nab}})
+      </m-row>
+      <m-row>
+         min({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tb}} &bullet; {{var_Nab}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nab}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tb}} &bullet; {{var_Nab}})
+      </m-row>
+      <m-row>
+         min({{var_Ta}} &bullet; {{var_Nca}}, {{var_Tb}} &bullet; {{var_Nca}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nca}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nca}}, {{var_Tb}} &bullet; {{var_Nca}})
+      </m-row>
+   </lu-math>
+   <p>
+      We can combine those.
+   </p>
+   <lu-math>
+      <m-row>
+         min({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tb}} &bullet; {{var_Nab}}, {{var_Tc}} &bullet; {{var_Nab}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nab}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nab}}, {{var_Tb}} &bullet; {{var_Nab}}, {{var_Tc}} &bullet; {{var_Nab}})
+      </m-row>
+      <m-row>
+         min({{var_Ta}} &bullet; {{var_Nca}}, {{var_Tb}} &bullet; {{var_Nca}})
+         &leq;
+         {{var_Hp}} &bullet; {{var_Nca}}
+         &leq;
+         max({{var_Ta}} &bullet; {{var_Nca}}, {{var_Tb}} &bullet; {{var_Nca}})
+      </m-row>
    </lu-math>
    
-   <p>
-      Let's focus on the dot product of each vertex with {{var_Nab_inl}}. Their dot products with {{var_Nbc_inl}} will be the same values but negated.
-   </p>
-   <lu-math>
-      {%- assign var_Tany = "<var data-type='vector'>T<sub>any</sub></var>" -%}
-      <m-solvestep>
-         <m-content>
-            {{var_Tany}}
-            &bullet;
-            (({{var_Ta}} &bullet; {{var_Ta}})({{var_Tc}} - {{var_Tb}})
-            +
-            ({{var_Ta}} &bullet; {{var_Tb}})(<!--
-            -->{{var_Ta}} + {{var_Tb}} - 2{{var_Tc}}<!--
-         -->)
-            +
-            ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tb}} - {{var_Ta}})
-            +
-            ({{var_Tb}} &bullet; {{var_Tb}})({{var_Tc}} - {{var_Ta}})
-            +
-            ({{var_Tb}} &bullet; {{var_Tc}})({{var_Ta}} - {{var_Tb}}))
-         </m-content>
-      </m-solvestep>
-      <m-solvestep>
-         <m-layout-v-segments>
-            <m-segment>
-               {{var_Tany}} &bullet; (({{var_Ta}} &bullet; {{var_Ta}})({{var_Tc}} - {{var_Tb}}))
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               {{var_Tany}} &bullet; (({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} + {{var_Tb}} - 2{{var_Tc}}))
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               {{var_Tany}} &bullet; (({{var_Ta}} &bullet; {{var_Tc}})({{var_Tb}} - {{var_Ta}}))
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               {{var_Tany}} &bullet; (({{var_Tb}} &bullet; {{var_Tb}})({{var_Tc}} - {{var_Ta}}))
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               {{var_Tany}} &bullet; (({{var_Tb}} &bullet; {{var_Tc}})({{var_Ta}} - {{var_Tb}}))
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-      <m-solvestep>
-         {{lu_math_expl_start}}
-            The vector dot product is distributive over scalar multiplication.
-         {{lu_math_expl_end}}
-         <m-layout-v-segments>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tany}} &bullet; ({{var_Tc}} - {{var_Tb}}))
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; ({{var_Ta}} + {{var_Tb}} - 2{{var_Tc}}))
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; ({{var_Tb}} - {{var_Ta}}))
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Tb}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; ({{var_Tc}} - {{var_Ta}}))
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Tb}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; ({{var_Ta}} - {{var_Tb}}))
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-      <m-solvestep>
-         {{lu_math_expl_start}}
-            The vector dot product is distributive over vector addition and subtraction.
-         {{lu_math_expl_end}}
-         <m-layout-v-segments>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Ta}})(<!--
-               -->({{var_Tany}} &bullet; {{var_Tc}})
-                - ({{var_Tany}} &bullet; {{var_Tb}})<!--
-            -->)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Tb}})(<!--
-               -->({{var_Tany}} &bullet; {{var_Ta}})
-                + ({{var_Tany}} &bullet; {{var_Tb}})
-                - 2({{var_Tany}} &bullet; {{var_Tc}})<!--
-            -->)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Tc}})(<!--
-               -->({{var_Tany}} &bullet; {{var_Tb}})
-                - ({{var_Tany}} &bullet; {{var_Ta}})<!--
-            -->)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Tb}} &bullet; {{var_Tb}})(<!--
-               -->({{var_Tany}} &bullet; {{var_Tc}})
-                - ({{var_Tany}} &bullet; {{var_Ta}})<!--
-            -->)
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Tb}} &bullet; {{var_Tc}})(<!--
-               -->({{var_Tany}} &bullet; {{var_Ta}})
-                - ({{var_Tany}} &bullet; {{var_Tb}})<!--
-            -->)
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-      <m-solvestep>
-         <m-layout-v-segments>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tany}} &bullet; {{var_Tc}})
-             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tany}} &bullet; {{var_Tb}})
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; {{var_Ta}})
-             + ({{var_Ta}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; {{var_Tb}})
-             - 2({{var_Ta}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; {{var_Tc}})
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; {{var_Tb}})
-             - ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; {{var_Ta}})
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Tb}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; {{var_Tc}})
-             - ({{var_Tb}} &bullet; {{var_Tb}})({{var_Tany}} &bullet; {{var_Ta}})
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Tb}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; {{var_Ta}})
-             - ({{var_Tb}} &bullet; {{var_Tc}})({{var_Tany}} &bullet; {{var_Tb}})
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-   </lu-math>
-   <p>
-      Now, let's try and simplify that down with {{var_Ta_inl}} first.
-   </p>
-   <lu-math>
-      <m-solvestep>
-         <m-layout-v-segments>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tc}})
-             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tb}})
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tb}})
-             + ({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tb}})
-             - 2({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tc}})
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tc}})
-             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tc}})
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tb}} &bullet; {{var_Tb}})
-             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tb}} &bullet; {{var_Tb}})
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tb}} &bullet; {{var_Tc}})
-             - ({{var_Ta}} &bullet; {{var_Tb}})({{var_Tb}} &bullet; {{var_Tc}})
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-      <m-solvestep>
-         {{lu_math_expl_start}}
-            Some terms cancel each other out; others can be combined.
-         {{lu_math_expl_end}}
-         <m-layout-v-segments>
-            <m-segment>
-               <ins>2</ins>({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tc}})<del>
-             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tb}})</del>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               <del>({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tb}})
-             + </del>({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tb}})
-             - <del>2</del>({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tc}})
-            </m-segment>
-            <m-segment class="del">
-               <del class="invis">{{dont_eat_this_space}} + ({{var_Ta}} &bullet; {{var_Tb}})({{var_Ta}} &bullet; {{var_Tc}})
-             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Ta}} &bullet; {{var_Tc}})</del>
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Tc}})({{var_Tb}} &bullet; {{var_Tb}})
-             - ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tb}} &bullet; {{var_Tb}})
-            </m-segment>
-            <m-sep> + </m-sep>
-            <m-segment>
-               ({{var_Ta}} &bullet; {{var_Ta}})({{var_Tb}} &bullet; {{var_Tc}})
-             - ({{var_Ta}} &bullet; {{var_Tb}})({{var_Tb}} &bullet; {{var_Tc}})
-            </m-segment>
-         </m-layout-v-segments>
-      </m-solvestep>
-   </lu-math>
 </section>
