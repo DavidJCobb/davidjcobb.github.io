@@ -447,13 +447,12 @@ table_of_contents:
       <m-solvestep>
          {{lu_math_expl_start}}
             <p>
-               The third term in this equation was the dot product of a big, complicated vector expression with itself &mdash; so, the length squared. However, the vector expression in question is a vector projection: it's the projection of 
+               The third term in this equation was the dot product of a big, complicated vector expression with itself &mdash; so, the length squared. However, the vector expression in question,
                <lu-math data-inline>
                   (<!--
                   -->({{var_Rl}} + {{var_Rd}}{{var_Hd}}) &bullet; {{var_Ca}}<!--
                -->){{var_Ca}}
-               </lu-math>
-               is just the projection of the vector 
+               </lu-math>, is just the projection of the vector 
                <lu-math data-inline>
                   {{var_Rl}} + {{var_Rd}}{{var_Hd}}
                </lu-math>
@@ -1129,8 +1128,6 @@ table_of_contents:
    </p>
    <lu-math>
       <m-row>
-         {{lu_math_eq_numbers[6]}}
-         
          {{var_Hd}} &geq; 0
       </m-row>
    </lu-math>
@@ -1231,10 +1228,10 @@ bool ray_cylinder_intersection(
    if (count == 0) {
       //
       // There is no intersection between a line (i.e. a "double-sided" ray) and the 
-      // infinite cone that matches our finite cone. This means that we cannot be 
-      // hitting any part of the cone: if we were hitting the base from the inside, 
-      // for example, then the "back of our ray" would be hitting the upper part of 
-      // the infinite cone.
+      // infinite cylinder that matches our finite cylinder. This means that we cannot 
+      // be hitting any part of the cylinder: if we were hitting the base from the 
+      // inside, for example, then the "back of our ray" would be hitting the upper 
+      // part of the infinite cylinder.
       //
       return false;
    }
