@@ -52,7 +52,7 @@ collection_item_css_files:
       </div>
    </figure>
    <p>
-      If you add a border to the table as a whole, and use the <code>outset</code> style for the table and the <code>inset</code> style for the cells, then you get the typical look for tables in the 1990s.
+      If you add a border to the table as a whole, and use the <code>outset</code> style for the table and the <code>inset</code> style for the cells, then you get what was (to my recollection, anyway) the typical look for tables in the 1990s. In fact, I believe these styles used to be the default whenever you set the deprecated <code>border="1"</code> attribute on a table.
    </p>
    <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
       <div class="wrap">
@@ -74,7 +74,7 @@ collection_item_css_files:
       That's what's happening visually: the cells share white shadowed borders that "collapse" together rather than reamining separate. What's happening on a technical level, of course, is the exact opposite. The table and its cells have separate (i.e. non-collapsing) borders that are colored in different shades of grey: these produce a shadow effect. The space <em>between</em> these borders, where the page background shows through, is what we visually perceive as the white border that is casting and receiving these shadows.
    </p>
    <p>
-      The default table styles, then, lend themselves very well to this sort of table border, which to my recollection was all the rage in the '90s. We use technically-separate borders to fake a depth effect on visually-collapsing borders. What happens, then, if we want a collapsing border without this 3D effect? For that, we use CSS's <code>border-collapse</code> property. If we give our table cells a simple one-pixel border, then applying <code>border-collapse: collapse</code> to the table will produce a result wherein the cells are separated by a single line: each cell shares a border with the cells adjacent to it.
+      The default table styles, then, lend themselves very well to this sort of table border. We use technically-separate borders to fake a depth effect on visually-collapsing borders. What happens, then, if we want a collapsing border without this 3D effect? For that, we use CSS's <code>border-collapse</code> property. If we give our table cells a simple one-pixel border, then applying <code>border-collapse: collapse</code> to the table will produce a result wherein the cells are separated by a single line: each cell shares a border with the cells adjacent to it.
    </p>
    <figure class="card-cutout" aria-labelledby="figure-aria-note-brief">
       <div class="wrap">
@@ -462,7 +462,7 @@ table {
 table {
    border-radius: 1em;
 }
-tbody, thead, tr {
+tbody, thead, tfoot, tr {
    border-radius: inherit;
 }
 
@@ -510,7 +510,7 @@ tr:last-child > :is(td, th):last-child {
 table {
    border-radius: 1em;
 }
-tbody, thead {
+tbody, thead, tfoot, tr {
    border-radius: inherit;
 }
 
@@ -609,7 +609,7 @@ tr>:is(td, th):last-child {
       </div>
    </figure>
    <p>
-      The row-spanned cell extends into the bottom row, but the <code>TD</code> element itself is located in one of the prior rows. There is no way to tell, with CSS, that this cell is in the bottom row, and just like with <code>border-collapse</code> emulation, this is a problem for using <code>border-radius</code>. We have no pure-CSS way to tell this cell to ronud off its bottom-left corner, so the cell <em>isn't</em> rounded. The cell's bottom border protrudes out of the table's rounded bottom-left corner. What's more: if this cell had a background color, then that background color would poke out of the table and produce a rectangular corner as well.
+      The row-spanned cell extends into the bottom row, but the <code>TD</code> element itself is located in one of the prior rows. There is no way to tell, with CSS, that this cell is in the bottom row, and just like with <code>border-collapse</code> emulation, this is a problem for using <code>border-radius</code>. We have no pure-CSS way to tell this cell to round off its bottom-left corner, so the cell <em>isn't</em> rounded. The cell's bottom border protrudes out of the table's rounded bottom-left corner. What's more: if this cell had a background color, then that background color would poke out of the table and produce a rectangular corner as well.
    </p>
    <p>
       There's one more problem that shows up if we put background colors on our cells. Our row-spanned cell stretches downward, displacing cells in lower rows to the right. However, as far as the DOM is concerned, those cells are the leftmost cells in their row. This means that if a row-spanned cell stretches to the bottom row of the table, the table's <code>border-bottom-left-radius</code> will be inherited by the <em>next-</em>leftmost cell in the bottom row. This isn't visible with the styles above, since our <code>border-collapse</code> emulation hides that cell's left and bottom borders; however, if we give our table cells a background color, the problem becomes apparent immediately.

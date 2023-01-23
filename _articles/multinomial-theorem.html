@@ -603,7 +603,11 @@ end</code></pre>
                {{ form }}
             </th>
                {%- endif -%}
+               {%- if forloop.first -%}
             <td data-type="number" data-value="{{ item }}" class="force-is-not-leftmost">{{ item }}</td>
+               {%- else -%}
+            <td data-type="number" data-value="{{ item }}">{{ item }}</td>
+               {%- endif -%}
             {%- endfor -%}
             <td>
                {%- for item in current_set -%}
@@ -676,7 +680,10 @@ end</code></pre>
                {{ form }}
             </th>
                {%- endif -%}
-               {%- assign td-classes = "force-is-not-leftmost" -%}
+               {%- assign td-classes = "" -%}
+               {%- if forloop.first -%}
+                  {%- assign td-classes = "force-is-not-leftmost" -%}
+               {%- endif -%}
                {%- if item == "0" -%}
                   {%- assign td-classes = td-classes | append: " deemphasize" -%}
                {%- endif -%}
@@ -729,7 +736,10 @@ end</code></pre>
                {{ form }}
             </th>
                {%- endif -%}
-               {%- assign td-classes = "force-is-not-leftmost" -%}
+               {%- assign td-classes = "" -%}
+               {%- if forloop.first -%}
+                  {%- assign td-classes = "force-is-not-leftmost" -%}
+               {%- endif -%}
                {%- if item == "0" -%}
                   {%- assign td-classes = td-classes | append: " deemphasize" -%}
                {%- endif -%}
@@ -792,7 +802,10 @@ end</code></pre>
                {{ form }}
             </th>
                {%- endif -%}
-               {%- assign td-classes = "force-is-not-leftmost" -%}
+               {%- assign td-classes = "" -%}
+               {%- if forloop.first -%}
+                  {%- assign td-classes = "force-is-not-leftmost" -%}
+               {%- endif -%}
                {%- if item == "0" -%}
                   {%- assign td-classes = td-classes | append: " deemphasize" -%}
                {%- endif -%}
