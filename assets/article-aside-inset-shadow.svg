@@ -1,0 +1,67 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="45" height="39">
+   <!-- slice dimensions: 18 top, 20 sides, 16 bottom; 5x5px center -->
+   <defs>
+      <linearGradient id="LT" gradientTransform="rotate(90)">
+         <stop   offset="0%" stop-color="rgba(0,0,0,0.10)" />
+         <stop  offset="33%" stop-color="rgba(0,0,0,0.06)" />
+         <stop  offset="66%" stop-color="rgba(0,0,0,0.02)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+      <linearGradient id="LL">
+         <stop   offset="0%" stop-color="rgba(0,0,0,0.06)" />
+         <stop  offset="25%" stop-color="rgba(0,0,0,0.05)" />
+         <stop  offset="50%" stop-color="rgba(0,0,0,0.01)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+      <linearGradient id="LR" href="#LL" gradientTransform="rotate(180 0.5 0.5)" />
+      <linearGradient id="LB" gradientTransform="rotate(270 0.5 0.5)">
+         <stop   offset="0%" stop-color="rgba(0,0,0,0.05)" />
+         <stop   offset="3%" stop-color="rgba(0,0,0,0.015)" />
+         <stop  offset="50%" stop-color="rgba(0,0,0,0.005)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+      
+      <linearGradient id="LTLc" href="#LT" gradientTransform="rotate( 45 0.5 0.5)" />
+      <linearGradient id="LTRc" href="#LT" gradientTransform="rotate(135 0.5 0.5)" />
+      <linearGradient id="LBLc" href="#LB" gradientTransform="rotate(315 0.5 0.5)" />
+      <linearGradient id="LBRc" href="#LB" gradientTransform="rotate(225 0.5 0.5)" />
+   </defs>
+   <clipPath id="inset-clip">
+      <rect x="0" y="0" width="41" height="35" rx="16" />
+   </clipPath>
+   <svg x="2" y="2" width="41" height="35" id="inset" clip-path="url(#inset-clip)" stroke="none">
+      <rect id="top"
+         x="0" y="0" width="41" height="16"
+         fill="url('#LT')"
+      />
+      <rect id="tl"
+         x="-8" y="-8" width="24" height="24"
+         fill="url('#LTLc')"
+      />
+      <rect id="tr"
+         x="25" y="-8" width="24" height="24"
+         fill="url('#LTRc')"
+      />
+      <rect id="left"
+         x="0" y="0" width="10" height="63"
+         fill="url('#LL')"
+      />
+      <rect id="right"
+         x="31" y="0" width="10" height="63"
+         fill="url('#LR')"
+      />
+      <rect id="bottom"
+         x="0" y="27" width="41" height="8"
+         fill="url('#LB')"
+      />
+      <rect id="bl"
+         x="2" y="20" width="24" height="16"
+         fill="url('#LBLc')"
+      />
+      <rect id="br"
+         x="15" y="20" width="24" height="16"
+         fill="url('#LBRc')"
+      />
+   </svg>
+   <rect x="2" y="2" width="41" height="35" fill="none" stroke="#FF7400" stroke-width="4" rx="14" />
+</svg>

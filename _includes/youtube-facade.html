@@ -1,0 +1,38 @@
+{%- if page.uses_youtube_facade -%}
+<noscript>
+{%- endif -%}
+   <iframe
+      loading="lazy"
+      width="560" height="315"
+      style="aspect-ratio:560/315"
+      src="https://www.youtube.com/embed/{{ include.id }}"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+      {%- if include.aria_label -%}
+         aria-label="{{ include.aria_label }}"
+      {%- endif -%}
+      {%- if include.aria_description -%}
+         aria-description="{{ include.aria_description }}"
+      {%- endif %}
+   >
+   </iframe>
+{%- if page.uses_youtube_facade -%}
+</noscript>
+<lu-youtube-facade width="560" height="315" youtube-id="{{ include.id }}"
+   {%- if include.title -%}
+      youtube-title="{{ include.title }}"
+   {%- endif -%}
+   {%- if include.channel_url -%}
+      youtube-channel-url="{{ include.channel_url }}"
+   {%- endif -%}
+   {%- if include.channel_image -%}
+      youtube-channel-image-src="{{ include.channel_image }}"
+   {%- endif -%}
+></lu-youtube-facade>
+{%- else -%}
+   <!--
+      NOTE: Attempted to include the YouTube facades, but the asset files they need haven't been 
+      set up. Is this intentional? Falling back to a normal IFRAME.
+   -->
+{%- endif -%}

@@ -1,0 +1,1 @@
+[Inconsolata](https://fonts.google.com/specimen/Inconsolata/about), [Raleway](https://fonts.google.com/specimen/Raleway/about), and [Source Sans Pro](https://fonts.google.com/specimen/Source+Sans+Pro/about) are available under the [Open Font License](https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL).

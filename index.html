@@ -1,9 +1,11 @@
 ---
-layout: default-no-sidebar
-title: Cobb
+layout: "default-no-sidebar"
+title:  "Cobb"
 social_media:
-   title: Cobb - Portfolio
+   title: "Cobb - Portfolio"
+uses_youtube_facade: true
 ---
+{%- capture site_logo -%}{{ '/assets/favicon.svg' | relative_url }}{%- endcapture -%}
 <section>
    <h1>About me</h1>
    <p>
@@ -30,7 +32,8 @@ social_media:
    <aside role="presentation">
       <img
          role="presentation"
-         src="/assets/dovahkit-shout-crop.png"
+         src="{{ '/assets/dovahkit-shout-crop.png' | relative_url }}"
+         width="560" height="315"
       />
    </aside>
    <p>
@@ -57,18 +60,17 @@ social_media:
 
 <section class="published-work">
    <h3>ReachVariantTool (2020)</h3>
-   <aside role="figure note">
-      <iframe
-         width="560" height="315"
-         style="aspect-ratio:560/315"
-         src="https://www.youtube.com/embed/-sP8ElrIdek"
-         frameborder="0"
-         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-         allowfullscreen="allowfullscreen"
-         aria-label="YouTube video of a mini-game created with ReachVariantTool. "
-         aria-description="YouTube video of Halo Minesweeper, a game mode created using ReachVariantTool. Minesweeper is here recreated in a first-person shooter game, with a 9x9 board constructed in the game's map editor; players can uncover board spaces by shooting them with a pistol, or toggle flags on board spaces by shooting them with a rifle, as the video demonstrates. Shooting a space that has a mine under it will reveal all mines, and then spawn ten to twenty more around the player-character, before detonating all of them. "
-      >
-      </iframe>
+   <aside role="note">
+      {% include youtube-facade.html
+         id="-sP8ElrIdek"
+         
+         title="In-Dev: Halo Minesweeper"
+         channel_url="https://www.youtube.com/channel/UCTGkRfgA4zsEgBl8NB38npA"
+         channel_image=site_logo
+         
+         aria_label="YouTube video of a mini-game created with ReachVariantTool. "
+         aria_description="YouTube video of Halo Minesweeper, a game mode created using ReachVariantTool. Minesweeper is here recreated in a first-person shooter game, with a 9x9 board constructed in the game's map editor; players can uncover board spaces by shooting them with a pistol, or toggle flags on board spaces by shooting them with a rifle, as the video demonstrates. Shooting a space that has a mine under it will reveal all mines, and then spawn ten to twenty more around the player-character, before detonating all of them. "
+      %}
    </aside>
    <p>
       ReachVariantTool is a third-party editor for <i>Halo: Reach</i> multiplayer game modes. 
@@ -110,7 +112,8 @@ social_media:
    <aside role="presentation">
       <img
          role="presentation"
-         src="/assets/itemtrig.png"
+         src="{{ '/assets/itemtrig.png' | relative_url }}"
+         width="560" height="315"
       />
    </aside>
    <p>
@@ -143,7 +146,8 @@ social_media:
    <aside role="presentation">
       <img
          role="presentation"
-         src="/assets/northernui-item-card.png"
+         src="{{ '/assets/northernui-item-card.png' | relative_url }}"
+         width="560" height="315"
       />
    </aside>
    <p>
@@ -179,17 +183,15 @@ social_media:
 <section class="published-work">
    <h3>Cobb Positioner (2016)</h3>
    <aside role="presentation">
-      <iframe
-         width="560" height="315"
-         style="aspect-ratio:560/315"
-         src="https://www.youtube.com/embed/ILyIWcJ-a-s"
-         title="YouTube video player"
-         frameborder="0"
-         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-         allowfullscreen="allowfullscreen"
-         role="presentation"
-      >
-      </iframe>
+      {% include youtube-facade.html
+         id="ILyIWcJ-a-s"
+         
+         title="Cobb Positioner - Brief Demo"
+         channel_url="https://www.youtube.com/channel/UCTGkRfgA4zsEgBl8NB38npA"
+         channel_image=site_logo
+         
+         aria_label="YouTube video player. "
+      %}
    </aside>
    <p>
       Cobb Positioner is an in-game map editor for <i>The Elder Scrolls V: Skyrim</i>, 

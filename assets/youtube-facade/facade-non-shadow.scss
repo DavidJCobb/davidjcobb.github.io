@@ -1,0 +1,34 @@
+---
+---
+
+///
+/// In Chromium, @font-face rules inside of a stylesheet in a shadow DOM will fail to 
+/// load or apply fonts. See: https://crbug.com/336876
+///
+/// Workaround is to load the @font-face in the top-level document.
+///
+
+@import "utils.scss";
+
+$font-roboto: (
+   "name":     "Roboto",
+   "base":     "roboto",
+   "display":  "swap",
+   "style":    "normal",
+   "weight":   [400, 500],
+   "charsets": (
+      "cyrillic":     $font-charset-cyrillic,
+      "cyrillic-ext": $font-charset-cyrillic-ext,
+      "greek":        $font-charset-greek,
+      "greek-ext":    $font-charset-greek-ext,
+      "latin":        $font-charset-latin,
+      "latin-ext":    $font-charset-latin-ext,
+      "vietnamese":   $font-charset-vietnamese
+   )
+);
+//
+// Put the Latin and Latin Extended fonts up front, since those will represent most of 
+// the content on the site; we want the browser to get to them first.
+//
+@include font-faces-from-font-info($font-roboto, $only-charsets: ["latin", "latin-ext"], $base-href: "", $path: "{{ 'assets/fonts/' | relative_url }}");
+@include font-faces-from-font-info($font-roboto, $skip-charsets: ["latin", "latin-ext"], $base-href: "", $path: "{{ 'assets/fonts/' | relative_url }}");

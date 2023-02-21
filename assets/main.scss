@@ -38,6 +38,10 @@ section {
       margin-bottom:0;
    }
 
+iframe[src^="https://www.youtube.com/"] {
+   display:block;
+}
+
 .extra-links {
    list-style:none;
    padding:0;

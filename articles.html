@@ -40,7 +40,7 @@ extra_css_files: [ "collection-index.css" ]
       {%- endif -%}
       {%- unless test contains "/" or test contains "\" -%}
    <li>
-      <a href="{{ article.url }}"><h2>{{- article.title -}}</h2></a>
+      <a href="{{ article.url | relative_url }}"><h2>{{- article.title -}}</h2></a>
       {%- if article.social_media %}
          {%- if article.social_media.description %}
       <p>{{ article.social_media.description }}</p>

@@ -1,0 +1,70 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="200" height="196">
+   <filter id="shadow-outset" x="-36" y="-4" width="200" height="196">
+      <feColorMatrix
+         in="SourceGraphic"
+         result="alpha_0_05"
+         type="matrix"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 0.05 0"
+      />
+      <feColorMatrix
+         in="SourceGraphic"
+         result="alpha_0_06"
+         type="matrix"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 0.06 0"
+      />
+      <feColorMatrix
+         in="SourceGraphic"
+         result="alpha_0_07"
+         type="matrix"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 0.07 0"
+      />
+   
+      <feGaussianBlur in="alpha_0_05" stdDeviation="2" result="b1out" />
+      
+      <feOffset in="alpha_0_05" dx="0" dy="5" />
+      <feGaussianBlur stdDeviation="3" result="b2out" />
+      
+      <feOffset in="alpha_0_06" dx="0" dy="6" />
+      <feGaussianBlur stdDeviation="4" result="b3out" />
+      
+      <feOffset in="alpha_0_06" dx="0" dy="8" />
+      <feGaussianBlur stdDeviation="5" result="b4out" />
+      
+      <feOffset in="alpha_0_07" dx="0" dy="10" />
+      <feGaussianBlur stdDeviation="6" result="b5out" />
+      
+      <feOffset in="alpha_0_07" dx="0" dy="20" />
+      <feGaussianBlur stdDeviation="12" result="b6out" />
+      
+      <feOffset in="SourceGraphic" dx="0" dy="30" />
+      <feGaussianBlur stdDeviation="18" />
+      <feColorMatrix
+         result="b7out"
+         type="matrix"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 0.08 0"
+      />
+      
+      <feMerge>
+         <feMergeNode in="b1out" />
+         <feMergeNode in="b2out" />
+         <feMergeNode in="b3out" />
+         <feMergeNode in="b4out" />
+         <feMergeNode in="b5out" />
+         <feMergeNode in="b6out" />
+         <feMergeNode in="b7out" />
+         <feMergeNode in="SourceGraphic" />
+      </feMerge>
+   </filter>
+</svg>

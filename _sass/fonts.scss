@@ -1,0 +1,56 @@
+
+@import "utils";
+
+$font-inconsolata: (
+   "name":    "Inconsolata",
+   "base":    "inconsolata",
+   "display": "swap",
+   "weight":  400,
+   "stretch": 100%,
+   "charsets": (
+      "latin":        $font-charset-latin,
+      "latin-ext":    $font-charset-latin-ext,
+      "vietnamese":   $font-charset-vietnamese
+   )
+);
+$font-raleway: (
+   "name":     "Raleway",
+   "base":     "raleway",
+   "display":  "swap",
+   "weight":   600,
+   "charsets": (
+      "cyrillic":     $font-charset-cyrillic,
+      "cyrillic-ext": $font-charset-cyrillic-ext,
+      "latin":        $font-charset-latin,
+      "latin-ext":    $font-charset-latin-ext,
+      "vietnamese":   $font-charset-vietnamese
+   )
+);
+$font-source-sans-pro: (
+   "name":     "Source Sans Pro",
+   "base":     "source-sans-pro",
+   "display":  "swap",
+   "style":    "normal",
+   "weight":   400,
+   "charsets": (
+      "cyrillic":     $font-charset-cyrillic,
+      "cyrillic-ext": $font-charset-cyrillic-ext,
+      "greek":        $font-charset-greek,
+      "greek-ext":    $font-charset-greek-ext,
+      "latin":        $font-charset-latin,
+      "latin-ext":    $font-charset-latin-ext,
+      "vietnamese":   $font-charset-vietnamese
+   )
+);
+
+$all-fonts: [$font-source-sans-pro, $font-raleway, $font-inconsolata];
+//
+// Put the Latin and Latin Extended fonts up front, since those will represent most of 
+// the content on the site; we want the browser to get to them first.
+//
+@each $font in $all-fonts {
+   @include font-faces-from-font-info($font, $only-charsets: ["latin", "latin-ext"]);
+}
+@each $font in $all-fonts {
+   @include font-faces-from-font-info($font, $skip-charsets: ["latin", "latin-ext"]);
+}

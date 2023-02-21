@@ -308,10 +308,18 @@ lu-math m-fraction {
    
    >m-numer {
       grid-area: numer;
+      
+      &:has(m-veclength:first-child:last-child) {
+         padding-bottom: .06em; /* goal is to equal 1px on desktop but be more reliable than literal "1px" on mobile */
+      }
    }
    >m-denom {
       grid-area: denom;
       border-top:1px solid currentcolor; /* dividing line: */
+      
+      &:has(m-veclength:first-child:last-child) {
+         padding-top: .06em; /* goal is to equal 1px on desktop but be more reliable than literal "1px" on mobile */
+      }
    }
    
    >m-rawcap {
@@ -854,7 +862,23 @@ lu-math {
       }
    }
    m-veclength>m-delim::after {
+      /*
       background: no-repeat left top/var(--glyph-width) 100% make-big-glyph-background("||");
+      */
+      /*
+      The above renders improperly on mobile: the two pipe symbols are squashed into one, or else 
+      one of them is downscaled entirely out of existence.
+      */
+      
+      $svg: "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 100' width='30' height='100' preserveAspectRatio='none'>";
+      $node-1: "<text dominant-baseline='ideographic' text-anchor='middle' x='10' y='100' textLength='12' fill='black' font-size='100'>|</text>";
+      $node-2: "<text dominant-baseline='ideographic' text-anchor='middle' x='20' y='100' textLength='12' fill='black' font-size='100'>|</text>";
+      
+      $mime:    "data:image/svg+xml";
+      $charset: "utf8";
+      $svg: url("#{$mime};charset=#{$charset},#{$svg}#{$node-1}#{$node-2}</svg>");
+      
+      background: no-repeat left top/var(--glyph-width) 100% $svg;
    }
 }
 

@@ -61,7 +61,7 @@ table_of_contents:
       We want to strip the file extension off of the path to this current article, if it 
       has one (this will depend on the permalink).
    {%- endcomment -%}
-   {%- assign temporary = page.url | split: "." -%}
+   {%- assign temporary = page.url | relative_url | split: "." -%}
    {{- page.dir -}}
    {%- if temporary.size > 1 -%}
       {%- for item in temporary -%}

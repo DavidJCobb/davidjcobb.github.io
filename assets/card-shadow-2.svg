@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" style="position:relative;left:5px;top:5px;">
+   <defs>
+      <filter id="shadow-inset">
+         <feColorMatrix
+            type="matrix"
+            in="SourceGraphic"
+            result="SourceAlpha"
+            values="0 0 0 0 0 
+                    0 0 0 0 0 
+                    0 0 0 0 0
+                    0 0 0 1 0"
+         />
+      
+      
+         <feMorphology in="SourceAlpha" radius="1" />
+         <feOffset dx="0" dy="4" />
+         <feGaussianBlur stdDeviation="8" />
+         <feOffset dx="0" dy="4" result="shrink" />
+         <feGaussianBlur in="shrink" result="blur" stdDeviation="8" />
+         <feComposite in="SourceAlpha" in2="blur" operator="in" />
+         
+         <feColorMatrix
+            type="matrix"
+            values="0 0 0  0 0 
+                    0 0 0  0 0 
+                    0 0 0  0 0
+                    0 0 0 -1 1"
+         />
+         <feComponentTransfer result="result">
+            <feFuncA type="linear" slope="0.4" />
+         </feComponentTransfer>
+         <!--
+         <feComposite in="SourceGraphic" in2="result" operator="in" />
+         -->
+         <feComposite in="SourceGraphic" in2="result" operator="over" />
+      </filter>
+   </defs>
+   
+   <!--
+      The clip-path attribute uses the coordinate space of the outermost 
+      enclosing SVG by default, so we can't use inset(0 round 16) if our 
+      element is transformed.
+      
+      Firefox doesn't  apply the R attribute on RECT  elements inside of 
+      CLIPPATH elements,  so we need a path.  Don't forget that within a 
+      CLIPPATH using object bounding box units, coordinate (0, 0) is the 
+      object top-left and (1, 1) is the object bottom right.
+      
+      Even better: Firefox doesn't even properly support the 
+      clipPathUnits attribute, despite CLAIMING TO on MDN! It 
+      sets the SCALE of coordinates, but the BASIS is still relative to 
+      the containing SVG!
+      
+      Basically: between  the SVG format designers  and the implementors 
+      on the browser end of things, you should always count on the worst 
+      possible decisions being made at every opportunity.
+   -->
+   <clipPath id="rr-clip" clipPathUnits="objectBoundingBox">
+      <path d="
+         M 0,0.166
+         A 0.166 0.166 90 0 1 0.166,0
+         L 0.833,0
+         A 0.166 0.166 90 0 1 1,0.166
+         L 1,0.833
+         A 0.166 0.166 90 0 1 0.833,1
+         L 0.166,1
+         A 0.166 0.166 90 0 1 0,0.833
+         L 0,0.166
+      " />
+   </clipPath>
+   
+   <rect
+      x="0" y="0"
+      width="96" height="96" r="16"
+      clip-path="url('#rr-clip')"
+      fill="#000" stroke="none"
+      filter="url('#shadow-inset')"
+   />
+</svg>

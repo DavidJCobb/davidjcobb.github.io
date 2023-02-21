@@ -1,0 +1,350 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="200" height="196">
+   <filter id="shadow-outset" x="-36" y="-4" width="200" height="196">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+      <feColorMatrix
+         result="b1out"
+         type="matrix"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 0.05 0"
+      />
+      
+      <feOffset in="SourceGraphic" dx="0" dy="5" />
+      <feGaussianBlur stdDeviation="3" />
+      <feColorMatrix
+         result="b2out"
+         type="matrix"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 0.05 0"
+      />
+      
+      <feOffset in="SourceGraphic" dx="0" dy="6" />
+      <feGaussianBlur stdDeviation="4" />
+      <feColorMatrix
+         result="b3out"
+         type="matrix"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 0.06 0"
+      />
+      
+      <feOffset in="SourceGraphic" dx="0" dy="8" />
+      <feGaussianBlur stdDeviation="5" />
+      <feColorMatrix
+         result="b4out"
+         type="matrix"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 0.06 0"
+      />
+      
+      <feOffset in="SourceGraphic" dx="0" dy="10" />
+      <feGaussianBlur stdDeviation="6" />
+      <feColorMatrix
+         result="b5out"
+         type="matrix"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 0.07 0"
+      />
+      
+      <feOffset in="SourceGraphic" dx="0" dy="20" />
+      <feGaussianBlur stdDeviation="12" />
+      <feColorMatrix
+         result="b6out"
+         type="matrix"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 0.07 0"
+      />
+      
+      <feOffset in="SourceGraphic" dx="0" dy="30" />
+      <feGaussianBlur stdDeviation="18" />
+      <feColorMatrix
+         result="b7out"
+         type="matrix"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 0.08 0"
+      />
+      
+      <feMerge>
+         <feMergeNode in="b1out" />
+         <feMergeNode in="b2out" />
+         <feMergeNode in="b3out" />
+         <feMergeNode in="b4out" />
+         <feMergeNode in="b5out" />
+         <feMergeNode in="b6out" />
+         <feMergeNode in="b7out" />
+         <feMergeNode in="SourceGraphic" />
+      </feMerge>
+   </filter>
+   
+   <filter id="shadow-inset--almost-perfect" filterUnits="objectBoundingBox" x="-1%" y="-1%" width="102%" height="196">
+      <feColorMatrix in="SourceGraphic" result="inset"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  1 0"
+      />
+      
+      <feGaussianBlur stdDeviation="2" />
+      <feColorMatrix
+         result="b1out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0 -.05 .05"
+      />
+      
+      <feOffset in="inset" dx="0" dy="5" />
+      <feGaussianBlur stdDeviation="3" />
+      <feColorMatrix
+         result="b2out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.05 .05"
+      />
+      
+      <feOffset in="inset" dx="0" dy="6" />
+      <feGaussianBlur stdDeviation="4" />
+      <feColorMatrix
+         result="b3out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.06 .06"
+      />
+      
+      <feOffset in="inset" dx="0" dy="8" />
+      <feGaussianBlur stdDeviation="5" />
+      <feColorMatrix
+         result="b4out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.06 .06"
+      />
+      
+      <feOffset in="inset" dx="0" dy="10" />
+      <feGaussianBlur stdDeviation="6" />
+      <feColorMatrix
+         result="b5out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.07 .07"
+      />
+      
+      <feOffset in="inset" dx="0" dy="20" />
+      <feGaussianBlur stdDeviation="12" />
+      <feColorMatrix
+         result="b6out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.07 .07"
+      />
+      
+      <feOffset in="inset" dx="0" dy="30" />
+      <feGaussianBlur stdDeviation="18" />
+      <feColorMatrix
+         result="b7out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.08 .08"
+      />
+      
+      <feColorMatrix in="SourceGraphic" result="source_alpha"
+         type="matrix"
+         values="0 0 0 0 1
+                 0 0 0 0 1 
+                 0 0 0 0 1
+                 0 0 0 1 0"
+      />
+      
+      <feMerge result="shadow_unclipped">
+         <feMergeNode in="b1out" />
+         <feMergeNode in="b2out" />
+         <feMergeNode in="b3out" />
+         <feMergeNode in="b4out" />
+         <feMergeNode in="b5out" />
+         <feMergeNode in="b6out" />
+         <feMergeNode in="b7out" />
+      </feMerge>
+      <feComposite operator="in" in2="source_alpha" in="shadow_unclipped" />
+   </filter>
+   
+   <filter id="shadow-inset" filterUnits="objectBoundingBox" x="-1%" y="-36" width="102%" height="196">
+      <feColorMatrix in="SourceGraphic" result="inset"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  1 0"
+      />
+      
+      <feGaussianBlur stdDeviation="2" />
+      <feColorMatrix
+         result="b1out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0 -.05 .05"
+      />
+      
+      <feGaussianBlur in="inset" stdDeviation="3" />
+      <feOffset dx="0" dy="5" />
+      <feColorMatrix
+         result="b2out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.05 .05"
+      />
+      
+      <feGaussianBlur in="inset" stdDeviation="4" />
+      <feOffset dx="0" dy="6" />
+      <feColorMatrix
+         result="b3out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.06 .06"
+      />
+      
+      <feGaussianBlur in="inset" stdDeviation="5" />
+      <feOffset dx="0" dy="8" />
+      <feColorMatrix
+         result="b4out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.06 .06"
+      />
+      
+      <feGaussianBlur in="inset" stdDeviation="6" />
+      <feOffset dx="0" dy="10" />
+      <feColorMatrix
+         result="b5out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.07 .07"
+      />
+      
+      <feGaussianBlur in="inset" stdDeviation="12" />
+      <feOffset dx="0" dy="20" />
+      <feColorMatrix
+         result="b6out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.07 .07"
+      />
+      
+      <feGaussianBlur in="inset" stdDeviation="18" />
+      <feOffset dx="0" dy="30" />
+      <feColorMatrix
+         result="b7out"
+         type="matrix"
+         values="-1  0  0  0 1 
+                  0 -1  0  0 1 
+                  0  0 -1  0 1
+                  0  0  0  -.08 .08"
+      />
+      
+      <feColorMatrix in="SourceGraphic" result="source_alpha"
+         type="matrix"
+         values="0 0 0 0 1
+                 0 0 0 0 1 
+                 0 0 0 0 1
+                 0 0 0 1 0"
+      />
+      
+      <feMerge result="shadow_unclipped">
+         <feMergeNode in="b7out" />
+         <feMergeNode in="b6out" />
+         <feMergeNode in="b5out" />
+         <feMergeNode in="b4out" />
+         <feMergeNode in="b3out" />
+         <feMergeNode in="b2out" />
+         <feMergeNode in="b1out" />
+      </feMerge>
+      <feComposite operator="in" in2="source_alpha" in="shadow_unclipped" />
+   </filter>
+   
+   <filter id="shadow-inset2">
+      <feColorMatrix
+         type="matrix"
+         in="SourceGraphic"
+         result="SourceAlpha"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 1 0"
+      />
+      
+      <feMorphology in="SourceAlpha" radius="1" />
+      <feOffset dx="0" dy="6" />
+      <feGaussianBlur stdDeviation="4" />
+      <feColorMatrix
+         type="matrix"
+         values="0 0 0  0 0 
+                 0 0 0  0 0 
+                 0 0 0  0 0
+                 0 0 0 -1 1"
+      />
+      <feComponentTransfer result="outer">
+         <feFuncA type="linear" slope="0.5" />
+      </feComponentTransfer>
+      
+      <feMorphology in="SourceAlpha" radius="1" />
+      <feOffset dx="0" dy="8" />
+      <feGaussianBlur stdDeviation="8" />
+      <feMorphology radius="4" operator="dilate" />
+      <feOffset dx="0" dy="4" result="shrink" />
+      <feGaussianBlur in="shrink" result="blur" stdDeviation="8" />
+      <feComposite in="SourceAlpha" operator="in" />
+      <feColorMatrix
+         type="matrix"
+         values="0 0 0  0 0 
+                 0 0 0  0 0 
+                 0 0 0  0 0
+                 0 0 0 -1 1"
+      />
+      <feComposite in="outer" operator="over" />
+      <feComponentTransfer result="shadow">
+         <feFuncA type="linear" slope="0.6" />
+      </feComponentTransfer>
+      
+      <feComposite in2="SourceGraphic" in="shadow" />
+   </filter>
+   
+   <!--<rect x="0" y="0" width="100%" height="100%" fill="#F00" stroke="none" />-->
+   <rect x="5" y="5" stroke="none" fill="#000" filter="url(#shadow-inset)" width="128" height="128" rx="16" clip-path="inset(0 round 16)" />
+</svg>

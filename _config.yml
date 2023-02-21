@@ -4,7 +4,7 @@ markdown: kramdown
 kramdown:
   input: GFM
 destination: ./_site
-exclude: ['_working', '_docs']
+exclude: ['_working', '_docs', 'README.md']
 collections:
    articles:
       name: Articles

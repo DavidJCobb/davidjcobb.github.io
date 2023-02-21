@@ -1,0 +1,14 @@
+<svg xmlns='http://www.w3.org/2000/svg' width="100%" height="100%" vector-effect="non-scaling-size">
+   <defs>
+      <pattern id="ptn" patternUnits="userSpaceOnUse" width="1" height="2" viewBox="0 0 1 2">
+         <line x1="-2" x2="2"  y1="1.5" y2="1.5" stroke="#000" stroke-width="1" vector-effect="non-scaling-stroke" />
+      </pattern>
+   </defs>
+   <rect fill="url(#ptn)" stroke="none" width="100%" height="100%" vector-effect="non-scaling-size" />
+   <!--
+      experiments to see if i could create a CSS scanline background that doesn't scale on mobile, i.e. 
+      one pixel in the SVG is one device pixel. sadly, not possible. there's no way to prevent it from 
+      being scaled per mobile viewport handling. even if we use no explicit background-size, or if we 
+      use background-size:cover, it still gets scaled; it "covers" in the context of the meta viewport.
+   -->
+</svg>

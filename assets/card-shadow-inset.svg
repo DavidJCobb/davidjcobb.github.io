@@ -1,0 +1,45 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="63" height="63">
+   <!-- slice dimensions: 41 top, 29 sides, 17 bottom; 5x5px center -->
+   <defs>
+      <linearGradient id="LT" gradientTransform="rotate(90)">
+         <stop   offset="0%" stop-color="rgba(0,0,0,0.30)" />
+         <stop  offset="35%" stop-color="rgba(0,0,0,0.10)" />
+         <stop  offset="60%" stop-color="rgba(0,0,0,0.03)" />
+         <stop  offset="75%" stop-color="rgba(0,0,0,0.01)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+      <linearGradient id="LL">
+         <stop   offset="0%" stop-color="rgba(0,0,0,0.40)" />
+         <stop  offset=" 5%" stop-color="rgba(0,0,0,0.20)" />
+         <stop  offset="15%" stop-color="rgba(0,0,0,0.10)" />
+         <stop  offset="50%" stop-color="rgba(0,0,0,0.01)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+      <linearGradient id="LR" href="#LL" gradientTransform="rotate(180 0.5 0.5)" />
+      <linearGradient id="LB" gradientTransform="rotate(270 0.5 0.5)">
+         <stop   offset="0%" stop-color="rgba(0,0,0,0.20)" />
+         <stop  offset=" 5%" stop-color="rgba(0,0,0,0.08)" />
+         <stop  offset="15%" stop-color="rgba(0,0,0,0.04)" />
+         <stop  offset="50%" stop-color="rgba(0,0,0,0.01)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+   </defs>
+   <g clip-path="inset(0 round 16)" stroke="none">
+      <rect id="top"
+         x="0" y="0" width="63" height="41"
+         fill="url('#LT')"
+      />
+      <rect id="left"
+         x="0" y="0" width="29" height="63"
+         fill="url('#LL')"
+      />
+      <rect id="right"
+         x="34" y="0" width="29" height="63"
+         fill="url('#LR')"
+      />
+      <rect id="bottom"
+         x="0" y="46" width="63" height="17"
+         fill="url('#LB')"
+      />
+   </g>
+</svg>

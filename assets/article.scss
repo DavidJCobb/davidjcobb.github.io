@@ -242,7 +242,6 @@ section>aside {
    /*margin:1rem -1rem;*/
    margin:1.5rem 0;
    
-   
    box-shadow:
       0  0px  4px rgba(70, 30, 0, 0.05),
       0  5px  6px rgba(70, 30, 0, 0.05),
@@ -252,6 +251,26 @@ section>aside {
       inset 0  0px  4px rgba(70, 30, 0, 0.05),
       inset 0  5px  6px rgba(70, 30, 0, 0.05),
       inset 0  6px  8px rgba(70, 30, 0, 0.06);
+   @include for-smartphones-only {
+      /*
+         Having too many box-shadows on-screen at one time can cause lag for weaker devices, 
+         such as smartphones. For that reason, we're going to have the inset box shadows on 
+         these elements fall back to using a border-image. (Designing an SVG to achieve the 
+         same effect for outset box-shadows is much harder.)
+         
+         A border-image will replace a normal border, so we have to include the orange line 
+         in the SVG as well.
+      */
+      border-image: url("./article-aside-inset-shadow.svg") 18 20 16 / 1.125rem 1.25rem 1rem / 0;
+      border-width: 4px;
+      min-height:calc(3.625em - 2px);
+      box-shadow:
+         0  0px  4px rgba(70, 30, 0, 0.05),
+         0  5px  6px rgba(70, 30, 0, 0.05),
+         0  6px  8px rgba(70, 30, 0, 0.06),
+         0  8px 10px rgba(70, 30, 0, 0.06),
+         0 10px 12px rgba(70, 30, 0, 0.07);
+   }
 }
 
 .card-cutout {

@@ -1,0 +1,48 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+   <filter id="shadow-inset">
+      <feColorMatrix
+         type="matrix"
+         in="SourceGraphic"
+         result="SourceAlpha"
+         values="0 0 0 0 0 
+                 0 0 0 0 0 
+                 0 0 0 0 0
+                 0 0 0 1 0"
+      />
+      
+      <feMorphology in="SourceAlpha" radius="1" />
+      <feOffset dx="0" dy="6" />
+      <feGaussianBlur stdDeviation="4" />
+      <feComponentTransfer result="outer">
+         <feFuncA type="linear" slope="-1" intercept="1" />
+      </feComponentTransfer>
+      <feComponentTransfer result="outer">
+         <feFuncA type="linear" slope="0.5" />
+      </feComponentTransfer>
+      
+      <feMorphology in="SourceAlpha" radius="1" />
+      <feOffset dx="0" dy="8" />
+      <feGaussianBlur stdDeviation="8" />
+      <feMorphology radius="4" operator="dilate" />
+      <feOffset dx="0" dy="4" result="shrink" />
+      <feGaussianBlur in="shrink" result="blur" stdDeviation="8" />
+      <feComposite in="SourceAlpha" operator="in" />
+      <feColorMatrix
+         type="matrix"
+         values="0 0 0  0 0 
+                 0 0 0  0 0 
+                 0 0 0  0 0
+                 0 0 0 -1 1"
+      />
+      <feComposite in="outer" operator="over" />
+      <feComponentTransfer result="shadow">
+         <feFuncA type="linear" slope="0.3" />
+      </feComponentTransfer>
+   </filter>
+   <rect
+      x="0" y="0" width="128" height="128" r="16"
+      clip-path="inset(0 round 16)"
+      filter="url('#shadow-inset')"
+      stroke="none"
+   />
+</svg>
