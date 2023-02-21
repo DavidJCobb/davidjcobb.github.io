@@ -109,6 +109,11 @@ iframe[src^="https://www.youtube.com/"] {
       }
       section>aside>*{
          width:100%;
+         height:auto;
+      }
+      section>aside>lu-youtube-facade {
+         width:100%!important;
+         height:auto!important;
       }
       section>aside>iframe[width][height] {
          height:auto!important; /* kill the height attribute */

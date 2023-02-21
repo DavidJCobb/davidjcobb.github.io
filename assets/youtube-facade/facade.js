@@ -226,6 +226,7 @@ let YouTubeFacade = (function() {
          //
          // Copy presentational and semantic attributes from the IFRAME:
          //
+         let size = {};
          for(const attr of ["width", "height"]) {
             let v = this.getAttribute(attr);
             if (v === null || isNaN(v = +v)) {
@@ -233,8 +234,11 @@ let YouTubeFacade = (function() {
                if (v === null || isNaN(v = +v))
                   continue;
             }
+            size[attr] = +v;
             this.style[attr] = v + "px";
          }
+         if (size.width && size.height)
+            this.style.aspectRatio = (size.width / size.height);
          for(const attr of ["alt", "aria-label", "aria-description", "aria-labelledby", "aria-describedby"]) {
             if (node.hasAttribute(attr)) {
                this.setAttribute(attr, node.getAttribute(attr));
