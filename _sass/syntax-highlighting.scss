@@ -1,60 +1,67 @@
-.highlight .language-cpp {
-   .c1 { /* comment */
-      color:#958;
+
+$cobb-enable-syntax-highlighting-styles: false !default;
+
+@if $cobb-enable-syntax-highlighting-styles {
+
+   .highlight .language-cpp {
+      .c1 { /* comment */
+         color:#958;
+      }
+
+      .k,   /* keyword: general */
+      .kt { /* keyword: type */
+         color:#C62;
+         font-weight:bold;
+      }
+      .mi { /* integer? */
+         color:#362;
+      }
+      .n  { /* name: general */
+      }
+      .nb { /* name: boolean */
+         color:#C62;
+         font-weight:bold;
+      }
+      .nf { /* name: function */
+         color:#321;
+         font-weight:bold;
+      }
+      
+      .o { /* operator (includes scope-resolution operator and reference type suffix) */
+         color:#446644;
+         font-weight:bold;
+      }
+      
+      .p { /* punctuation (parens, braces) */
+         color:#666;
+         font-weight:bold;
+      }
    }
 
-   .k,   /* keyword: general */
-   .kt { /* keyword: type */
-      color:#C62;
-      font-weight:bold;
+   .highlight .language-css {
+      .c { /* comment */
+         color:#958;
+      }
+      .cp { /* !important */
+         color:#FF7400;
+      }
+      
+      .m  { /* value? */
+      }
+      .nd { /* name: pseudoclass */
+         color:#339053;
+      }
+      .nl { /* name: property */
+         color:#225070;
+      }
+      .nt { /* name: tag */
+         color:#C62;
+      }
+      
+      .p { /* punctuation (parens, braces) */
+         color:#666;
+         font-weight:bold;
+      }
    }
-   .mi { /* integer? */
-      color:#362;
-   }
-   .n  { /* name: general */
-   }
-   .nb { /* name: boolean */
-      color:#C62;
-      font-weight:bold;
-   }
-   .nf { /* name: function */
-      color:#321;
-      font-weight:bold;
-   }
-   
-   .o { /* operator (includes scope-resolution operator and reference type suffix) */
-      color:#446644;
-      font-weight:bold;
-   }
-   
-   .p { /* punctuation (parens, braces) */
-      color:#666;
-      font-weight:bold;
-   }
-}
 
-.highlight .language-css {
-   .c { /* comment */
-      color:#958;
-   }
-   .cp { /* !important */
-      color:#FF7400;
-   }
-   
-   .m  { /* value? */
-   }
-   .nd { /* name: pseudoclass */
-      color:#339053;
-   }
-   .nl { /* name: property */
-      color:#225070;
-   }
-   .nt { /* name: tag */
-      color:#C62;
-   }
-   
-   .p { /* punctuation (parens, braces) */
-      color:#666;
-      font-weight:bold;
-   }
 }

@@ -87,6 +87,7 @@ $theme-scanline-background-layer: (
       $-inset-str 0 10px 12px rgba(0, 0, 0, 0.07),
       $-inset-str 0 20px 24px rgba(0, 0, 0, 0.07),
       $-inset-str 0 30px 36px rgba(0, 0, 0, 0.08);
+   
    @if $inset {
       /*
          Having too many box-shadows on-screen at one time can cause lag for weaker devices, 

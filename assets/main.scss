@@ -3,6 +3,10 @@
 
 $inline-asides-on-smartphone: true !default;
 
+{% if jekyll.environment == "development" %}
+   $cobb-display-error-sentinels-for-blind: true;
+{% endif %}
+
 @import "common-visual.scss";
 @import "utils.scss";
 

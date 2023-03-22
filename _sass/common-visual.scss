@@ -4,26 +4,42 @@
 @import "fonts";
 @import "syntax-highlighting";
 
+$cobb-enable-code-styles: false !default;
+$cobb-enable-table-styles: false !default;
+
 $cobb-common-visual-was-imported: false !default;
 @if not $cobb-common-visual-was-imported { /* start include guard */
 $cobb-common-visual-was-imported: true;
 
 $code-block-back-color: #F8F8F8;
+/*
+   NOTE: Overridden on mobile, when we drop back to a border-image instead of several 
+   box-shadows. No way to make that configurable; see explanation at the relevant code.
+*/
+
+$mobile-styled-scrollbar-thickness: .4rem;
+$mobile-styled-scrollbar-margin:    .4rem;
 
 :root {
    color-scheme: light;
 }
 
 [hidden] {
-   display: none;
+   display: none !important;
 }
 
 a:link { color:#0066cc; }
 a:link:visited,
 a:visited { color:#801490; }
 
-code, pre {
-   font-family: $theme-code-font-family;
+@if $cobb-enable-code-styles {
+   code, pre {
+      font-family: $theme-code-font-family;
+   }
+} @else {
+   code {
+      font-family: $theme-code-font-family;
+   }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -50,158 +66,239 @@ h3, h4, h5, h6 {
 }
 p{margin:1em 0}
 
-pre {
-   /*background:$code-block-back-color;*/
-   border-radius:1rem;
-   /*@include content-card-shadow(true);*/
-   
-   overflow-x:auto;
-   
-   padding:1rem 1.5rem;
-   margin:1em 0;
-   line-height:1.2em;
-   
-   /*
-      below: a disgusting hack, to work around the fact that inset box-shadows are 
-      covered by an element's horizontal scrollbar rather than being moved above 
-      them.
+@if $cobb-enable-code-styles {
+   pre {
+      /*background:$code-block-back-color;*/
+      border-radius:1rem;
+      /*@include content-card-shadow(true);*/
       
-      we use linear gradients to mimic the effect of an inset box-shadow on the 
-      element's bottom edge; this handles the case of a horizontal scrollbar being 
-      present.
+      overflow-x:auto;
       
-      when a horizontal scrollbar is not present, then we want our normal box-shadows 
-      (since they adapt to border-radius), so we use two sets of box-shadows: the 
-      normal one; and a set of white shadows, to cancel out the effect of the linear 
-      gradient backgrounds. (otherwise, both the box-shadows and backgrounds would 
-      cover the same spot, resulting in a doubly dark shadow.)
-   */
-   
-   $shadow-alphas: 0.05, 0.05, 0.06, 0.06, 0.07, 0.07, 0.08;
-   $shadow-begins:    0,  5px,  6px,  8px, 10px, 20px, 30px;
-   $shadow-blurs:   4px,  6px,  8px, 10px, 12px, 24px, 36px;
-   
-   $sha-bg-layers: ();
-   $shadow-layers: ();
-   $negate-layers: ();
-   $shadow-inset:  true;
-   @for $i from 1 through length($shadow-alphas) {
-      $s: 0%;
-      $a: nth($shadow-alphas, $i);
-      $y: nth($shadow-begins, $i);
-      $l: nth($shadow-blurs,  $i);
+      padding:1rem 1.5rem;
+      margin:1em 0;
+      line-height:1.2em;
       
-      $shadow-layers: append($shadow-layers, unquote("inset 0 #{$y} #{$l} rgba(0, 0, 0, #{$a})"), comma);
-      $negate-layers: append($shadow-layers, unquote("inset 0 -#{$y} #{$l} rgba(255, 255, 255, #{$a})"), comma);
+      /*
+         below: a disgusting hack, to work around the fact that inset box-shadows are 
+         covered by an element's horizontal scrollbar rather than being moved above 
+         them.
+         
+         we use linear gradients to mimic the effect of an inset box-shadow on the 
+         element's bottom edge; this handles the case of a horizontal scrollbar being 
+         present.
+         
+         when a horizontal scrollbar is not present, then we want our normal box-shadows 
+         (since they adapt to border-radius), so we use two sets of box-shadows: the 
+         normal one; and a set of white shadows, to cancel out the effect of the linear 
+         gradient backgrounds. (otherwise, both the box-shadows and backgrounds would 
+         cover the same spot, resulting in a doubly dark shadow.)
+      */
       
-      $proceed: true;
-      @if $y > $l {
-         $proceed: false;
+      $shadow-alphas: 0.05, 0.05, 0.06, 0.06, 0.07, 0.07, 0.08;
+      $shadow-begins:    0,  5px,  6px,  8px, 10px, 20px, 30px;
+      $shadow-blurs:   4px,  6px,  8px, 10px, 12px, 24px, 36px;
+      
+      $sha-bg-layers: ();
+      $shadow-layers: ();
+      $negate-layers: ();
+      $shadow-inset:  true;
+      @for $i from 1 through length($shadow-alphas) {
+         $s: 0%;
+         $a: nth($shadow-alphas, $i);
+         $y: nth($shadow-begins, $i);
+         $l: nth($shadow-blurs,  $i);
+         
+         $shadow-layers: append($shadow-layers, unquote("inset 0 #{$y} #{$l} rgba(0, 0, 0, #{$a})"), comma);
+         $negate-layers: append($shadow-layers, unquote("inset 0 -#{$y} #{$l} rgba(255, 255, 255, #{$a})"), comma);
+         
+         $proceed: true;
+         @if $y > $l {
+            $proceed: false;
+         }
+         $a: $a * remove-unit($y / remove-unit($y + $l));
+         $l: #{$l - $y};
+         $y: 0;
+      
+         @if $proceed {
+            $sha-bg-layers: append($sha-bg-layers, unquote("local bottom center linear-gradient(to top, rgba(0,0,0,#{$a}) 0, transparent #{$l})"), comma);
+            $l: $l + 1px;
+         }
       }
-      $a: $a * remove-unit($y / remove-unit($y + $l));
-      $l: #{$l - $y};
-      $y: 0;
-   
-      @if $proceed {
-         $sha-bg-layers: append($sha-bg-layers, unquote("local bottom center linear-gradient(to top, rgba(0,0,0,#{$a}) 0, transparent #{$l})"), comma);
-         $l: $l + 1px;
-         /*$n--egate-layers: append($negate-layers, unquote("local bottom center linear-gradient(to top, rgba(255,255,255,#{$a}) 0, transparent #{$l})"), comma);*/
+      
+      box-shadow: join($shadow-layers, $negate-layers);
+      background: $sha-bg-layers, $code-block-back-color;
+      
+      @include for-smartphones-only {
+         /*
+            Having too many box-shadows on-screen at one time can cause lag for weaker devices, 
+            such as smartphones. The box shadows above are especially bad, so we'll drop them 
+            back on weaker devices.
+         */
+         
+         background: transparent none;
+         /*
+            Ordinarily, we'd use #F4F4F4 here -- a slightly darker shade, to account for the 
+            fact that the border-image doesn't reach as far as the box-shadows. However, due 
+            to crbug.com/1426649, we cannot have both a border-image and a background on a 
+            scrollable element that uses the white-space property. Our solution is to encode 
+            the background color directly into the border-image and use the `fill` specifier.
+         */
+         
+         $slice-top:    37;
+         $slice-side:   27;
+         $slice-bottom: 16;
+         
+         $show-top:    $slice-top    * 0.0625 * 1rem;
+         $show-side:   $slice-side   * 0.0625 * 1rem;
+         $show-bottom: $slice-bottom * 0.0625 * 1rem;
+         
+         $show-min-height: $show-top + $show-bottom;
+         
+         box-shadow: none;
+         border:1px solid transparent; /* crbug.com/1417526 */
+         border-image: url("./inset-shadow-pre.svg") #{$slice-top} #{$slice-side} #{$slice-bottom} fill / #{$show-top} #{$show-side} #{$show-bottom} / 0;
+         min-height:calc(#{$show-min-height} - 2px);
+         
+         /* Ruby Sass doesn't support newer techniques, is unmaintained, and therefore never will */
+         /*@supports selector(::-webkit-scrollbar) {*/
+            $scrollbar-inset: 1.1rem; /* = border radius of the PRE plus a little extra */
+            
+            &::-webkit-scrollbar,
+            &::-webkit-scrollbar-track {
+               height: $mobile-styled-scrollbar-thickness + $mobile-styled-scrollbar-margin * 2;
+            }
+
+            &::-webkit-scrollbar-track {
+               margin:0 $scrollbar-inset;
+               background: rgba(0, 0, 0, 0.1);
+               @include webkit-scrollbar-rounding-and-margin($mobile-styled-scrollbar-margin);
+            }
+
+            &::-webkit-scrollbar-thumb {
+               @include webkit-scrollbar-rounding-and-margin($mobile-styled-scrollbar-margin);
+               background: rgba(0, 0, 0, 0.5);
+            }
+         /*}*/
       }
    }
-   
-   box-shadow: join($shadow-layers, $negate-layers);
-   background: $sha-bg-layers, $code-block-back-color;
-}
-figure.highlight { /* generated by Jekyll/Rouge syntax highlighting */
-   display:contents;
-}
-@include for-firefox-only {
-   .highlight>pre>code {
-      /*
-         in Firefox only, horizontal scrolling completely nullifies padding-right unless 
-         the sole child is inline-block. apparently Firefox botched this way back in the 
-         Neolithic era, so until they and the CSSWG finish cleaning up the mess, we have 
-         to do this hack. lucky for us, the Rouge syntax highlighter automatically wraps 
-         all content in both a FIGURE.highlight, a PRE, and a CODE,  so we actually have 
-         an element we can use.
-         
-            https://github.com/w3c/csswg-drafts/issues/129
-            https://bugzilla.mozilla.org/show_bug.cgi?id=1700858
-      */
-      display:inline-block;
-      padding-right:inherit;
+   figure.highlight { /* generated by Jekyll/Rouge syntax highlighting */
+      display:contents;
+   }
+   @include for-firefox-only {
+      .highlight>pre>code {
+         /*
+            in Firefox only, horizontal scrolling completely nullifies padding-right unless 
+            the sole child is inline-block. apparently Firefox botched this way back in the 
+            Neolithic era, so until they and the CSSWG finish cleaning up the mess, we have 
+            to do this hack. lucky for us, the Rouge syntax highlighter automatically wraps 
+            all content in both a FIGURE.highlight, a PRE, and a CODE,  so we actually have 
+            an element we can use.
+            
+               https://github.com/w3c/csswg-drafts/issues/129
+               https://bugzilla.mozilla.org/show_bug.cgi?id=1700858
+         */
+         display:inline-block;
+         padding-right:inherit;
+      }
    }
 }
 
-table:not(.no-default-styles) {
-   margin:1rem auto;
-   
-   border:1px solid #000;
-   border-radius:1em;
-   @include border-collapse(
-      $radius: 1em,
-      $separate-cells-from-tables: false,
-      $override-cell-table-border: 1px solid #444
-   );
-   background:#777;
-   padding:3px;
-   
-   th, td {
-      border:1px solid #DDD;
-      padding:.25em .75em;
-   }
-   th {
-      border:1px solid #666;
-      background:#FF7400;
-      font-weight: bold;
-   }
-   
-   /// Shade every other row.
-   tbody>tr {
-      /*
-         We can't apply the background color to the TR directly, as in Firefox, that will 
-         break a table's border-radius  if we use $separate-cells-from-tables above.  The 
-         problem is that the  TR isn't rounded,  so it protrudes in  front of the table's 
-         background.
-      */
-      >:is(td, th) {
-         background:#FFF;
+@if $cobb-enable-table-styles {
+   table:not(.no-default-styles) {
+      margin:1rem auto;
+      
+      border:1px solid #000;
+      border-radius:1em;
+      @include border-collapse(
+         $radius: 1em,
+         $separate-cells-from-tables: false,
+         $override-cell-table-border: 1px solid #444
+      );
+      background:#777;
+      padding:3px;
+      
+      th, td {
+         border:1px solid #DDD;
+         padding:.25em .75em;
+      }
+      th {
+         border:1px solid #666;
+         background:#FF7400;
+         font-weight: bold;
       }
       
-      &:nth-of-type(2n+1) {
+      /// Shade every other row.
+      tbody>tr {
+         /*
+            We can't apply the background color to the TR directly, as in Firefox, that will 
+            break a table's border-radius  if we use $separate-cells-from-tables above.  The 
+            problem is that the  TR isn't rounded,  so it protrudes in  front of the table's 
+            background.
+         */
          >:is(td, th) {
-            background:#F8F8F8;
+            background:#FFF;
          }
          
-         td {
-            border-left-color:#CCC;
-            border-right-color:#CCC;
+         &:nth-of-type(2n+1) {
+            >:is(td, th) {
+               background:#F8F8F8;
+            }
+            
+            td {
+               border-left-color:#CCC;
+               border-right-color:#CCC;
+            }
          }
       }
+      
+      td[data-type=number] {
+         text-align:right;
+      }
+      
+      >tbody>tr>th:first-child:last-of-type {
+         vertical-align:top;
+         background:#444;
+         color:#ECE7E0;
+      }
+      
+      &.fade-zeroes td[data-type="number"][data-value="0"],
+      td.deemphasize {
+         color:#666;
+      }
    }
-   
-   td[data-type=number] {
-      text-align:right;
-   }
-   
-   >tbody>tr>th:first-child:last-of-type {
-      vertical-align:top;
-      background:#444;
-      color:#ECE7E0;
-   }
-   
-   &.fade-zeroes td[data-type="number"][data-value="0"],
-   td.deemphasize {
-      color:#666;
-   }
-}
-.table-wrapper {
-   max-width:  100%;
-   overflow-x: auto;
-   
-   >table {
-      width: max-content;
-      max-width: 150vw; /* or else cols word-wrap to the computed widths of headers' contents (width on TH can't enlarge) */
+   .table-wrapper {
+      max-width:  100%;
+      overflow-x: auto;
+      margin:1rem 0;
+      
+      >table {
+         width: max-content;
+         max-width: 150vw; /* or else cols word-wrap to the computed widths of headers' contents (width on TH can't enlarge) */
+         margin: 0;
+      }
+      
+      @include for-smartphones-only {
+         padding-bottom: .4rem;
+      
+         &::-webkit-scrollbar,
+         &::-webkit-scrollbar-track {
+            //height: $mobile-styled-scrollbar-thickness + $mobile-styled-scrollbar-margin * 2;
+            height: $mobile-styled-scrollbar-thickness;
+         }
+
+         &::-webkit-scrollbar-track {
+            //margin:0 0;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 5rem;
+            //@include webkit-scrollbar-rounding-and-margin($mobile-styled-scrollbar-margin);
+         }
+
+         &::-webkit-scrollbar-thumb {
+            //@include webkit-scrollbar-rounding-and-margin($mobile-styled-scrollbar-margin);
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5rem;
+         }
+      }
    }
 }
 
@@ -211,33 +308,37 @@ table:not(.no-default-styles) {
 ///
 /// For articles:
 ///
+
+$cobb-display-error-sentinels-for-blind: false !default;
 .different-wording-for-the-blind {
    &>.sighted {}
    &>.blind {
       @include screen-reader;
    }
    
-   ///
-   /// Error checks:
-   ///
-   &>.sighted:not([aria-hidden=true]) {
-      &::before {
-         content:"BUG: THIS CONTENT SHOULD BE MARKED ARIA-HIDDEN";
-         padding:.25em .5em;
-         display:inline-block;
-         background:red;
-         color:white;
-         font-weight:bold;
+   @if $cobb-display-error-sentinels-for-blind {
+      ///
+      /// Error checks:
+      ///
+      &>.sighted:not([aria-hidden=true]) {
+         &::before {
+            content:"BUG: THIS CONTENT SHOULD BE MARKED ARIA-HIDDEN";
+            padding:.25em .5em;
+            display:inline-block;
+            background:red;
+            color:white;
+            font-weight:bold;
+         }
       }
-   }
-   &>.sighted:first-child:last-child {
-      &::after {
-         content:"BUG: NO CONTENT OFFERED FOR SCREEN READERS";
-         padding:.25em .5em;
-         display:inline-block;
-         background:red;
-         color:white;
-         font-weight:bold;
+      &>.sighted:first-child:last-child {
+         &::after {
+            content:"BUG: NO CONTENT OFFERED FOR SCREEN READERS";
+            padding:.25em .5em;
+            display:inline-block;
+            background:red;
+            color:white;
+            font-weight:bold;
+         }
       }
    }
 }

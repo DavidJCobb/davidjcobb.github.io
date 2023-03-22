@@ -1,0 +1,71 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="59" height="53" clip-path="inset(0 round 16)">
+   <!-- slice dimensions: 37 top, 27 sides, 11 bottom; 5x5px center -->
+   <defs>
+      <linearGradient id="LT" gradientTransform="rotate(90)">
+         <stop  offset=" 0%" stop-color="rgba(0,0,0,0.50)" />
+         <stop  offset=" 3%" stop-color="rgba(0,0,0,0.50)" />
+         <stop  offset="16%" stop-color="rgba(0,0,0,0.40)" />
+         <stop  offset="30%" stop-color="rgba(0,0,0,0.27)" />
+         <stop  offset="50%" stop-color="rgba(0,0,0,0.12)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+      <linearGradient id="LL">
+         <stop   offset="0%" stop-color="rgba(0,0,0,0.35)" />
+         <stop  offset="30%" stop-color="rgba(0,0,0,0.10)" />
+         <stop  offset="50%" stop-color="rgba(0,0,0,0.05)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+      <linearGradient id="LR" href="#LL" gradientTransform="rotate(180 0.5 0.5)" />
+      <linearGradient id="LB" gradientTransform="rotate(270 0.5 0.5)">
+         <stop   offset="0%" stop-color="rgba(0,0,0,0.30)" />
+         <stop  offset="10%" stop-color="rgba(0,0,0,0.08)" />
+         <stop  offset="30%" stop-color="rgba(0,0,0,0.03)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+      <clipPath id="lineclip">
+         <rect x=" 0" y=" 0" width="16" height="16" />
+         <rect x="43" y=" 0" width="16" height="16" />
+         <rect x=" 0" y="37" width="16" height="16" />
+         <rect x="43" y="37" width="16" height="16" />
+      </clipPath>
+   </defs>
+   <g stroke="none">
+      <rect id="top"
+         x="0" y="0" width="59" height="37"
+         fill="url('#LT')"
+      />
+      <rect id="left"
+         x="0" y="0" width="20" height="53"
+         fill="url('#LL')"
+      />
+      <rect id="right"
+         x="39" y="0" width="20" height="53"
+         fill="url('#LR')"
+      />
+      <rect id="bottom"
+         x="0" y="47" width="59" height="6"
+         fill="url('#LB')"
+      />
+   </g>
+   <path fill="none" stroke="red" stroke-width="1"
+      d="M 16,0
+         a 16 16 90 0 0 -16 16
+         M 43,0
+         a 16 16 90 0 1 16 16
+         M 43,53
+         a 16 16 90 0 0 16 -16
+         M 0,37
+         a 16 16 90 0 0 16 16"
+   />
+   <!--<path clip-path="url(#lineclip)" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="1"
+      d="M 16,0
+         L 43,0
+         A 16 16 90 0 1 59 16
+         L 59,37
+         A 16 16 90 0 1 43 53
+         L 16,53
+         A 16 16 90 0 1 0 37
+         L 0,16
+         A 16 16 90 0 1 16 0"
+   />-->
+</svg>

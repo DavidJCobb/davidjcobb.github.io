@@ -1,0 +1,42 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="59" height="58">
+   <!-- slice dimensions: 37 top, 27 sides, 16 bottom; 5x5px center -->
+   <defs>
+      <linearGradient id="edgeT" gradientTransform="rotate(90)">
+         <stop  offset=" 0%" stop-color="rgba(0,0,0,0.50)" />
+         <stop  offset=" 3%" stop-color="rgba(0,0,0,0.50)" />
+         <stop  offset="16%" stop-color="rgba(0,0,0,0.40)" />
+         <stop  offset="30%" stop-color="rgba(0,0,0,0.27)" />
+         <stop  offset="50%" stop-color="rgba(0,0,0,0.12)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+      <linearGradient id="edgeL">
+         <stop   offset="0%" stop-color="rgba(0,0,0,0.35)" />
+         <stop  offset="30%" stop-color="rgba(0,0,0,0.10)" />
+         <stop  offset="50%" stop-color="rgba(0,0,0,0.05)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+      <linearGradient id="edgeR" href="#edgeL" gradientTransform="rotate(180 0.5 0.5)" />
+      <linearGradient id="edgeB" gradientTransform="rotate(270 0.5 0.5)">
+         <stop   offset="0%" stop-color="rgba(0,0,0,0.30)" />
+         <stop  offset="10%" stop-color="rgba(0,0,0,0.08)" />
+         <stop  offset="30%" stop-color="rgba(0,0,0,0.03)" />
+         <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+   </defs>
+   <g stroke="none" clip-path="inset(0 round 16)">
+      <rect fill="#F4F4F4" x="0" y="0" width="100%" height="100%" /> <!-- workaround: crbug.com/1426649 -->
+      <rect fill="url('#edgeT')"
+         x="0" y="0" width="59" height="37"
+      />
+      <rect fill="url('#edgeL')"
+         x="0" y="0" width="20" height="58"
+      />
+      <rect fill="url('#edgeR')"
+         x="39" y="0" width="20" height="58"
+      />
+      <rect fill="url('#edgeB')"
+         x="0" y="52" width="59" height="6"
+      />
+   </g>
+   <path fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="1" d="M 16,0 a 16 16 90 0 0 -16 16 M 43,0 a 16 16 90 0 1 16 16 M 43,58 a 16 16 90 0 0 16 -16 M 0,42 a 16 16 90 0 0 16 16" />
+</svg>

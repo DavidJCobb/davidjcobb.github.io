@@ -1,6 +1,13 @@
 ---
 ---
 
+$cobb-enable-code-styles: true;
+$cobb-enable-syntax-highlighting-styles: true;
+$cobb-enable-table-styles: true;
+{% if jekyll.environment == "development" %}
+   $cobb-display-error-sentinels-for-blind: true;
+{% endif %}
+
 @import "utils";
 @import "common-visual.scss";
 

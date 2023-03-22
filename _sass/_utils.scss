@@ -133,6 +133,29 @@
 // Mixins
 //
 
+///
+///   @webkit-scrollbar-rounding-and-margin($margin)
+///
+///   Helper styles for when you want elements in a Webkit-styled scrollbar to be inset 
+///   from the edge of the scrollable element, yet still rounded.
+///
+///   Padding and margin values on scrollbar elements are unreliable; in general, they 
+///   work on the scrollbar's own axis (e.g. horizontal margins on a horizontal scroll-
+///   bar) but not on the cross axis. As such, we have to use nearly-invisible borders 
+///   to space the scrollbar elements out from their surroundings instead. Using fully 
+///   transparent borders has no effect.
+///
+///   Scrollbar components appear to function akin to a collection of sibling elements 
+///   that are absolutely positioned. Even if you use an invisible border on the scroll-
+///   bar track, for example, you'll still also need one on the thumb; the thumb doesn't 
+///   seem to be a "child element" of the track.
+///
+@mixin webkit-scrollbar-rounding-and-margin($margin) {
+   background-clip: padding-box !important;
+   border: $margin solid rgba(0, 0, 0, 0.00001);
+   border-radius: 5rem;
+}
+
 //
 // CSS unicode-range values for common character sets seen in Google Fonts:
 //
