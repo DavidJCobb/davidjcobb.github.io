@@ -34,16 +34,18 @@ mark {
    }
 }
 
-dl {}
-dt {
-   font-weight: bold;
-}
-dd + dt {
-   margin-top: 1em;
-}
-dd {
-   line-height: 1.5em;
-   text-align: justify;
+:not(lu-math) {
+   dl {}
+   dt {
+      font-weight: bold;
+   }
+   dd + dt {
+      margin-top: 1em;
+   }
+   dd {
+      line-height: 1.5em;
+      text-align: justify;
+   }
 }
 
 .cite-ref,
