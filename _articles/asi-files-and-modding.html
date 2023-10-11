@@ -26,6 +26,9 @@ info_sources:
       archive_today:
          2012: "https://archive.ph/VB5N"
          2023: "https://archive.ph/vEitl"
+ - id:    "src-mss-home"
+   title: "The Miles Sound System"
+   url:   "http://www.radgametools.com/miles.htm"
  - id:    "src-asi-acronym"
    title: "Proxy DLL 32 - GitHub repo homepage"
    url:   "https://github.com/Erik-JS/proxy-dll-32"
@@ -34,6 +37,12 @@ info_sources:
       archive_today: "https://archive.ph/BzLZ3"
 
 ---
+{%- capture cite_mss_home -%}
+   {%- include article-fragments/source-list-ref.html
+      list = page.info_sources
+      id   = "src-mss-home"
+   -%}
+{%- endcapture -%}
 {%- capture cite_mss_ver -%}
    {%- include article-fragments/source-list-ref.html
       list = page.info_sources
@@ -64,7 +73,7 @@ info_sources:
 <section>
    <h2><a name="origins"></a>The origins of ASIs</h2>
    <p>
-      The <dfn>Miles Sound System</dfn> is audio middleware created and owned by RAD Game Tools, Inc., the same company behind Bink Video. It was initially developed in the late 1990s{{cite_mss_ver}} and named after one of its designers, John Miles. In 1998{{cite_mss_ver}}, a new feature was added: the ability for MSS to load <dfn>Audio Stream Interface</dfn>{{cite_asi_acronym}} files. These <code>*.asi</code> files were essentially just DLLs with the file extension changed, each of which gave MSS the ability to decode new audio codecs. MSS would load any ASI files located in its directory.
+      The <dfn>Miles Sound System</dfn> is audio middleware created and owned by RAD Game Tools, Inc., the same company behind Bink Video. It was initially developed in the late 1990s{{cite_mss_ver}} and named after one of its designers, John Miles{{cite_mss_home}}. In 1998{{cite_mss_ver}}, a new feature was added: the ability for MSS to load <dfn>Audio Stream Interface</dfn>{{cite_asi_acronym}} files. These <code>*.asi</code> files were essentially just DLLs with the file extension changed, each of which gave MSS the ability to decode new audio codecs. MSS would load any ASI files located in its directory.
    </p>
    <p>
       In 2002, Rockstar released the PC version of <i>Grand Theft Auto III</i>, which used the Miles Sound System. The GTA modding community soon discovered that the game (through MSS) would load <code>*.asi</code> files and treat them as DLLs. The community took advantage of this, writing their own DLLs to patch the game engine and renaming those files to use the <code>*.asi</code> file extension.{{cite_asi_acronym}} <i>Grand Theft Auto: San Andreas</i> and onward did not include functionality to load ASIs, so the community began building their own ASI loaders and performing code injection on their own. ASI loaders spread into other game modding communities; for example, ME3Tweaks, a mod manager for the <i>Mass Effect</i> series, <a href="https://me3tweaks.com/mods/asi/" target="_blank">can load ASIs</a>.
