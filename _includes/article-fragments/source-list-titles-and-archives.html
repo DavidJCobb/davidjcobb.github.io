@@ -1,0 +1,40 @@
+{% for source in include.list %}
+   <li id="source-{{source.id}}">
+      <a href="{{source.url}}" target="_blank">{{source.title}}</a>
+      {%- if source.archives -%}
+      <div class="archives">
+         <label>Archives:</label>
+         <ul>
+            {%- for archive in source.archives -%}
+               <li>
+               
+               {%- assign label = archive[0] -%}
+               {%- case archive[0] -%}
+                  {%- when "wayback" -%}
+                     {%- assign label = "Wayback Machine" -%}
+                  {%- when "archive_today" -%}
+                     {%- assign label = "archive.today" -%}
+               {%- endcase -%}
+               
+               {%- assign value = archive[1] -%}
+               {%- if value -%}
+                  {%- if value.first -%}
+                     {%- comment -%}
+                        We're dealing with a collection.
+                     {%- endcomment -%}
+                     [{{label}}: {% for pair in value %}
+                        <a href="{{pair[1]}}" target="_blank">{{pair[0]}}</a>
+                        {%- if forloop.last == false %}; {% endif -%}
+                     {% endfor -%}]
+                  {%- else -%}
+                     [<a href="{{value}}" target="_blank">{{label}}</a>]
+                  {%- endif -%}
+               {%- endif -%}
+               </li>
+               {%- raw %} {% endraw -%}
+            {%- endfor %}
+         </ul>
+      </div>
+      {%- endif -%}
+   </li>
+{% endfor %}

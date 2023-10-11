@@ -1,0 +1,206 @@
+---
+title: "ASI files and modding"
+tags:
+ - asi
+ - modding
+social_media:
+   description: "ASI files seem to be used in several video game modding communities, but... what exactly are they?"
+table_of_contents:
+ - id:    origins
+   title: The origins of ASIs
+ - id:    how-asi-files-run
+   title: How ASI files run
+ - id:    how-xse-files-run
+   title: How xSE files run
+ - id:    asi-xse-comparison
+   title: A comparison between ASI and xSE plug-ins, in brief
+ - id:    sources
+   title: Sources
+
+info_sources:
+ - id:    "src-mss-version"
+   title: "Miles Sound System Development History"
+   url:   "http://www.radgametools.com/msshist.htm"
+   archives:
+      wayback: "https://web.archive.org/web/20230314084847/http://www.radgametools.com/msshist.htm"
+      archive_today:
+         2012: "https://archive.ph/VB5N"
+         2023: "https://archive.ph/vEitl"
+ - id:    "src-asi-acronym"
+   title: "Proxy DLL 32 - GitHub repo homepage"
+   url:   "https://github.com/Erik-JS/proxy-dll-32"
+   archives:
+      wayback:       "https://web.archive.org/web/20200909183900/https://github.com/Erik-JS/proxy-dll-32"
+      archive_today: "https://archive.ph/BzLZ3"
+
+---
+{%- capture cite_mss_ver -%}
+   {%- include article-fragments/source-list-ref.html
+      list = page.info_sources
+      id   = "src-mss-version"
+   -%}
+{%- endcapture -%}
+{%- capture cite_asi_acronym -%}
+   {%- include article-fragments/source-list-ref.html
+      list = page.info_sources
+      id   = "src-asi-acronym"
+   -%}
+{%- endcapture -%}
+<section>
+   <p>
+      ASI files seem to be used in several video game modding communities. They're typically applied to a game by a community-made "ASI loader." However, information on what these things actually <em>are</em> seems to be scattered across several different sources, and on an Internet whose <a href="https://dkb.blog/p/google-search-is-dying" target="_blank">primary search engine is dying</a>, it's not easy to find them all if you don't already have some idea of what you're looking for.
+   </p>
+   <p>
+      I want to be upfront about the fact that I'm writing about ASIs as an outsider to the scenes where they're normally used, so here's my background on the topic:
+   </p>
+   <p>
+      I'm a mod author in the community for <i>The Elder Scrolls V: Skyrim</i>, and am experienced with code injection for that game. In the Bethesda RPG modding scene, code injection is centralized through community-made "script extenders," like SKSE and SFSE, made by the xSE team. These typically extend their respective games' script APIs with numerous functions that are useful for mod authors, and can load community-made DLLs as a secondary function. DLLs that are loaded through xSE are expected to communicate with the script extender through specific entry points.
+   </p>
+   <p>
+      As of this writing, Starfield has only recently been released, and Bethesda has not published any modding tools; in fact, much of their mod loader has actually been stripped out of the executable. This means that SFSE is also quite new, and only offers DLL loading, with no script extensions. Some mod authors have promoted ASIs as a competing mod loading mechanism, so I &mdash; having never heard of ASIs before &mdash; went looking for info and decided to gather everything I found in one spot. I've also written about xSE plug-ins, in order to better connect ASIs to what I already know.
+   </p>
+</section>
+
+<section>
+   <h2><a name="origins"></a>The origins of ASIs</h2>
+   <p>
+      The <dfn>Miles Sound System</dfn> is audio middleware created and owned by RAD Game Tools, Inc., the same company behind Bink Video. It was initially developed in the late 1990s{{cite_mss_ver}} and named after one of its designers, John Miles. In 1998{{cite_mss_ver}}, a new feature was added: the ability for MSS to load <dfn>Audio Stream Interface</dfn>{{cite_asi_acronym}} files. These <code>*.asi</code> files were essentially just DLLs with the file extension changed, each of which gave MSS the ability to decode new audio codecs. MSS would load any ASI files located in its directory.
+   </p>
+   <p>
+      In 2002, Rockstar released the PC version of <i>Grand Theft Auto III</i>, which used the Miles Sound System. The GTA modding community soon discovered that the game (through MSS) would load <code>*.asi</code> files and treat them as DLLs. The community took advantage of this, writing their own DLLs to patch the game engine and renaming those files to use the <code>*.asi</code> file extension.{{cite_asi_acronym}} <i>Grand Theft Auto: San Andreas</i> and onward did not include functionality to load ASIs, so the community began building their own ASI loaders and performing code injection on their own. ASI loaders spread into other game modding communities; for example, ME3Tweaks, a mod manager for the <i>Mass Effect</i> series, <a href="https://me3tweaks.com/mods/asi/" target="_blank">can load ASIs</a>.
+   </p>
+   <p>
+      ASIs are often incorrectly referred to as "ASI scripts," and some people mistakenly assume that the acronym stands for "arbitrary script injection." This mislabeling comes from the fact that some ASIs rely on "script hook" DLLs that expose <i>Grand Theft Auto</i>'s scripting functions to C++ code. However, these ASIs (and all ASIs) are still fully native code; they're not scripts, their source code is not a script, and they don't have any of the limitations that one would reasonably expect a script to have.
+   </p>
+</section>
+
+<section>
+   <h2><a name="how-asi-files-run"></a>How ASI files run</h2>
+   <p>
+      The way ASI files work is pretty straightforward; there's not much to talk about.
+   </p>
+   <p>
+      ASI loaders generally don't provide any support to the ASIs they load: no APIs, no helper functions, nothing. ASI files are loaded directly and will typically execute all of their code right from <a href="https://learn.microsoft.com/en-us/windows/win32/dlls/dllmain" target="_blank"><code>DllMain</code></a>. Some will instead spawn a worker thread from <code>DllMain</code> to do their patching (<a href="https://gist.github.com/ThirteenAG/868a964b46b82ce5cebbd4a0823c69e4" target="_blank">here's one example</a>), generally because they need to wait for specific parts of the game engine, modules, or assets to load, and they rely on <a href="https://en.wikipedia.org/wiki/Busy_waiting" target="_blank">busy-waiting</a> or <a href="https://learn.microsoft.com/en-us/windows/win32/sync/using-waitable-timer-objects" target="_blank">Win32 timers</a> rather than specific hooks. (These techniques for waiting would delay the entire game (and, by implication, the very events being waited on) if run from the main thread.) The examples I've found all patch the game's code without any synchronization with the main thread!
+   </p>
+   <p>
+      Libraries exist to help people write ASIs for specific games, with hardcoded offsets for game engine functions. <a href="https://github.com/DK22Pac/plugin-sdk" target="_blank">DK22Pac's Plugin SDK</a> is one example for <i>Grand Theft Auto: San Andreas</i>, <i>Vice City</i>, and <i>Grand Theft Auto III</i>. Some ASIs also rely on signature scanning to locate game functions via pattern matching. However, ASI loaders themselves don't offer direct access to game functions, and don't typically come with their own libraries that do so.
+   </p>
+   <p>
+      Because ASI loaders are so basic, they can be added onto pretty much any game, and pretty easily. Generally, this requires shimming a DLL that the game needs &mdash; that is, impersonating a DLL like Bink Video so that the game loads your code, and then having your impostor load the real DLL along with any other DLLs you want to load. Any DLL can do this, but having everything go through a single loader can help to reduce the risk of conflicts and avoid the need to daisy-chain a bunch of DLLs. Some ASI loaders also offer extra qualify-of-life features; for example, <a href="https://github.com/ThirteenAG/Ultimate-ASI-Loader/" target="_blank">ThirteenAG's Ultimate ASI Loader</a> has crash logging, and <a href="https://www.gtagarage.com/mods/show.php?id=21709" target="_blank">Silent's ASI Loader</a> varies which ASIs it injects into different versions of <i>Grand Theft Auto: San Andreas</i> by comparing the ASIs' file paths to the game's filename.
+   </p>
+</section>
+
+<section>
+   <h2><a name="how-xse-files-run"></a>How xSE files run</h2>
+   <p>
+      xSE, the "script extenders" available for Bethesda RPGs, are more fully-featured. They offer a variety of interfaces that a loaded DLL plug-in can make use of, many of which are specific to the game being hooked. They also include a more involved load process, during which xSE runs a variety of compatibility checks against the plug-in to ensure that it's compatible with the specific version of the game that you're playing on. Of course, this also means that xSE is purpose-built for each game that it supports, and this requires game-specific research and development by its authors; supporting a new game is a non-trivial task.
+   </p>
+   <p>
+       Older versions of xSE would load a plug-in and call its "query" function, letting the plug-in run compatibility checks on its own. Newer versions of xSE (beginning with the newest versions of SKSE64 for <i>The Elder Scrolls V: Skyrim Special Edition</i>) are more robust. Modern plug-ins are supposed to export a data structure containing information about which game versions they're compatible with, and what measures they take to achieve compatibility. For example, plug-ins can declare that they rely on Address Library (<a href="https://www.nexusmods.com/skyrimspecialedition/mods/32444" target="_blank">SSE</a>; <a href="https://www.nexusmods.com/starfield/mods/3256" target="_blank">SF</a>), a community-maintained resource for allowing plug-ins to target different game patches, and in that case xSE will check whether Address Library is properly set up for the user's current game version. Plug-ins which fail these compatibility checks <a href="https://github.com/ianpatt/skse64/blob/971babc435e2620521c8556ea8ae7b9a4910ff61/skse64/PluginManager.cpp#L278" target="_blank">will never even have the opportunity to run any code</a>, ensuring that they can't break anything.
+   </p>
+   <p>
+      In addition to compatibility checking, the 64-bit Skyrim Script Extender (SKSE) offers the following APIs for all loaded plug-ins:
+   </p>
+   <dl>
+      <dt>The messaging interface</dt>
+         <dd>
+            <p>
+               SKSE allows plug-ins to register callbacks for specific messages related to the game's operation. Plug-ins can request to run code after all SKSE plug-ins have loaded, after all game data is loaded, before or after a save file is loaded, when a new save file is made, when a save file is deleted, and when a new playthrough is started. The messaging interface can also be used to dispatch messages to other SKSE plug-ins that have successfully loaded. This means that plug-ins don't have to use multi-threading, busy-waiting, and timers to wait for notable events during the game's load process.
+            </p>
+         </dd>
+      <dt>The Papyrus interface</dt>
+         <dd>
+            <p>
+               SKSE allows plug-ins to add new functions to Papyrus, <i>Skyrim</i>'s script engine, and it also adds plenty of new functions of its own. Plug-ins can use SKSE's Papyrus interface to register native code for their own custom script functions. Some SKSE plug-ins ship with Papyrus scripts coded in text, using C++ for the bare minimum of their functionality; others exist as resources, adding script functions for mod authors who don't know C++.
+            </p>
+         </dd>
+      <dt>The serialization interface</dt>
+         <dd>
+            <p>
+               Often, plug-ins will need to save their own state alongside a player's save file. Patching the game's save file format isn't easy, and having each DLL patch it individually isn't sustainable, so xSE offers its own solution: <dfn>co-save files</dfn>, which are stored alongside save files with their own extension (<code>*.ess</code>, "Elder Scrolls Save," for the game's save files; <code>*.skse</code> for SKSE co-saves). SKSE's serialization interface allows plug-ins to register callbacks for when a save file is loaded or updated; plug-ins can then read or write data in the co-save.
+            </p>
+         </dd>
+      <dt>The trampoline interface</dt>
+         <dd>
+            <p>
+               When you run a program, Windows copies the full compiled code for that program into RAM. Plug-ins often work by overwriting portions of that code in RAM, to alter the game engine's behavior. Unfortunately, in a 64-bit environment, there are some tricky low-level considerations that come into play.
+            </p>
+            <p>
+               In compiled code, there are several instructions that refer to code or data locations. Some of these can only refer to data or code within a distance of 2GB (within RAM) from where the instruction itself is located. The most notable cases are "call" and "jump" instructions, which tell a program to start executing code at a given location. These each come in "short" and "far" flavors, where the "short" flavor has that 2GB range limit, while the "far" flavor isn't limited but takes more bytes to write. This all matters because 64-bit programs can load DLLs to <a href="https://en.wikipedia.org/wiki/Address_space_layout_randomization" target="_blank">varying memory locations, including ones that are more than 2GB away from the program's own code</a>. The cleanest and most interoperable way for an xSE plug-in to patch over the game's code is to find an existing jump or call and overwrite it with a jump or call that takes the same number of bytes... but traveling from <i>Skyrim</i>'s code to the plug-in's code may require a far jump or call, and <i>Skyrim</i>'s executable isn't 2GB large, so all of its jumps and calls are going to be short.
+            </p>
+            <p>
+               To solve this problem, SKSE offers the ability to create a <dfn>trampoline</dfn>. On startup, SKSE reserves some memory near the game's code, and a plug-in can ask SKSE for a portion of that memory to use as a trampoline. The plug-in can overwrite one of the game's short jumps or calls to point to its personal trampoline, and then write a far jump into the trampoline that points to the plug-in's code. So, the game executes its own code until it hits the short jump or call to the trampoline; execution then immediately bounces out of the trampoline and into the xSE plug-in's code, which would've been out of reach otherwise.
+            </p>
+         </dd>
+   </dl>
+   <p>
+      In addition to offering these APIs, xSE comes with sample code that one can use as a base for building plug-ins. This sample code includes basic headers and class definitions for important game types, though for <i>Skyrim Special Edition</i> and onward, people more often use community-maintained libraries like <a href="https://github.com/CharmedBaryon/CommonLibSSE-NG" target="_blank">CommonLibSSE</a> and Address Library.
+   </p>
+</section>
+
+<section>
+   <h2><a name="asi-xse-comparison"></a>A comparison between ASI and xSE plug-ins, in brief</h2>
+   <div class="table-wrapper primarily-text">
+   <table>
+      <thead>
+         <tr>
+            <th>Feature</th>
+            <th>ASI</th>
+            <th>xSE</th>
+         </tr>
+      </thead>
+      <colgroup>
+         <col />
+         <col class="body-text" />
+         <col class="body-text" />
+      </colgroup>
+      <tbody>
+         <tr>
+            <th>Load process</th>
+            <td>
+               Completely barebones. ASIs don't have to go through any specific API and so are not subject to compatibility or correctness checking of any kind. Adding any such checks to a loader would break compatibility with all existing ASIs, and would be a large enough design change that it'd be better not to even use "ASI" terminology at that point.
+            </td>
+            <td>
+               Multiple forms of version and compatibility checking, mandatory for all plug-ins, to help cope with code changes in games that are still being updated. Use of a centrally maintained load process &mdash; there is one script extender maintained by one team, and everyone depends on it &mdash; means that xSE can <a href="https://github.com/llde/xOBSE/blob/3ddc62cf61138cea7421a4fd4c9a4bf1f16919b2/obse/obse/PluginManager.cpp#L607" target="_blank">reject</a> or even <a href="https://github.com/llde/xOBSE/blob/3ddc62cf61138cea7421a4fd4c9a4bf1f16919b2/obse/obse/PluginManager.cpp#L649" target="_blank" target="_blank">hotfix</a> plug-ins that are known to be defective.
+            </td>
+         </tr>
+         <tr>
+            <th>Script extensions</th>
+            <td>
+               None, beyond what ASIs themselves manage on their own.
+            </td>
+            <td>
+               xSE typically adds new script functions to the game engine, and gives its plug-ins the ability to do the same. Where necessary (i.e. pre-<i>Skyrim</i>, where every script function needed a unique numeric ID), xSE can help to centrally coordinate the addition of new script functions.
+            </td>
+         </tr>
+         <tr>
+            <th>APIs offered to plug-ins</th>
+            <td>
+               None.
+            </td>
+            <td>
+               Callback registration for notable game engine events, including through the game's load process. A centrally managed serialization system for storing data alongside the user's save files. Memory allocation APIs to help with trampoline creation in 64-bit.
+            </td>
+         </tr>
+         <tr>
+            <th>Scope and scale</th>
+            <td>
+               ASI loaders are trivial to bolt onto any game, and game-agnostic loaders already exist.
+            </td>
+            <td>
+               xSE is developed by a specialized team for a specific series of games. Compatibility checks are game-specific. Other game-specific functionality generally matures as the game's own modding scene matures.
+            </td>
+         </tr>
+      </tbody>
+   </table>
+   </div>
+</section>
+
+<section>
+   <h2><a name="sources"></a>Sources</h2>
+   <ol class="source-list">
+      {% include article-fragments/source-list-titles-and-archives.html
+         list = page.info_sources
+      %}
+   </ol>
+</section>

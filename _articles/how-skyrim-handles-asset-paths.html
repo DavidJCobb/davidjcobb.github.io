@@ -1,0 +1,389 @@
+---
+title: "How Skyrim handles asset file paths"
+tags:
+ - skyrim
+ - modding
+social_media:
+   description: "A brief overview of how The Elder Scrolls V: Skyrim's game engine normalizes asset file paths."
+table_of_contents:
+ - id:    method-1
+   title: Method 1
+ - id:    method-2
+   title: Method 2
+ - id:    method-3
+   title: Method 3
+ - id:    method-4
+   title: Method 4
+ - id:    conclusions
+   title: Conclusions
+---
+<section>
+   <p>
+      <i>The Elder Scrolls V: Skyrim</i>'s 2011 release has multiple functions that normalize asset paths in different and sometimes mutually incompatible ways. This document lists those that I've found.
+   </p>
+   <p>
+      All subroutine offsets provided below are for the most recent version of the 2011 release. All strings are written with C++ string literal syntax with string escapes to avoid ambiguity, i.e. the text "Hello\World" would be listed as <code>"Hello\\World"</code>.
+   </p>
+</section>
+
+<section>
+   <h2><a name="method-1"></a>Method 1</h2>
+   <p>
+      The subroutine at 0x00687F60 has the following signature:
+   </p>
+{% highlight cpp %}
+const char* NormalizeAssetPath(char* path, uint32_t start_from = 0);
+{% endhighlight %}
+   <p>
+      This subroutine modifies the argument string in-place, returning a pointer to the "start from" char. It converts all ASCII letters to uppercase, and converts all slashes to backslashes.
+   </p>
+</section>
+
+<section>
+   <h2><a name="method-2"></a>Method 2</h2>
+   <p>
+      The subroutine at 0x00C70F80 has the following signature:
+   </p>
+{% highlight cpp %}
+void NormalizeAssetPath(
+   char* out,
+   const char* original_path,
+   const char* suffix,
+   bool prepend_data_if_absent
+);
+{% endhighlight %}
+   <p>
+      This subroutine modifies the argument string in-place.
+   </p>
+   <p>
+      The function returns immediately if the path doesn't contain a <code>'.'</code> symbol. Otherwise, the function treats all content at and past the <code>'.'</code> symbol as a file extension, truncating the extension to ten chars.
+   </p>
+   <p>
+      The subroutine then copies the first <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation"><code>MAX_PATH</code></a> (260) bytes' worth of <code>original_path</code> into a stack-allocated buffer. It prepends <code>"Data\\"</code> if the arguments so specify, if the path doesn't already start with <code>"data"</code> (case-insensitive), and if the path is neither absolute nor relative to a drive (i.e. the first character is not a backslash and the second is not a colon). The final path (besides the Data folder) consists of the path up to the last <code>'.'</code>, followed by the <code>suffix</code> argument and then the truncated extension, and is copied to the buffer pointed to by the <code>out</code> argument.
+   </p>
+   <p>
+      Here are examples of the function's output, using <code>"ABC"</code> as the suffix:
+   </p>
+   <div class="table-wrapper primarily-text">
+   <table>
+      <thead>
+         <tr>
+            <th>Input</th>
+            <th>Output</th>
+         </tr>
+      </thead>
+      <tbody>
+         <tr>
+            <td>
+               <code>"textures\\"</code>
+            </td>
+            <td>
+               <code>""</code> (no output if no extension)
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"textures/foo.dds"</code>
+            </td>
+            <td>
+               <code>"Data\\textures/fooABC.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"folder.name\\test123.dds"</code>
+            </td>
+            <td>
+               <code>"Data\\folder.name\\test123ABC.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"folder.name\\subfolder"</code>
+            </td>
+            <td>
+               <code>"Data\\folderABC.name\\subf"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"a.b.c.d.dds"</code>
+            </td>
+            <td>
+               <code>"Data\\a.b.c.dABC.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"C:foo.dds"</code>
+            </td>
+            <td>
+               <code>"C:fooABC.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"/foo.dds"</code>
+            </td>
+            <td>
+               <code>"/fooABC.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"DataStarTrek\\foo.dds"</code>
+            </td>
+            <td>
+               <code>"DataStarTrek\\fooABC.dds"</code>
+            </td>
+         </tr>
+      </tbody>
+   </table>
+   </div>
+</section>
+
+<section>
+   <h2><a name="method-3"></a>Method 3</h2>
+   <p>
+      The subroutine at 0x00AFDE00 has the following signature:
+   </p>
+{% highlight cpp %}
+void NormalizeArmorAssetPath(
+   char* out,
+   const char* original_path,
+   const char* filename_suffix
+);
+{% endhighlight %}
+   <p>
+      This subroutine is similar to the previously discussed subroutine, but it's specialized for armor mesh paths. If the path contains an underscore, and either has no backslashes or has the last underscore after the last backslash, then the filename will be truncated just before that underscore. This truncation happens after capturing the file extension, which, as with the last subroutine, involves blindly cutting at the last-seen period.
+   </p>
+   <p>
+      This fits with what I've dug up when reverse-engineering the code which applies ArmorAddons to actors' 3D models. The game assumes that the model filenames (not including the extensions) will end with <code>"_0"</code> or <code>"_1"</code>; the suffix argument here likely exists in order to be able to choose from one of those as desired, regardless of which of the two possible names is specified in a form's paths.
+   </p>
+   <p>
+      Here are examples of the function's output, using <code>"ABC"</code> as the suffix:
+   </p>
+   <div class="table-wrapper primarily-text">
+   <table>
+      <thead>
+         <tr>
+            <th>Input</th>
+            <th>Output</th>
+         </tr>
+      </thead>
+      <tbody>
+         <tr>
+            <td>
+               <code>"textures\\"</code>
+            </td>
+            <td>
+               <code>""</code> (no output if no extension)
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"textures/foo.dds"</code>
+            </td>
+            <td>
+               <code>"DATA\\textures\\fooABC.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"archmagebootssm_0.nif"</code>
+            </td>
+            <td>
+               <code>"DATA\\archmagebootssmABC.nif"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"abc_def\\ghi.nif"</code>
+            </td>
+            <td>
+               <code>"DATA\\abc_def\\ghiABC.nif"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"abc_def/ghi.nif"</code>
+            </td>
+            <td>
+               <code>"DATA\\abcABC.nif"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"abc_def_0.nif"</code>
+            </td>
+            <td>
+               <code>"abc_defABC.nif"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"folder.name\\test_0.nif"</code>
+            </td>
+            <td>
+               <code>"DATA\\folder.name\\testABC.nif"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"folder.name\\subfolder"</code>
+            </td>
+            <td>
+               <code>"DATA\\folderABC.name\\subf"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"C:foo.dds"</code>
+            </td>
+            <td>
+               <code>"C:fooABC.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"/foo.dds"</code>
+            </td>
+            <td>
+               <code>"/fooABC.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"DataStarTrek\\foo.dds"</code>
+            </td>
+            <td>
+               <code>"DataStarTrek\\fooABC.dds"</code>
+            </td>
+         </tr>
+      </tbody>
+   </table>
+   </div>
+</section>
+
+<section>
+   <h2><a name="method-4"></a>Method 4</h2>
+   <p>
+      The subroutine at 0x00A5A7F0 has the following signature:
+   </p>
+{% highlight cpp %}
+const char* MakePathRelativeToDataDirectory(const char* path);
+{% endhighlight %}
+   <p>
+      This subroutine conditionally advances the input pointer and returns it. It'll skip a leading slash, if there is one, and then attempt to skip the Data directory including the slash. It only matches <code>"Data\\"</code> and <code>"data\\"</code> while failing to catch any other cases.
+   </p>
+   <p>
+      Here are examples of the function's output:
+   </p>
+   <div class="table-wrapper primarily-text">
+   <table>
+      <thead>
+         <tr>
+            <th>Input</th>
+            <th>Output</th>
+         </tr>
+      </thead>
+      <tbody>
+         <tr>
+            <td>
+               <code>"\\abc.dds"</code>
+            </td>
+            <td>
+               <code>"abc.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"Data\\abc.dds"</code>
+            </td>
+            <td>
+               <code>"abc.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"data\\abc.dds"</code>
+            </td>
+            <td>
+               <code>"abc.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"\\Data\\abc.dds"</code>
+            </td>
+            <td>
+               <code>"abc.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"dATA\\abc.dds"</code>
+            </td>
+            <td>
+               <code>"dATA\\abc.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"datA\\abc.dds"</code>
+            </td>
+            <td>
+               <code>"datA\\abc.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"/abc.dds"</code>
+            </td>
+            <td>
+               <code>"/abc.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"data/abc.dds"</code>
+            </td>
+            <td>
+               <code>"data/abc.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"\\data/abc.dds"</code>
+            </td>
+            <td>
+               <code>"data/abc.dds"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"C:\\abc.dds"</code>
+            </td>
+            <td>
+               <code>"C:\\abc.dds"</code>
+            </td>
+         </tr>
+      </tbody>
+   </table>
+   </div>
+</section>
+
+<section>
+   <h2><a name="conclusions"></a>Conclusions</h2>
+   <p>
+      This behavior is quite uneven; the specifics of path normalization will depend on what game system is even performing the lookup. However, we can come up with a few rules:
+   </p>
+   <ul>
+      <li>Use backslashes as path separators when loading and saving paths.</li>
+      <li>Don't allow periods inside of folder names.</li>
+      <li>If a path contains the Data directory, it must always be rendered as <code>"Data"</code> or <code>"data"</code>, and never with any other letter case.</li>
+      <li>The name of the first folder in a path should never be allowed to start with <code>"data"</code> as a case-insensitive prefix; for example, <code>"dataaaa/"</code> is unsafe, as the game may properly fail to prefix it with <code>"Data/"</code> when necessary.</li>
+      <li>The Data directory is optional in some cases, and may be added if missing. This implies that the path <code>"Data/Data/foo.dds"</code> may in some cases be encoded as <code>"Data/foo.dds"</code>, and may in turn end up resolving to <code>"Data/foo.dds"</code>; double Data directories, then, are unsafe.</li>
+      <li>NIF filenames for ArmorAddon meshes should only be allowed to contain any underscores if they also end in <code>"_0"</code> or <code>"_1"</code>; underscores without that suffix can be truncated and will produce improper results.</li>
+   </ul>
+</section>

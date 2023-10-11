@@ -266,6 +266,11 @@ p{margin:1em 0}
          color:#666;
       }
    }
+   
+   :is(table.primarily-text, .table-wrapper.primarily-text>table) :is(td, th) {
+      vertical-align: top;
+   }
+   
    .table-wrapper {
       max-width:  100%;
       overflow-x: auto;
@@ -274,7 +279,34 @@ p{margin:1em 0}
       >table {
          width: max-content;
          max-width: 150vw; /* or else cols word-wrap to the computed widths of headers' contents (width on TH can't enlarge) */
-         margin: 0;
+         margin: 0 auto;
+      }
+      
+      &.primarily-text>table {
+         width: auto;
+         
+         @include for-smartphones-only-portrait {
+         /*
+            This is a hack. What we want is to detect when the text size is at a given 
+            proportion relative to the width of the body area (which is always 960px), 
+            and allow the table to expand and overflow (with scrolling) when the text 
+            is large relative to the page it's on; this will generally occur on mobile 
+            browsers, but could occur on other types of devices as well.
+            
+            Media queries can't really achieve that; we can check the width of the 
+            screen (which won't match the body area for desktop user agents with the 
+            window narrowed) and we can compare it to sizes in pixels or ems (but we 
+            can't compare those pixel and em sizes *to each other*).
+            
+            The solution, then, is to give up and just toss these styles at every 
+            smartphone in portrait orientation.
+         */
+         
+            width: max-content;
+            col.body-text {
+               width: 40em;
+            }
+         }
       }
       
       @include for-smartphones-only {

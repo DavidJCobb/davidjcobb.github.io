@@ -34,6 +34,89 @@ mark {
    }
 }
 
+dl {}
+dt {
+   font-weight: bold;
+}
+dd + dt {
+   margin-top: 1em;
+}
+dd {
+   line-height: 1.5em;
+   text-align: justify;
+}
+
+.cite-ref,
+.footnote {
+   font-size: .8em;
+   line-height: 1em;
+   vertical-align: super;
+}
+.source-list {
+   >li {
+      >a {
+         font-weight: bold;
+      }
+      .archives {
+         font-size: .85em;
+         
+         ul {
+            display: inline-block;
+            list-style: none;
+            padding: 0;
+            margin:  0;
+         }
+         li {
+            display: inline-block;
+            padding: 0;
+            margin:  0;
+         }
+      }
+   }
+}
+:is(.source-list, .footnotes) {
+   padding-left: 2.5em;
+   
+   >li {
+      $vertical-spacing: 1em;
+      
+      padding: $vertical-spacing 1em $vertical-spacing 1em;
+      margin:  0;
+      
+      &::marker {
+         content: "[" counter(list-item) "] ";
+         font-weight: bold;
+      }
+      &:target {
+         animation: jump-to-footnote 3s ease-in 1;
+      }
+      
+      /* If we nullify the padding, then the animated yellow background seen 
+         when linking directly to this list item will be too short. Instead, 
+         pull everything else closer: eat into the margins of the heading 
+         above this list, and into the padding of the containing card below 
+         this list. */
+      &:first-child {
+         margin-top: -$vertical-spacing;
+      }
+      &:last-child {
+         margin-bottom: -$vertical-spacing;
+      }
+      &:not(:first-child) {
+         border-top:1px solid #CCC;
+      }
+   }
+}
+
+/* yellow fade when jumping to a footnote or source */
+@keyframes jump-to-footnote {
+   0% {
+      background:rgba(255, 255, 128, 0.5);
+      box-shadow:0 0 6px 6px rgba(255, 255, 128, 0.5);
+   }
+   100% { background:transparent }
+}
+
 lu-math {
    &:not([data-inline]) {
       /*

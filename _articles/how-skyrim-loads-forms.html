@@ -1,0 +1,174 @@
+---
+title: "How Skyrim loads forms"
+tags:
+ - skyrim
+ - modding
+social_media:
+   description: "An overview of how The Elder Scrolls V: Skyrim's game engine loads individual pieces of game data, called \"forms.\""
+table_of_contents:
+ - id:    in-brief
+   title: The load process in brief
+ - id:    verifying-the-rule-of-one
+   title: Verifying the Rule of One
+ - id:    footnotes
+   title: Footnotes
+---
+<section>
+   <p>
+      In <i>The Elder Scrolls V: Skyrim</i> and Bethesda's other core RPGs, each piece of game data is a "form" with a unique numeric "form ID." Forms are encoded into a file as "records" and "subrecords," each identified with a <a href="https://en.wikipedia.org/wiki/FourCC" target="_blank">FourCC</a>. If a file includes a record with the same form ID as a record in one of the file's dependencies, then this new record "overrides" the old one. This gives rise to the "Rule of One," a principle which describes how data conflicts are handled by the game engine.
+   </p>
+   <p>
+      Here's a basic example of the Rule of One. Say you want to make a mod that changes the name of the item "Apple" to "Red Apple." You go to the Creation Kit and you make that change. What actually gets encoded into your file is a full copy of the original record, but with a changed name: you can't simply change the name of an item, but rather must replace all of the item's data with a near-exact duplicate, identical save for the name. What happens, then, if another mod wants to change the price of an apple? Well, that mod, too, will embed a near-exact duplicate of the original apple definition. These two mods will conflict: each one is trying to wholly replace the entire definition of an apple, and only one of them can "win." In practice, the mod that loads last is the mod that will win: you can get a "Red Apple" or a differently-priced "Apple," but you won't get a differently-priced "Red Apple."
+   </p>
+   <p>
+      Sounds pretty straightforward, then, right? Because of the Rule of One, only one definition of a form can be loaded,  which means a form can be edited by at most one file before conflicts occur. Except it isn't <em>quite</em> so simple.
+   </p>
+</section>
+
+<section>
+   <h2><a name="in-brief"></a>The load process in brief</h2>
+   <p>
+      This information is based on my old reverse-engineering efforts for <i>Skyrim</i>'s 2011 release. The remaster may have additional behavior.
+   </p>
+   <p>
+      Upon encountering a record, the game checks to see if a form is already loaded into memory with that record's form ID (which would be the case if the record were an override). If so, then the game does a quick sanity check to make sure that the existing form and the new record are of the same type. If they aren't (e.g. a WEAP overriding a VTYP), then the form fails to load. (There is one exception: ARMO and ARMA are allowed to override each other.<span class="footnote">[<a href="#footnote-armo-arma">1</a>]</span>)
+   </p>
+   <p>Next up: the game handles "partial" forms, treating overrides and new forms differnelty.</p>
+   <p>
+      If the form is already loaded, then the game checks if it's a "parent" form, i.e. if it's allowed to "contain" other forms (as in the case of: CELLs, which contain REFRs; WRLDs, which contain CELLs; or DIALs, which contain INFOs; note that despite how things are laid out in the Creation Kit's UI, QUSTs don't actually contain DIALs). The game then checks if the record is "partial." A parent form's record is "partial" if it has the "partial" flag, or if the file is being loaded with the <code>HotLoadPlugin</code> console command and the form is neither a cell nor a worldspace. If the record is "partial," then the game does a special "partial" load and then stops all further processing: the record is at this point fully loaded.
+   </p>
+   <p>
+      (The purpose of "partial" loads is to help with source control: the Creation Kit has integrated support for Perforce. One author can modify, say, a REFR,  without including a "false" edit of the parent CELL that might conflict with another author's changes to that CELL; child form edits don't cause Rule of One conflicts with the parent form when the "partial" flag is used.)
+   </p>
+   <p>
+      If the form <em>doesn't</em> already exist in memory (i.e. if this record isn't an override), then the game checks if the record is flagged as "partial." If so, then the game's response differs depending on what file the form is expected to originate from based on its form ID (in Skyrim Classic, this is done via a test of the form ID's load prefix). If the form should originate from the file that the game is currently loading, then the "partial" flag is  simply stripped off and ignored; otherwise, the record is skipped.
+   </p>
+   <p>
+      Once the "partial" flag is dealt with, we get to the bulk of form handling.
+   </p>
+   <p>
+      If the form already exists in memory (i.e. this record is an override), and if the record isn't flagged as "deleted," then some special steps (which I haven't decoded) are taken if the form is a quest or object-reference. Regardless of the form's type, it will then be asked to clear all of its data. <em>This</em> is the origin of the Rule of One: it's not the result of the game only using the last-loaded record for any form ID, but rather a deliberate design decision on Bethesda's part, and crucially, it's a design decision to which they can make exceptions: any data that they don't go out of their way to clear will, in effect, be coalesced across every file that defines a given form.
+   </p>
+   <p>
+      That's an important point, so let me restate it: data will be exempt from the Rule of One in every case where Bethesda does not consciously apply the rule. Known examples include various Location (LCTN) subrecords that serve as lists of ObjectReferences in a given Location.
+   </p>
+   <p>
+      (It should also be noted that after an already-existing form is asked to clear its data, it will then be asked to "initialize" its data. It seems that the "clear" function just destroys pointed-to objects owned by the form, while the other "initialize" function sets all of the form's members to their defaults, zeroing pointers to owned resources redundantly.)
+   </p>
+   <p>
+      If, on the other hand, the form doesn't already exist in memory, then the game will create a new form in-memory as  appropriate. I say "as appropriate" because there are several special cases that are handled here, such as the loading of GMST records and the loading of the TES4/ONAM subrecord.<span class="footnote">[<a href="#footnote-special-cases">2</a>]</span>
+   </p>
+</section>
+
+<section>
+   <h2><a name="verifying-the-rule-of-one"></a>Verifying the Rule of One</h2>
+   <p>
+      In practice, in order to know whether a given piece of data in a form type does or does not obey the Rule of One, a reverse-engineer must check at least four places:
+   </p>
+   <ul>
+      <li><code>void TESForm::ClearAllComponentData()</code>, at offset 0x00450D00 in <i>Skyrim</i> 2011.</li>
+      <li><code>virtual void TESForm::ClearAllData()</code>, at zero-based index 5 in the v-table.</li>
+      <li><code>virtual void TESForm::InitializeData()</code>, at zero-based index 4 in the v-table.</li>
+      <li><code>virtual bool TESForm::Load(TESFile*)</code>, at zero-based index 6 in the v-table.</li>
+   </ul>
+   <p>
+      For parent forms, a reverse-engineer must also check one more location in code: 
+   </p>
+   <ul>
+      <li><code>virtual bool TESForm::LoadPartial(TESFile*)</code>, at zero-based index 7 in the v-table.</li>
+   </ul>
+   <p>
+      Some forms may load only some of their data at startup, loading the rest during play. For example, INFO only loads response data on-demand during play, and so the TRDT, LNAM, NAM1, and SNAM subrecords are not retrieved by  <code>TESForm::LoadForm</code> but rather by <code>TESTopicInfo::LoadResponseDataAtRunTime</code> (at offset 0x0057D7D0 in <i>Skyrim</i> 2011). Functions like these must obtain a pointer to the last file that supplied a record for the form in question; in <i>Skyrim</i> 2011, they do so by calling the subroutine at 0x004515B0.
+   </p>
+   <p>
+      The internal form class, <code>TESForm</code>, uses multiple inheritance in order to supply properties like a full name (<code>TESFullName</code>) or a description (<code>TESDescription</code>) &mdash; a typical case of abusing inheritance in order to get composition with dynamic dispatch. SKSE class definitions list these parent classes as members in order to ensure consistent struct layouts with the game, though the fields are usually marked with a comment indicating that they're actually parents, not members. You can safely assume that these fields will have their data cleared when a form is overridden (presuming the override lacks the "deleted" flag). Clearing them is the purpose of <code>TESForm::ClearAllComponentData</code>.<span class="footnote">[<a href="#footnote-TESForm_ClearAllComponentData">2</a>]</span>
+   </p>
+   <p>
+      Papyrus data is also cleared off of overridden forms (again, presuming that the override lacks the "deleted" flag).  The form loader communicates directly with the Papyrus VM; the form itself isn't responsible for clearing Papyrus state in this situation.
+   </p>
+   <p>
+      The function that coordinates all of the above is, in <i>Skyrim</i> 2011, located at offset 0x004401B0.
+   </p>
+</section>
+
+<section>
+   <h2><a name="footnotes"></a>Footnotes</h2>
+   <ol class="source-list">
+      <li id="footnote-armo-arma">
+         <p>
+            This is likely a leftover behavior from <i>Fallout 3</i>, where one of these form types was just a more advanced version of the other. ElminsterAU, the author of <a href="http://tes5edit.github.io/" target="_blank">xEdit</a>, has speculated that this may specifically be a <a href="https://geckwiki.com/index.php/Main_Page">GECK</a> leftover intended to help Bethesda convert forms from one type to the other. The Creation Kit is a modified build of the game itself, and each game is based on the previous game's engine; when quirks like this exist in the editor, one can reasonably expect them to also appear in the game, and vice versa. ARMO and ARMA have obviously diverged significantly from each other since <i>Fallout 3</i>, and the data is not likely to still be compatible.
+         </p>
+      </li>
+      <li id="footnote-special-cases">
+         <p>
+            The following records are known to be defined and handled as special cases in <i>Skyrim</i>'s 2011 release:
+         </p>
+         <dl>
+            <dt>AVIF (actor value info)</dt>
+               <dd>If the form already exists, then data is loaded. New forms of this type are never created; all instances are hardcoded.</dd>
+            <dt>CELL (cell)</dt>
+               <dd>
+                  <p>The cell is created in memory and its data is loaded as normal. If the cell is an exterior and isn't an override, then additional processing will connect it to its worldspace as appropriate:</p>
+                  <ul>
+                     <li>If it's the first persistent-flagged cell to load in that worldspace, then it will be set as the worldspace's persistent cell.</li>
+                     <li>If it isn't set as the worldspace's persistent cell, and if the worldspace already has a cell in  the same grid coordinates, then the new cell form will be deleted. The record will be loaded by the existing cell, effectively overriding that cell instead.</li>
+                     <li>Otherwise, the new cell is inserted into the worldspace as expected.</li>
+                  </ul>
+                  <p>A pointer to the appropriate cell is retained, and used to keep track of what cell any child records should be associated with.</p>
+               </dd>
+            <dt>CPTH (camera path)</dt>
+            <dt>IDLE (idle)</dt>
+               <dd>Instances of the forms are created in memory, and the appropriate form loader (<code>TESForm::LoadForm</code> override) is called. It's a different <code>case</code> in the form-type switch-case, but behavior is in practice the same as pretty much all other forms.</dd>
+            <dt>DIAL (dialogue topic)</dt>
+               <dd>The form is loaded as normal, and then additional functions (which I have not yet decoded) are called on the file object, with the loaded form passed as an argument.</dd>
+            <dt>DOBJ (default object manager)</dt>
+               <dd>This is a <dfn>singleton form</dfn>: the game stores its default object list in a singleton that is a subclass of <code>TESForm</code>. The game calls the appropriate form loader (<code>TESForm::LoadForm</code> override) on the singleton.</dd>
+            <dt>DLVW (dialogue view)</dt>
+               <dd>The game aborts form loading here and therefore never loads these.</dd>
+            <dt>GMST (game setting)</dt>
+               <dd>
+                  <p>
+                     These aren't actually forms.
+                  </p>
+                  <p>
+                     The game checks for an EDID subrecord and immediately skips the rest of the record if one isn't found. Otherwise, the editor ID and the rest of the record body is passed to the <code>GameSettingCollection</code> singleton. The game doesn't create an in-memory form for game settings, which means that GMSTs always run the special-case load behavior.
+                  </p>
+                  <p>
+                     In short, a GMST can have any form ID so long as it doesn't override a non-GMST form; GMSTs with invalid form IDs will still load, as will GMSTs within the same file that share the same form ID. As of October 2020, no tools are known to exploit this, and xEdit is known not to support it. A new editor could exploit this engine quirk to conserve form IDs within ESL files, but default behaviors that conflict with other tools would be unwise.
+                  </p>
+               </dd>
+            <dt>INFO (dialogue topic info)</dt>
+               <dd>The form is loaded as normal. A pointer to it is retained for use when opening TOFT records<span class="footnote">[<a href="#footnote-toft">4</a>]</span>.</dd>
+            <dt>LAND (heightmapped landscape)</dt>
+               <dd>An instance is created, and some tasks (which I have not decoded) are performed using the instance       and its parent cell. Then, the game calls the appropriate form loader (<code>TESForm::LoadForm</code> override) for the landscape.</dt>
+            <dt>NAVI (navmesh info map)</dt>
+               <dd>Like DOBJ, this is a singleton form: the game will only ever create a single <code>NavMeshInfoMap</code> instance, retained within the <code>TES</code> singleton; if an instance already exists, then it will be reused. The appropriate form loader (<code>TESForm::LoadForm</code> override) will be called.</dd>
+            <dt>NAVM (navmesh)</dt>
+               <dd>Instances of the forms are created in memory, and the appropriate form loader (<code>TESForm::LoadForm</code> override) is called. After that, the parent cell is retrieved, and special functionality (which I have not decoded) is used to integrate the navmesh into the cell.</dd>
+            <dt>REFR and subclasses (object-reference)</dt>
+               <dd>
+                  <p>
+                     A reference is created and given a reference handle. The appropriate form loader (<code>TESForm::LoadForm</code> override) is called, and then the game makes up to two consecutive attempts to give the reference a new handle. The game then performs various bookkeeping tasks, including: checking whether the reference's parent cell is persistent and if so, setting the ref's "persistent cell" extra-data; checking whether the reference is an <code>Actor</code> and if so, forcibly removing its  reference handle from in-memory AI lists (most likely to ensure that it doesn't get stuck in the low- or middle-process lists); and flagging the reference as persistent at run-time if the file that defines it isn't a master.
+                  </p>
+               </dd>
+            <dt>TES4 (file header)</dt>
+               <dd>The game loads and processes the ONAM subrecord, if present.</dd>
+            <dt>WRLD (worldspace)</dt>
+               <dd>The game loads the form as normal, with the sole exception that it stores a pointer to the newly-loaded worldspace whether or not the worldspace loader returns true. The pointer is used to keep track of what worldspace any child records should be associated with; the CELL behavior above, for example, uses this worldspace pointer to identify the cell's containing worldspace.</dd>
+         </dl>
+      </li>
+      <li id="footnote-TESForm_ClearAllComponentData">
+         <p>
+            <code>TESForm::ClearAllComponentData</code> works as follows. First, it creates a list of thirty-eight null pointers &mdash; one for every one of the game's form component classes. Then, it calls a function which  dynamic-casts the form to each such component class, storing the resulting pointers. Once the list is filled, it gets looped over: for each non-null pointer, virtual member function 0x02 is called; this clears data on the individual form component. Each of these three steps &mdash; creating the list and filling it with null; storing dynamic-casted pointers into the list; and looping over it &mdash; is performed by separate non-member functions which <code>TESForm::ClearAllComponentData</code> calls. These are the penultimate three calls made; the last call, after them, is a no-op, presumably the destructor for the component pointer list. As such, in order to determine whether a form type's components are cleared, one must check the second of the last four function calls made in <code>ClearAllComponentData</code> to see if that component is the subject of a dynamic cast; if so, one must then check the component class's virtual member function 0x02.
+         </p>
+      </li>
+      <li id="footnote-toft">
+         <p>
+            Records with the signature TOFT are exempt from the process described above and in fact don't define forms at all. There's a form type value for TOFT, but it doesn't correspond to any <code>TESForm</code> subclass (which is somewhat normal; form type constants also exist for file structure elements like the file header and GRUPs).
+         </p>
+         <p>
+            In a TOFT record, the space normally used for a form ID is instead used to hold a file offset. If the offset in question isn't equal to -1 (0xFFFFFFFF) or -2 (0xFFFFFFFE), then it will be supplied to the last-loaded topic info (INFO), worldspace (WRLD), or interior cell (CELL with appropriate flag) that came from the current GRUP.  The exact significance of this file offset is unknown, and TOFT records have never been seen in the wild in any Bethesda RPG.
+         </p>
+      </li>
+   </ol>
+</section>

@@ -1,0 +1,6 @@
+{%- for source in include.list -%}
+   {%- if source.id == include.id -%}
+      <span class="cite-ref">[<a href="#source-{{source.id}}">{{forloop.index}}</a>]</span>
+      {%- break -%}
+   {%- endif -%}
+{%- endfor -%}

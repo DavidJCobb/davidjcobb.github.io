@@ -35,16 +35,20 @@
 
 @function str-replace($string, $substring, $target) {
    $i: str-index($string, $substring);
-   @while $i != null {
-      $head: str-slice($string, 0, $i);
-      $tail: str-slice($string, $i + str-length($substring));
-      
-      $substring: str-insert($head, $target, -1);
-      $substring: str-insert($substring, $tail, -1);
-   
-      $i: str-index($string, $substring);
+   @if $i == null {
+      @return $string;
    }
-   @return $substring;
+   
+   $ssize: str-length($substring);
+   
+   $out: str-slice($string, 1, $i - 1);
+   @while $i != null {
+      $out:    $out + $target;
+      $string: str-slice($string, $i + $ssize);
+      $i:      str-index($string, $substring);
+   }
+   $out: $out + $string;
+   @return $out;
 }
 
 @function text-shadows-for-outline($color) {
