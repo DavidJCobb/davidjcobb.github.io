@@ -56,10 +56,10 @@ void NormalizeAssetPath(
       This subroutine modifies the argument string in-place.
    </p>
    <p>
-      The function returns immediately if the path doesn't contain a <code>'.'</code> symbol. Otherwise, the function treats all content at and past the <code>'.'</code> symbol as a file extension, truncating the extension to ten chars.
+      The function returns immediately if the path doesn't contain a <code>'.'</code> symbol. Otherwise, the function treats all content at and past the <code>'.'</code> symbol as a file extension, copying it into a ten-byte buffer. The copy operation uses <code>strcpy_s</code>, and so fails if the file extension (including the leading <code>'.'</code> and a null terminator) appears to be longer than the buffer can hold. AFAIK a failure here would result in file extensions longer than eight letters being cleared, unless Bethesda <a href="https://learn.microsoft.com/en-us/cpp/c-runtime-library/parameter-validation" target="_blank">changed the CRT's invalid parameter handler</a>.
    </p>
    <p>
-      The subroutine then copies the first <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation"><code>MAX_PATH</code></a> (260) bytes' worth of <code>original_path</code> into a stack-allocated buffer. It prepends <code>"Data\\"</code> if the arguments so specify, if the path doesn't already start with <code>"data"</code> (case-insensitive), and if the path is neither absolute nor relative to a drive (i.e. the first character is not a backslash and the second is not a colon). The final path (besides the Data folder) consists of the path up to the last <code>'.'</code>, followed by the <code>suffix</code> argument and then the truncated extension, and is copied to the buffer pointed to by the <code>out</code> argument.
+      The subroutine then copies the first <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation"><code>MAX_PATH</code></a> (260) bytes' worth of <code>original_path</code> into a stack-allocated buffer, again using <code>strcpy_s</code>, so excessively long paths will fail, too. It prepends <code>"Data\\"</code> if the arguments so specify, if the path doesn't already start with <code>"data"</code> (case-insensitive), and if the path is neither absolute nor relative to a drive (i.e. the first character is not a backslash and the second is not a colon). The final path (besides the Data folder) consists of the path up to the last <code>'.'</code>, followed by the <code>suffix</code> argument and then the truncated extension, and is copied to the buffer pointed to by the <code>out</code> argument.
    </p>
    <p>
       Here are examples of the function's output, using <code>"ABC"</code> as the suffix:
@@ -99,10 +99,26 @@ void NormalizeAssetPath(
          </tr>
          <tr>
             <td>
+               <code>"folder.name\\hi"</code>
+            </td>
+            <td>
+               <code>"Data\\folderABC.name\\hi"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
                <code>"folder.name\\subfolder"</code>
             </td>
             <td>
-               <code>"Data\\folderABC.name\\subf"</code>
+               <code>"Data\\folderABC"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <code>"textures/foo.abcdefghijklmnop"</code>
+            </td>
+            <td>
+               <code>"Data\\textures/fooABC"</code>
             </td>
          </tr>
          <tr>
@@ -155,7 +171,10 @@ void NormalizeArmorAssetPath(
 );
 {% endhighlight %}
    <p>
-      This subroutine is similar to the previously discussed subroutine, but it's specialized for armor mesh paths. If the path contains an underscore, and either has no backslashes or has the last underscore after the last backslash, then the filename will be truncated just before that underscore. This truncation happens after capturing the file extension, which, as with the last subroutine, involves blindly cutting at the last-seen period.
+      This subroutine is similar to the previously discussed subroutine, but it's specialized for armor mesh paths.
+   </p>
+   <p>
+      As with the previous subroutine, this one does nothing if the path doesn't contain a <code>'.'</code>. The last <code>'.'</code> glyph indicates the file extension, which is retained if it's fewer than ten chars or discarded otherwise. The path before the file extension is copied into a buffer that is <code>MAX_PATH</code> bytes long, and then <code>"DATA\\"</code> &mdash; caps, this time, and it's not optional &mdash; gets prepended. Where this function diverges from the other is in its handling of underscores. If the path contains an underscore, and either has no backslashes or has the last underscore after the last backslash, then the filename will be truncated just before that underscore. This truncation happens after capturing the file extension, which, as with the last subroutine, involves blindly cutting at the last-seen period.
    </p>
    <p>
       This fits with what I've dug up when reverse-engineering the code which applies ArmorAddons to actors' 3D models. The game assumes that the model filenames (not including the extensions) will end with <code>"_0"</code> or <code>"_1"</code>; the suffix argument here likely exists in order to be able to choose from one of those as desired, regardless of which of the two possible names is specified in a form's paths.
@@ -217,7 +236,7 @@ void NormalizeArmorAssetPath(
                <code>"abc_def_0.nif"</code>
             </td>
             <td>
-               <code>"abc_defABC.nif"</code>
+               <code>"DATA\\abc_defABC.nif"</code>
             </td>
          </tr>
          <tr>
@@ -230,10 +249,18 @@ void NormalizeArmorAssetPath(
          </tr>
          <tr>
             <td>
+               <code>"folder.name\\hi"</code>
+            </td>
+            <td>
+               <code>"Data\\folderABC.name\\hi"</code>
+            </td>
+         </tr>
+         <tr>
+            <td>
                <code>"folder.name\\subfolder"</code>
             </td>
             <td>
-               <code>"DATA\\folderABC.name\\subf"</code>
+               <code>"Data\\folderABC"</code>
             </td>
          </tr>
          <tr>
@@ -381,9 +408,11 @@ const char* MakePathRelativeToDataDirectory(const char* path);
    <ul>
       <li>Use backslashes as path separators when loading and saving paths.</li>
       <li>Don't allow periods inside of folder names.</li>
+      <li>In general, don't allow paths that are longer than 254 characters (<code>MAX_PATH</code>, or 260, minus 1 for a null terminator and 5 for a Data-directory prefix).</li>
       <li>If a path contains the Data directory, it must always be rendered as <code>"Data"</code> or <code>"data"</code>, and never with any other letter case.</li>
       <li>The name of the first folder in a path should never be allowed to start with <code>"data"</code> as a case-insensitive prefix; for example, <code>"dataaaa/"</code> is unsafe, as the game may properly fail to prefix it with <code>"Data/"</code> when necessary.</li>
       <li>The Data directory is optional in some cases, and may be added if missing. This implies that the path <code>"Data/Data/foo.dds"</code> may in some cases be encoded as <code>"Data/foo.dds"</code>, and may in turn end up resolving to <code>"Data/foo.dds"</code>; double Data directories, then, are unsafe.</li>
       <li>NIF filenames for ArmorAddon meshes should only be allowed to contain any underscores if they also end in <code>"_0"</code> or <code>"_1"</code>; underscores without that suffix can be truncated and will produce improper results.</li>
+      <li>If a NIF filename for an ArmorAddon mesh does not already contain a <code>"_0"</code> or <code>"_1"</code> suffix, then the file path shouldn't be allowed to be longer than 252 characters (<code>MAX_PATH</code>, or 260, minus 1 for a null terminator, minus 5 for a Data-directory prefix, and minus 2 for the missing weight suffix).</li>
    </ul>
 </section>
