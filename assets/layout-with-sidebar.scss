@@ -248,7 +248,8 @@ body>footer {
          font-weight:bold;
       }
    }
-   
+}
+#site-nav {
    li:nth-last-of-type(2)>a {
       border-radius:.5em .5em 0 0; /* flatten bottom edge of item before "View All," to match drawn border */
    }

@@ -83,6 +83,12 @@ lu-math{
    line-height:$lu-math-line-height * 100%;
    hyphens: none;
    
+   /* HACK; probably shouldn't be using LI for binomial coefficient parts */
+   li {
+      line-height: inherit;
+      text-align: inherit;
+   }
+   
    &[data-inline] {
       display:inline;
       margin:initial;

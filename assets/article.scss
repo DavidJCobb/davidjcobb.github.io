@@ -4,7 +4,8 @@
 @import "utils";
 @import "theme-mixins";
 
-main p {
+main p,
+main li {
    text-align:justify;
    
    /* override line height */
