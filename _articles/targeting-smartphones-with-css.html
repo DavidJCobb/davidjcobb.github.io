@@ -47,7 +47,7 @@ table_of_contents:
 <section>
    <h2><a name="css-dpi"></a>Browsers lie about DPI</h2>
    <p>
-      The CSS standard definition of a "pixel" is somewhat counterintuivie &mdash; a pile-up of historical compromises and assumptions with a result that isn't entirely optimal today. The standard mandates fixed relationships between all length units, physical and digital, and assumes a DPI of 96 in order to allow this; ergo <code>96px</code> is equivalent to <code>1in</code> regardless of the actual properties of the device displaying the page. Devices which support CSS are allowed to implement these fixed relationships in one of two ways, choosing at their discretion:
+      The CSS standard definition of a "pixel" is somewhat counterintuitive &mdash; a pile-up of historical compromises and assumptions with a result that isn't entirely optimal today. The standard mandates fixed relationships between all length units, physical and digital, and assumes a DPI of 96 in order to allow this; ergo <code>96px</code> is equivalent to <code>1in</code> regardless of the actual properties of the device displaying the page. Devices which support CSS are allowed to implement these fixed relationships in one of two ways, choosing at their discretion:
    </p>
    <ul>
       <li>Map <code>1px</code> to a single device pixel, thereby making all physical units (e.g. <code>1in</code>) inaccurate for DPIs other than 96. This implies a need for the device to lie to pages and JavaScript about the DPI, screen size, and similar, in order to maintain the 96 DPI conversion factor.</li>

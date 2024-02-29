@@ -349,6 +349,7 @@ $topbar-height: calc(#{$topbar-padding * 2} + #{$topbar-logo-size});
 
 $social-icon-size:64px;
 @include for-smartphones-only-portrait {
+   /* MUST NOT use em, ch, etc.; can use rem and friends though. */
    $social-icon-size:1.7rem;
 }
 
@@ -398,12 +399,29 @@ body {
          display:block;
          font-size:$social-icon-size;
          margin:0;
+         /*
          @include content-card-shadow(false);
+         */
          background-color:#FFF;
          background-position:center center;
          border-radius:50%;
          padding:.2em;
       }
+      
+      /*
+         Kiwi/Chromium mobile is failing to apply the box-shadow to all pseudo-elements 
+         matching the selector. Don't even ask me why; I have no idea. We'll apply the 
+         needed styles to the closest real element instead. Everything works fine on 
+         desktop (including when emulating smartphones) and in Firefox.
+         
+         What a stupid bug.
+         
+         [2/29/2024]
+      */
+      width:  calc($social-icon-size * 1.4); /* calc to emulate padding on the pseudo-element */
+      height: calc($social-icon-size * 1.4);
+      border-radius:50%;
+      @include content-card-shadow(false);
    }
 }
 

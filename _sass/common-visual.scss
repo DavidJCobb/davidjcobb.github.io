@@ -74,7 +74,9 @@ p{margin:1em 0}
       
       overflow-x:auto;
       
-      padding:1rem 1.5rem;
+      $pre-vertical-padding: 1rem;
+      
+      padding:$pre-vertical-padding 1.5rem;
       margin:1em 0;
       line-height:1.2em;
       
@@ -157,7 +159,7 @@ p{margin:1em 0}
          box-shadow: none;
          border:1px solid transparent; /* crbug.com/1417526 */
          border-image: url("./inset-shadow-pre.svg") #{$slice-top} #{$slice-side} #{$slice-bottom} fill / #{$show-top} #{$show-side} #{$show-bottom} / 0;
-         min-height:calc(#{$show-min-height} - 2px);
+         min-height:calc(#{$show-min-height} - 2px - #{2 * $pre-vertical-padding});
          
          /* Ruby Sass doesn't support newer techniques, is unmaintained, and therefore never will */
          /*@supports selector(::-webkit-scrollbar) {*/
