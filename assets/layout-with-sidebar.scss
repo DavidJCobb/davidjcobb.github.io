@@ -418,8 +418,8 @@ body {
          
          [2/29/2024]
       */
-      width:  calc($social-icon-size * 1.4); /* calc to emulate padding on the pseudo-element */
-      height: calc($social-icon-size * 1.4);
+      width:  $social-icon-size * 1.4; /* calc to emulate padding on the pseudo-element */
+      height: $social-icon-size * 1.4;
       border-radius:50%;
       @include content-card-shadow(false);
    }
