@@ -100,7 +100,7 @@ table_of_contents:
          On platforms where <code>meta viewport</code> is used (including platforms which use <code>meta viewport</code> behavior with some default width, e.g. 960 or 980, when the tag is omitted), the <code>width</code> option controls how many CSS pixels map to <code>100vw</code>. By implication, <code>1px</code> on these platforms never maps directly to one device pixel.
       </li>
       <li>
-         On Google Chrome, at the very least, setting <code>width=device-width</code> means that <code>160px</code> is equivalent to one physical inch, and <code>100vw</code> is equivalent to the full width of the screen, assuming the page doesn't overflow. That choice of DPI violates of the CSS spec, but the behavior overall at least keeps to the <em>spirit</em> of the spec, anchoring digital units to physical ones as would be done for print media.
+         On Google Chrome, at the very least, setting <code>width=device-width</code> means that <code>160px</code> is equivalent to one physical inch, and <code>100vw</code> is equivalent to the full width of the screen, assuming the page doesn't overflow. That choice of DPI violates the CSS spec, but the behavior overall at least keeps to the <em>spirit</em> of the spec, anchoring digital units to physical ones as would be done for print media.
       </li>
       <li>
          Setting <code>width</code> to any other value means that there's no longer any mapping between any CSS unit and any real-world unit: nothing is anchored to anything; the measurement system is completely unmoored from reality. This is a violation of the CSS spec. It's also the default behavior in pretty much every mobile browser, since again, most of them default the viewport width to 960 or 980.
