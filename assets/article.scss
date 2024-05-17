@@ -363,7 +363,9 @@ section>aside {
    @include content-card-cutout;
 }
 figure.card-cutout>.wrap {
-   @extend %content-card;
+   @extend  %content-card;
+   @include content-card-shadow-mobile-optimization;
+   
    width:min-content;
    margin:0 auto;
 }

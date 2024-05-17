@@ -109,6 +109,20 @@ $theme-scanline-background-layer: (
       }
    }
 }
+@mixin content-card-shadow-mobile-optimization {
+   /*
+      has to be separate because the border-image trick will clobber any background image,
+      which causes problems for e.g. the site nav on mobile
+      
+      also, for non-inset shadows only
+      
+      will incur more resource downloading so currently not used
+   */
+   @include for-smartphones-only {
+      box-shadow: none;
+      border-image: url("./card-shadow-outset.png") 144 144 164 144 / 4.5em 4.5em 5.125em 4.5em / 0.375em 2.25em 4.125em 2.25em repeat;
+   }
+}
 $content-card-shadow-max-size:36px;
 
 @mixin content-card {
@@ -153,4 +167,20 @@ $content-card-shadow-max-size:36px;
    }
    
    background: unpack-backgrounds($all-backgrounds), $theme-background-color;
+   
+   @include for-smartphones-only {
+      background: fixed linear-gradient(
+         to bottom,
+         #4d567f,
+         #636b8f 5%,
+         #6d7496 10%,
+         #797e9c 20%,
+         #9594a6 40%,
+         #a7a1ad 50%,
+         #af9da4 60%,
+         #d2a08f 80%,
+         #ca9585 90%,
+         #b97c6c 100%
+      ), $theme-background-color;
+   }
 }
