@@ -1,0 +1,10 @@
+@import "polyfills/math-div.scss";
+
+@function degrees-to-radians($angle) {
+   @if unit($angle) == "deg" {
+      $angle: math-div($angle, 1deg);
+   }
+   $angle: math-div($angle, 180);
+   $angle: $angle * 3.1415926536;
+   @return $angle;
+}

@@ -3,6 +3,7 @@
 
 @import "utils";
 @import "theme-mixins";
+@import "widgets/different-wording-for-the-blind.scss";
 
 main p,
 main li {
@@ -293,7 +294,7 @@ lu-math {
    mark {
       &::before,
       &::after {
-         @include screen-reader;
+         @include screen-reader-only;
       }
       &::after {
          content: "[mark end]";

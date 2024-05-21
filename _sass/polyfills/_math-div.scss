@@ -1,0 +1,13 @@
+@import "./remove-unit.scss";
+
+@function math-div($a, $b) {
+   $unit-a: $a * 0 + 1;
+   $unit-b: $b * 0 + 1;
+   
+   $a: remove-unit($a);
+   $b: remove-unit($b);
+   
+   $result: $a / $b;
+   $result: $result * $unit-a / $unit-b;
+   @return $result;
+}

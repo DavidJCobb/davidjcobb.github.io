@@ -1,0 +1,156 @@
+
+@import "fonts";
+@import "utils/for-smartphones-only.mixin.scss";
+
+/* start include guard */
+$include-guard-element-pre: false !default;
+@if not $include-guard-element-pre {
+   $include-guard-element-pre: true;
+
+$code-block-back-color: #F8F8F8;
+/*
+   NOTE: Overridden on mobile, when we drop back to a border-image instead of several 
+   box-shadows. No way to make that configurable; see explanation at the relevant code.
+*/
+
+pre {
+   font-family: $theme-code-font-family;
+   border-radius:1rem;
+   
+   /*background:$code-block-back-color;*/
+   /*@include content-card-shadow(true);*/
+   
+   overflow-x:auto;
+   
+   $pre-vertical-padding: 1rem;
+   
+   padding:$pre-vertical-padding 1.5rem;
+   margin:1em 0;
+   line-height:1.2em;
+   
+   /*
+      below: a disgusting hack, to work around the fact that inset box-shadows are 
+      covered by an element's horizontal scrollbar rather than being moved above 
+      them.
+      
+      we use linear gradients to mimic the effect of an inset box-shadow on the 
+      element's bottom edge; this handles the case of a horizontal scrollbar being 
+      present.
+      
+      when a horizontal scrollbar is not present, then we want our normal box-shadows 
+      (since they adapt to border-radius), so we use two sets of box-shadows: the 
+      normal one; and a set of white shadows, to cancel out the effect of the linear 
+      gradient backgrounds. (otherwise, both the box-shadows and backgrounds would 
+      cover the same spot, resulting in a doubly dark shadow.)
+   */
+   
+   $shadow-alphas: 0.05, 0.05, 0.06, 0.06, 0.07, 0.07, 0.08;
+   $shadow-begins:    0,  5px,  6px,  8px, 10px, 20px, 30px;
+   $shadow-blurs:   4px,  6px,  8px, 10px, 12px, 24px, 36px;
+   
+   $sha-bg-layers: ();
+   $shadow-layers: ();
+   $negate-layers: ();
+   $shadow-inset:  true;
+   @for $i from 1 through length($shadow-alphas) {
+      $s: 0%;
+      $a: nth($shadow-alphas, $i);
+      $y: nth($shadow-begins, $i);
+      $l: nth($shadow-blurs,  $i);
+      
+      $shadow-layers: append($shadow-layers, unquote("inset 0 #{$y} #{$l} rgba(0, 0, 0, #{$a})"), comma);
+      $negate-layers: append($shadow-layers, unquote("inset 0 -#{$y} #{$l} rgba(255, 255, 255, #{$a})"), comma);
+      
+      $proceed: true;
+      @if $y > $l {
+         $proceed: false;
+      }
+      $a: $a * remove-unit($y / remove-unit($y + $l));
+      $l: #{$l - $y};
+      $y: 0;
+   
+      @if $proceed {
+         $sha-bg-layers: append($sha-bg-layers, unquote("local bottom center linear-gradient(to top, rgba(0,0,0,#{$a}) 0, transparent #{$l})"), comma);
+         $l: $l + 1px;
+      }
+   }
+   
+   box-shadow: join($shadow-layers, $negate-layers);
+   background: $sha-bg-layers, $code-block-back-color;
+   
+   @include for-smartphones-only {
+      /*
+         Having too many box-shadows on-screen at one time can cause lag for weaker devices, 
+         such as smartphones. The box shadows above are especially bad, so we'll drop them 
+         back on weaker devices.
+      */
+      
+      background: transparent none;
+      /*
+         Ordinarily, we'd use #F4F4F4 here -- a slightly darker shade, to account for the 
+         fact that the border-image doesn't reach as far as the box-shadows. However, due 
+         to crbug.com/1426649, we cannot have both a border-image and a background on a 
+         scrollable element that uses the white-space property. Our solution is to encode 
+         the background color directly into the border-image and use the `fill` specifier.
+      */
+      
+      $slice-top:    37;
+      $slice-side:   27;
+      $slice-bottom: 16;
+      
+      $show-top:    $slice-top    * 0.0625 * 1rem;
+      $show-side:   $slice-side   * 0.0625 * 1rem;
+      $show-bottom: $slice-bottom * 0.0625 * 1rem;
+      
+      $show-min-height: $show-top + $show-bottom;
+      
+      box-shadow: none;
+      border:1px solid transparent; /* crbug.com/1417526 */
+      border-image: url("./inset-shadow-pre.svg") #{$slice-top} #{$slice-side} #{$slice-bottom} fill / #{$show-top} #{$show-side} #{$show-bottom} / 0;
+      min-height:calc(#{$show-min-height} - 2px - #{2 * $pre-vertical-padding});
+      
+      /* Ruby Sass doesn't support newer techniques, is unmaintained, and therefore never will */
+      /*@supports selector(::-webkit-scrollbar) {*/
+         $scrollbar-inset: 1.1rem; /* = border radius of the PRE plus a little extra */
+         
+         &::-webkit-scrollbar,
+         &::-webkit-scrollbar-track {
+            height: $mobile-styled-scrollbar-thickness + $mobile-styled-scrollbar-margin * 2;
+         }
+
+         &::-webkit-scrollbar-track {
+            margin:0 $scrollbar-inset;
+            background: rgba(0, 0, 0, 0.1);
+            @include webkit-scrollbar-rounding-and-margin($mobile-styled-scrollbar-margin);
+         }
+
+         &::-webkit-scrollbar-thumb {
+            @include webkit-scrollbar-rounding-and-margin($mobile-styled-scrollbar-margin);
+            background: rgba(0, 0, 0, 0.5);
+         }
+      /*}*/
+   }
+}
+figure.highlight { /* generated by Jekyll/Rouge syntax highlighting */
+   display:contents;
+}
+@include for-firefox-only {
+   .highlight>pre>code {
+      /*
+         in Firefox only, horizontal scrolling completely nullifies padding-right unless 
+         the sole child is inline-block. apparently Firefox botched this way back in the 
+         Neolithic era, so until they and the CSSWG finish cleaning up the mess, we have 
+         to do this hack. lucky for us, the Rouge syntax highlighter automatically wraps 
+         all content in both a FIGURE.highlight, a PRE, and a CODE,  so we actually have 
+         an element we can use.
+         
+            https://github.com/w3c/csswg-drafts/issues/129
+            https://bugzilla.mozilla.org/show_bug.cgi?id=1700858
+      */
+      display:inline-block;
+      padding-right:inherit;
+   }
+}
+
+/* end include guard */
+}

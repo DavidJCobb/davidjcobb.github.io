@@ -1,0 +1,180 @@
+
+@import "theme-config/scrollbars.scss";
+@import "utils/for-smartphones-only.mixin.scss";
+@import "utils/table-border-collapse.mixin.scss";
+
+/* start include guard */
+$include-guard-element-tables: false !default;
+@if not $include-guard-element-tables {
+   $include-guard-element-tables: true;
+
+///
+///   Default styles for table elements. Tables should be wrapped in a `div.table-wrapper` 
+///   element, in order to allow us to properly apply overflow for the purposes of making 
+///   large tables scrollable on mobile without breaking the layout.
+///
+///   The following selectors are defined as customization points:
+///
+///
+///      .table-wrapper.primarily-text
+///
+///         Optimizes the table's width, in narrow viewports such as smartphones, for 
+///         prose content.
+///
+///
+///      table.no-default-styles
+///
+///         Prevents any of these styles from applying.
+///
+///
+///      td.deemphasize
+///
+///         Visually de-emphasizes a table cell, i.e. with a faded text color.
+///
+///
+///      td[data-type="number"]
+///
+///         Formats a table cell as if its contents were numeric, e.g. by right-aligning 
+///         its contents.
+///
+///
+///      table.fade-zeroes
+///
+///         Applies the effect of `td.deemphasize` to any `td` element with the following 
+///         attributes:
+///
+///          - data-type  = "number"
+///          - data-value = "0"
+///
+///
+table:not(.no-default-styles) {
+   margin:1rem auto;
+   
+   border:1px solid #000;
+   border-radius:1em;
+   @include table-border-collapse(
+      $radius: 1em,
+      $separate-cells-from-tables: false,
+      $override-cell-table-border: 1px solid #444
+   );
+   background:#777;
+   padding:3px;
+   
+   th, td {
+      border:1px solid #DDD;
+      padding:.25em .75em;
+   }
+   th {
+      border:1px solid #666;
+      background:#FF7400;
+      font-weight: bold;
+   }
+   
+   /// Shade every other row.
+   tbody>tr {
+      /*
+         We can't apply the background color to the TR directly, as in Firefox, that will 
+         break a table's border-radius  if we use $separate-cells-from-tables above.  The 
+         problem is that the  TR isn't rounded,  so it protrudes in  front of the table's 
+         background.
+      */
+      >:is(td, th) {
+         background:#FFF;
+      }
+      
+      &:nth-of-type(2n+1) {
+         >:is(td, th) {
+            background:#F8F8F8;
+         }
+         
+         td {
+            border-left-color:#CCC;
+            border-right-color:#CCC;
+         }
+      }
+   }
+   
+   td[data-type=number] {
+      text-align:right;
+   }
+   
+   >tbody>tr>th:first-child:last-of-type {
+      vertical-align:top;
+      background:#444;
+      color:#ECE7E0;
+   }
+   
+   &.fade-zeroes td[data-type="number"][data-value="0"],
+   td.deemphasize {
+      color:#666;
+   }
+}
+
+:is(table.primarily-text, .table-wrapper.primarily-text>table) :is(td, th) {
+   vertical-align: top;
+}
+
+.table-wrapper {
+   max-width:  100%;
+   overflow-x: auto;
+   margin:1rem 0;
+   
+   >table {
+      width: max-content;
+      max-width: 150vw; /* or else cols word-wrap to the computed widths of headers' contents (width on TH can't enlarge) */
+      margin: 0 auto;
+   }
+   
+   &.primarily-text>table {
+      width: auto;
+      
+      @include for-smartphones-only-portrait {
+      /*
+         This is a hack. What we want is to detect when the text size is at a given 
+         proportion relative to the width of the body area (which is always 960px), 
+         and allow the table to expand and overflow (with scrolling) when the text 
+         is large relative to the page it's on; this will generally occur on mobile 
+         browsers, but could occur on other types of devices as well.
+         
+         Media queries can't really achieve that; we can check the width of the 
+         screen (which won't match the body area for desktop user agents with the 
+         window narrowed) and we can compare it to sizes in pixels or ems (but we 
+         can't compare those pixel and em sizes *to each other*).
+         
+         The solution, then, is to give up and just toss these styles at every 
+         smartphone in portrait orientation.
+      */
+      
+         width: max-content;
+         col.body-text {
+            width: 40em;
+         }
+      }
+   }
+   
+   @include for-smartphones-only {
+      padding-bottom: .4rem;
+   
+      &::-webkit-scrollbar,
+      &::-webkit-scrollbar-track {
+         //height: $mobile-styled-scrollbar-thickness + $mobile-styled-scrollbar-margin * 2;
+         height: $mobile-styled-scrollbar-thickness;
+      }
+
+      &::-webkit-scrollbar-track {
+         //margin:0 0;
+         background: rgba(0, 0, 0, 0.1);
+         border-radius: 5rem;
+         //@include webkit-scrollbar-rounding-and-margin($mobile-styled-scrollbar-margin);
+      }
+
+      &::-webkit-scrollbar-thumb {
+         //@include webkit-scrollbar-rounding-and-margin($mobile-styled-scrollbar-margin);
+         background: rgba(0, 0, 0, 0.5);
+         border-radius: 5rem;
+      }
+   }
+}
+
+/* end include guard */
+}

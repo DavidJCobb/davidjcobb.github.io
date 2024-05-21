@@ -1,0 +1,14 @@
+@function str-ends-with($haystack, $prefix) {
+   $prefix-length:   str-length($prefix);
+   $haystack-length: str-length($haystack);
+   
+   @if $haystack-length < $prefix-length {
+      @return false;
+   }
+   
+   $slice: str-slice($haystack, $haystack-length - $prefix-length);
+   @if $slice == $prefix {
+      @return true;
+   }
+   @return false;
+}

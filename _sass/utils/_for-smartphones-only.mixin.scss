@@ -1,0 +1,21 @@
+///
+///   styles for smartphones. there's no good query for these, so we have 
+///   to go with:
+///   
+///    - device has a screen
+///    - device does not have a pointer that can "hover" over things
+///    - maximum aspect ratio ensures we only affect portrait orientation
+///    
+///
+@mixin for-smartphones-only {
+   @media only screen and (any-hover: none) and (pointer: coarse),
+          only screen and (any-hover: none) and (pointer: none) {
+      @content;
+   }
+}
+@mixin for-smartphones-only-portrait {
+   @media only screen and (any-hover: none) and (pointer: coarse) and (max-aspect-ratio:3/5),
+          only screen and (any-hover: none) and (pointer: none)   and (max-aspect-ratio:3/5) {
+      @content;
+   }
+}

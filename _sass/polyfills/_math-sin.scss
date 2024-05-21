@@ -1,0 +1,26 @@
+@import "polyfills/math-div.scss";
+@import "utils/math-functions/degrees-to-radians.scss";
+@import "utils/math-functions/factorial.scss";
+
+@function math-sin($angle) {
+   @if unit($angle) == "deg" {
+      $angle: degrees-to-radians($angle);
+   }
+
+   $sign:   -1;
+   $result: $angle;
+   
+   $numer: $angle;
+   $denom: 1;
+   $i: 1;
+   @while $i <= 10 {
+      $numer: $numer * $angle * $angle;
+      $denom: $denom * factorial_to(2 * $i + 1, 2 * ($i - 1) + 1);
+      
+      $result: $result + math-div($sign * $numer, $denom);
+      
+      $i:    $i + 1;
+      $sign: $sign * -1;
+   }
+   @return $result;
+}

@@ -1,0 +1,45 @@
+
+@import "utils/for-smartphones-only.mixin.scss";
+@import "utils/list-prepend.function.scss";
+@import "utils/unpack-backgrounds.function.scss";
+
+///
+///   theme-background
+///
+///      Generates the CSS fore the page background. You should define 
+///      a few variables before calling this:
+///
+///       - $theme-gradient-background-layers
+///       - $theme-scanline-background-layer
+///       - $theme-background-color
+///
+@mixin theme-background($include-gradients: true, $include-scanlines: true) {
+   $all-backgrounds: ();
+
+   // Pull gradients:
+   $all-backgrounds: $theme-gradient-background-layers;
+   
+   // Pull scanlines:
+   @include scanline-bg-params;
+   $all-backgrounds: list-prepend($all-backgrounds, $theme-scanline-background-layer);
+   
+   // Apply:
+   
+   background: unpack-backgrounds($all-backgrounds), $theme-background-color;
+   
+   @include for-smartphones-only {
+      background: fixed linear-gradient(
+         to bottom,
+         #4d567f,
+         #636b8f 5%,
+         #6d7496 10%,
+         #797e9c 20%,
+         #9594a6 40%,
+         #a7a1ad 50%,
+         #af9da4 60%,
+         #d2a08f 80%,
+         #ca9585 90%,
+         #b97c6c 100%
+      ), $theme-background-color;
+   }
+}

@@ -1,0 +1,64 @@
+
+@import "polyfills/map-set.scss";
+
+///
+///   unpack-backgrounds
+///
+///      Given a list of background layer definitions, this function unpacks them so they 
+///      can be written directly into the value of a `background` property.
+///
+@function unpack-backgrounds($list) {
+   $result: ();
+   
+   $properties-defaults: (
+      "attach":   "scroll",
+      "position": "left top",
+      "repeat":   "repeat",
+      "size":     "auto",
+   );
+   
+   $properties-present: ();
+   @each $key, $default in $properties-defaults {
+      $properties-present: map-set($properties-present, $key, false);
+   }
+   @each $item in $list {
+      @each $key, $default in $properties-defaults {
+         @if map-has-key($item, $key) {
+            $properties-present: map-set($properties-present, $key, true);
+            /*
+               Background-size cannot be specified in bulk without background-position.
+            */
+            @if $key == "size" {
+               $properties-present: map-set($properties-present, "position", true);
+            }
+         }
+      }
+   }
+   
+   @each $item in $list {
+      $entry: "";
+      @if map-has-key($item, "attach") {
+         $entry: $entry + " " + map-get($item, "attach");
+      }
+      
+      @if map-has-key($item, "position") {
+         $entry: $entry + " " + map-get($item, "position");
+         @if map-has-key($item, "size") {
+            $entry: $entry + "/" + map-get($item, "size");
+         }
+      } @else if map-has-key($item, "size") {
+         $entry: $entry + " left top/" + map-get($item, "size");
+      }
+      
+      @if map-has-key($item, "image") {
+         $entry: $entry + " " + map-get($item, "image");
+      }
+      
+      $result: append(
+         $result,
+         unquote($entry),
+         comma
+      );
+   }
+   @return $result;
+}

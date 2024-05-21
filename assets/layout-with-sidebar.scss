@@ -1,15 +1,15 @@
 ---
 ---
 
-$cobb-enable-code-styles: true;
-$cobb-enable-syntax-highlighting-styles: true;
-$cobb-enable-table-styles: true;
 {% if jekyll.environment == "development" %}
    $cobb-display-error-sentinels-for-blind: true;
 {% endif %}
 
 @import "utils";
 @import "common-visual.scss";
+@import "elements/pre.scss";
+@import "elements/tables.scss";
+@import "syntax-highlighting.scss";
 
 /*
    You need to have imported "common-visual.scss" before this.
@@ -22,7 +22,7 @@ $theme-center-footer-under-full-page: true !default;
 
 #skip-to-content,
 a[name="page-content"] {
-   @include screen-reader;
+   @include screen-reader-only;
 }
 
 /*
@@ -319,14 +319,14 @@ body>footer {
 }
 
 /*
-========================================================================================================================
+=================================================================================
 
    MOBILE STYLES BELOW
    
    These were in a separate file. That worked in my local Jekyll installation, 
    but apparently it makes GitHub Pages choke.
 
-========================================================================================================================
+=================================================================================
 */
 
 @include for-smartphones-only {
@@ -376,7 +376,7 @@ body {
    order:9999; /* move below footer */
    
    background:transparent none;
-   box-shadow:none;
+   @include revert-card-shadow-styles;
    
    text-align:center;
    
@@ -388,23 +388,23 @@ body {
       display:flex;
       flex-flow:row nowrap;
       justify-content:center;
-      gap:$social-icon-size;
+      gap: $social-icon-size;
    }
    a {
       font-size:1px;
       padding:0;
       
       &::before {
-         display:block;
-         font-size:$social-icon-size;
-         margin:0;
+         display:   block;
+         font-size: $social-icon-size;
+         margin:    0;
          /*
          @include content-card-shadow(false);
          */
-         background-color:#FFF;
-         background-position:center center;
-         border-radius:50%;
-         padding:.2em;
+         background-color: #FFF;
+         background-position: center center;
+         border-radius: 50%;
+         padding:       .2em;
       }
       
       /*
@@ -420,7 +420,7 @@ body {
       width:  $social-icon-size * 1.4; /* calc to emulate padding on the pseudo-element */
       height: $social-icon-size * 1.4;
       border-radius:50%;
-      @include content-card-shadow(false);
+      @include content-card-shadow(false, false);
    }
 }
 
@@ -526,12 +526,17 @@ body {
 */
 
 @if $theme-topbar-always-follows-user {
-   #site-chrome,
-   #site-nav>menu {
-      /*
-         Put this here to avoid duplicating these styles *quite* as much...
-      */
+   #site-chrome {
       @include content-card-shadow(false);
+      background:$theme-topbar-back-color;
+   }
+   
+   #site-nav>menu {
+      @include content-card-shadow(
+         false,
+         true,
+         ( top right )
+      );
       background:$theme-topbar-back-color;
    }
    
@@ -558,6 +563,8 @@ body {
    #site-nav {
       order:1;
       flex:1 1 auto;
+      
+      @include revert-card-shadow-styles;
       
       >menu {
          position:absolute;
@@ -603,6 +610,7 @@ body {
    #site-nav {
       position:absolute;
       top:0;
+      @include revert-card-shadow-styles;
    }
    
    #logo {

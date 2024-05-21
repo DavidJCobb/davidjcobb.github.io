@@ -59,7 +59,7 @@ iframe[src^="https://www.youtube.com/"] {
       padding-right:1em; /* margin results in odd and inconsistent indentation when word-wrapping */
    }
    li.screen-reader-only:not(:focus, :focus-within) {
-      @include screen-reader;
+      @include screen-reader-only;
    }
    
    a {

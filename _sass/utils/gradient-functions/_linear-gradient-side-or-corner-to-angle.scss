@@ -1,0 +1,58 @@
+
+@import "utils/str-split.function.scss";
+
+///
+///   linear-gradient-side-or-corner-to-angle
+///
+///      Given a string with a value like "top" or "bottom left", this function 
+///      returns the equivalent CSS angle value in degrees.
+///
+@function linear-gradient-side-or-corner-to-angle($side-or-corner) {
+   $corner: str-split($side-or-corner, " ");
+         
+   $side-x: null;
+   $side-y: null;
+   
+   $j: 1;
+   @while $j <= length($corner) {
+      $sc: nth($corner, $j);
+      @if $sc == "top" {
+         $side-y: -1;
+      } @else if $sc == "bottom" {
+         $side-y: 1;
+      } @else if $sc == "left" {
+         $side-x: -1;
+      } @else if $sc == "right" {
+         $side-x: 1;
+      }
+      $j: $j + 1;
+   }
+   
+   $angle: 0;
+   @if $side-x == null {
+      $angle: 180deg;
+      @if $side-y == -1 {
+         $angle: 0deg;
+      }
+   } @else if $side-y == null {
+      $angle: 90deg;
+      @if $side-x == -1 {
+         $angle: 270deg;
+      }
+   } @else {
+      @if $side-x == -1 {
+         @if $side-y == -1 {
+            $angle: 315deg;
+         } @else {
+            $angle: 225deg;
+         }
+      } @else {
+         @if $side-y == -1 {
+            $angle: 45deg;
+         } @else {
+            $angle: 135deg;
+         }
+      }
+   }
+   @return $angle;
+}

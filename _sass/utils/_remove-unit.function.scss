@@ -1,0 +1,24 @@
+///
+///   remove-unit
+///
+///      Sass can only divide unitless numbers. Use this function to aid with division.
+///
+///      To be specific: at some point in its lifespan, Sass was ported from Ruby to Dart, 
+///      and the Ruby version is abandonware. GitHub Pages runs on Jekyll, which is built 
+///      in Ruby (and is itself abandonware due to the death of its developer).
+///
+///      As of this writing, all versions of Sass support dividing numbers by writing a 
+///      slash between them: $a / $b. However, if those numbers have units, then Sass will 
+///      not perform a division; it will print #{$a} / #{$b}. This is because CSS itself 
+///      uses the slash symbol for its own purposes.
+///
+///      Post-Ruby versions of Sass offer `math.div($a, $b)` as an alternative, but that 
+///      was never backported to Ruby Sass. Even if it had been, Jekyll wouldn't have 
+///      adopted it, for obvious reasons.
+///
+@function remove-unit($number) {
+   @if type-of($number) == "number" and not unitless($number) {
+      @return $number / ($number * 0 + 1);
+   }
+   @return $number;
+}

@@ -1,0 +1,53 @@
+
+@import "utils/screen-reader-only.mixin.scss";
+
+$cobb-display-error-sentinels-for-blind: false !default;
+
+///
+///   different-wording-for-the-blind
+///
+///      A widget allowing us to provide different content to sighted and blind 
+///      users. Useful around visual figures and illustrations.
+///
+///      Usage:
+///
+///         <span class="different-wording-for-the-blind">
+///            <span aria-hidden="true" class="sighted">Sighted only</span>
+///            <span class="blind">Blind only</span>
+///         </span>
+///
+///      When testing the site locally, if you fail to specify content for both 
+///      sighted and blind users, an error will display.
+///
+.different-wording-for-the-blind {
+   &>.sighted {}
+   &>.blind {
+      @include screen-reader-only;
+   }
+   
+   @if $cobb-display-error-sentinels-for-blind {
+      ///
+      /// Error checks:
+      ///
+      &>.sighted:not([aria-hidden=true]) {
+         &::before {
+            content:"BUG: THIS CONTENT SHOULD BE MARKED ARIA-HIDDEN";
+            padding:.25em .5em;
+            display:inline-block;
+            background:red;
+            color:white;
+            font-weight:bold;
+         }
+      }
+      &>.sighted:first-child:last-child {
+         &::after {
+            content:"BUG: NO CONTENT OFFERED FOR SCREEN READERS";
+            padding:.25em .5em;
+            display:inline-block;
+            background:red;
+            color:white;
+            font-weight:bold;
+         }
+      }
+   }
+}

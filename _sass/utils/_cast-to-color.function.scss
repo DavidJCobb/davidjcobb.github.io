@@ -1,0 +1,59 @@
+
+@import "./cast-to-number.scss";
+
+@function cast-to-color($v) {
+   @if type-of($v) == "color" {
+      @return $v;
+   }
+   @if $v == "transparent" {
+      @return adjust-color(
+         #000000,
+         $alpha: -1
+      );
+   }
+   
+   $c: str-slice($v, 1, 1);
+   @if $c == "#" {
+      $octets: ();
+   
+      $v: str-slice($v, 2);
+      
+      $len: str-length($v);
+      
+      @if $len <= 4 {
+         @for $i from 1 through $len {
+            $c: str-slice($v, $i, $i);
+            $c: $c + $c;
+            $c: cast-to-number($c, 16);
+            $octets: append($octets, $c);
+         }
+      } @else {
+         $len: $len / 2;
+         @for $i from 1 through $len {
+            $start: $i * 2 - 1;
+            $c: str-slice($v, $start, $start + 1);
+            $c: cast-to-number($c, 16);
+            $octets: append($octets, $c);
+         }
+      }
+      @if $len < 4 {
+         $octets: append($octets, 1);
+      } @else {
+         $alpha: nth($octets, 4);
+         $alpha: $alpha / 255;
+         $octets: set-nth($octets, 4, $alpha);
+      }
+      
+      $color: #000000;
+      $color: adjust-color(
+         #000000,
+         $red:   nth($octets, 1),
+         $green: nth($octets, 2),
+         $blue:  nth($octets, 3),
+         $alpha: nth($octets, 4) - 1
+      );
+      @return $color;
+   }
+   
+   @return null;
+}

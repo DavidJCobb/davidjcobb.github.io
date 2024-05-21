@@ -1,0 +1,9 @@
+@function wrap-items-in-key($key, $list...) {
+   $result: ();
+   @each $item in $list {
+      $result: append($result, (
+         $key: quote($item)
+      ));
+   }
+   @return $result
+}

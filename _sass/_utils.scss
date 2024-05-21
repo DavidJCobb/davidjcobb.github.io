@@ -1,20 +1,11 @@
 
 // polyfills:
 
-@function map-set($map, $key, $value) {
-   @return map-merge($map, ($key: $value));
-}
+@import "polyfills/map-set.scss";
 
 // near-polyfills:
 
-@function list-prepend($list, $item) {
-   $result: ();
-   $result: append($result, $item);
-   @each $prior in $list {
-      $result: append($result, $prior);
-   }
-   @return $result;
-}
+@import "./utils/_list-prepend.function.scss";
 
 // custom:
 
@@ -26,30 +17,8 @@
    @return $result
 }
 
-@function remove-unit($number) {
-   @if type-of($number) == "number" and not unitless($number) {
-      @return $number / ($number * 0 + 1);
-   }
-   @return $number;
-}
-
-@function str-replace($string, $substring, $target) {
-   $i: str-index($string, $substring);
-   @if $i == null {
-      @return $string;
-   }
-   
-   $ssize: str-length($substring);
-   
-   $out: str-slice($string, 1, $i - 1);
-   @while $i != null {
-      $out:    $out + $target;
-      $string: str-slice($string, $i + $ssize);
-      $i:      str-index($string, $substring);
-   }
-   $out: $out + $string;
-   @return $out;
-}
+@import "./utils/_remove-unit.function.scss";
+@import "./utils/_str-replace.function.scss";
 
 @function text-shadows-for-outline($color) {
    $text-shadows: ();
@@ -67,71 +36,8 @@
    @return $text-shadows;
 }
 
-@function unpack-backgrounds($list) {
-   $result: ();
-   
-   $properties-defaults: (
-      "attach":   "scroll",
-      "position": "left top",
-      "repeat":   "repeat",
-      "size":     "auto",
-   );
-   
-   $properties-present: ();
-   @each $key, $default in $properties-defaults {
-      $properties-present: map-set($properties-present, $key, false);
-   }
-   @each $item in $list {
-      @each $key, $default in $properties-defaults {
-         @if map-has-key($item, $key) {
-            $properties-present: map-set($properties-present, $key, true);
-            /*
-               Background-size cannot be specified in bulk without background-position.
-            */
-            @if $key == "size" {
-               $properties-present: map-set($properties-present, "position", true);
-            }
-         }
-      }
-   }
-   
-   @each $item in $list {
-      $entry: "";
-      @if map-has-key($item, "attach") {
-         $entry: $entry + " " + map-get($item, "attach");
-      }
-      
-      @if map-has-key($item, "position") {
-         $entry: $entry + " " + map-get($item, "position");
-         @if map-has-key($item, "size") {
-            $entry: $entry + "/" + map-get($item, "size");
-         }
-      } @else if map-has-key($item, "size") {
-         $entry: $entry + " left top/" + map-get($item, "size");
-      }
-      
-      @if map-has-key($item, "image") {
-         $entry: $entry + " " + map-get($item, "image");
-      }
-      
-      $result: append(
-         $result,
-         unquote($entry),
-         comma
-      );
-   }
-   @return $result;
-}
-
-@function wrap-items-in-key($key, $list...) {
-   $result: ();
-   @each $item in $list {
-      $result: append($result, (
-         $key: quote($item)
-      ));
-   }
-   @return $result
-}
+@import "./utils/_unpack-backgrounds.function.scss";
+@import "./utils/_wrap-items-in-key.function.scss";
 
 //
 // Mixins
@@ -352,157 +258,7 @@ $font-charset-vietnamese:   "U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169,
    }
 }
 
-/// Use inside of a table.
-@mixin border-collapse(
-   $radius: "unspecified",
-   $separate-cells-from-tables: true,
-   $override-cell-table-border: false
-) {
-   /*
-      The CSS spec says that border-collapse completely nullifies border-radius. Apparently, 
-      CSS 2.1 had spec'd  out a  reasonable behavior, but because browsers  didn't bother to 
-      implement it, the CSSWG just spiked it outright "for interop:"
-      
-         https://github.com/w3c/csswg-drafts/issues/475
-         
-      So now, we need ugly hacks for rounded collapsing borders.
-      
-      As long as we're doing this, we may as well offer a few additional bells and whistles. 
-      You can optionally  decide to have cell  borders collapse against  each other, but not 
-      against the  table. If you also  override the color of shared cell/table  borders, and 
-      add  a padding and background color on  the table, then this has the effect of  giving 
-      the table an outlined border, similar to the 1990s table-outset/cell-inset look.
-   */
-   
-   border-collapse:separate;
-   border-spacing:0;
-   
-   @if $radius != "unspecified" {
-      border-radius: $radius;
-   }
-   
-   >:is(thead, tbody, tfoot),
-   >:is(thead, tbody, tfoot)>tr {
-      @if $radius != "unspecified" and $separate-cells-from-tables == false {
-         /*
-            Account for gaps between cell radius and table radius. NOTE: This only even 
-            works on Firefox on desktop; Chrome has a more pronounced gap. This will also 
-            be dependent on the table border thickness.
-         */
-         border-radius: calc(#{$radius} - 2px);
-      } @else {
-         border-radius: inherit;
-      }
-   }
-   
-   /*
-      NOTE: TR elements placed directly in a TABLE will be wrapped in a TBODY element, per 
-            the HTML spec:
-            
-            https://html.spec.whatwg.org/multipage/syntax.html#element-restrictions
-   */
-   /*
-      Note that we actually can't emulate border-collapse for tables with rowSpan, because 
-      if some row R begins with a rowSpan > 1 cell, rows below R can no longer rely on the 
-      :first-child pseudo-class to identify cells on the left edge of the table.  The rows 
-      below R will have their cells inset by the rowSpan'd cell in R: the first TD/TH node 
-      in these rows will actually represent the cell in the second column.
-      
-      Similar issues exist with the rightmost column.
-      
-      It's tempting to use clip-path to at least prevent row-spanning cells' corners and 
-      backgrounds from poking out of the table, but doing that can cause browsers to clip 
-      out the table's borders due to subpixel rounding errors at certain X-positions and 
-      widths on-screen.
-   */
-   
-   >:is(thead, tbody, tfoot) {
-   
-      /* collapse cell/cell borders, preferring leading cell's bottom border */
-      &>tr+tr,
-      &+:is(thead, tbody, tfoot)>tr {
-         >:is(td, th) {
-            border-top-width:0!important;
-         }
-      }
-      
-      >tr {
-         >:is(td, th) {
-            /* collapse cell/cell borders, preferring leading cell's right border */
-            &+:is(th, td),
-            &.force-is-not-leftmost {
-               border-left-width:0!important;
-            }
-         
-            @if $separate-cells-from-tables {
-               /* collapse table/cell borders, preferring table */
-               &:first-child:not(.force-is-not-leftmost) {
-                  border-left-width:0!important;
-               }
-               &:last-child {
-                  border-right-width:0!important;
-               }
-            } @else if $override-cell-table-border != false {
-               &:first-child:not(.force-is-not-leftmost) {
-                  border-left:$override-cell-table-border!important;
-               }
-               &:last-child {
-                  border-right:$override-cell-table-border!important;
-               }
-            }
-         }
-         
-         /* needed to cope with rowSpan */
-         >:is(th, td).force-is-bottom-row {
-            @if $separate-cells-from-tables {
-               border-bottom-width:0!important; /* collapse table/cell borders, preferring table */
-            } @else if $override-cell-table-border != false {
-               border-bottom:$override-cell-table-border!important;
-            }
-            
-            &:first-child:not(.force-is-not-leftmost) {
-               border-bottom-left-radius:inherit;
-            }
-            &:last-child {
-               border-bottom-right-radius:inherit;
-            }
-         }
-      }
-      
-      &:first-child>tr:first-child {
-         >:is(th, td) {
-            @if $separate-cells-from-tables {
-               border-top-width:0!important; /* collapse table/cell borders, preferring table */
-            } @else if $override-cell-table-border != false {
-               border-top:$override-cell-table-border!important;
-            }
-            
-            &:first-child:not(.force-is-not-leftmost) {
-               border-top-left-radius:inherit;
-            }
-            &:last-child {
-               border-top-right-radius:inherit;
-            }
-         }
-      }
-      &:last-child>tr:last-child {
-         >:is(th, td) {
-            @if $separate-cells-from-tables {
-               border-bottom-width:0!important; /* collapse table/cell borders, preferring table */
-            } @else if $override-cell-table-border != false {
-               border-bottom:$override-cell-table-border!important;
-            }
-            
-            &:first-child:not(.force-is-not-leftmost) {
-               border-bottom-left-radius:inherit;
-            }
-            &:last-child {
-               border-bottom-right-radius:inherit;
-            }
-         }
-      }
-   }
-}
+@import "./utils/_table-border-collapse.mixin.scss";
 
 @mixin for-firefox-only {
    @-moz-document url-prefix() {
@@ -515,32 +271,5 @@ $font-charset-vietnamese:   "U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169,
    }
 }
 
-///
-///   styles for smartphones. there's no good query for these, so we have 
-///   to go with:
-///   
-///    - device has a screen
-///    - device does not have a pointer that can "hover" over things
-///    - maximum aspect ratio ensures we only affect portrait orientation
-///    
-///
-@mixin for-smartphones-only {
-   @media only screen and (any-hover: none) and (pointer: coarse),
-          only screen and (any-hover: none) and (pointer: none) {
-      @content;
-   }
-}
-@mixin for-smartphones-only-portrait {
-   @media only screen and (any-hover: none) and (pointer: coarse) and (max-aspect-ratio:3/5),
-          only screen and (any-hover: none) and (pointer: none)   and (max-aspect-ratio:3/5) {
-      @content;
-   }
-}
-
-@mixin screen-reader {
-   position:absolute;
-   left:-100vw;
-   top:auto;
-   width:1px;
-   height:1px;
-}
+@import "./utils/_for-smartphones-only.mixin.scss";
+@import "./utils/_screen-reader-only.mixin.scss";

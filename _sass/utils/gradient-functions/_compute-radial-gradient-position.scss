@@ -1,0 +1,119 @@
+
+@import "polyfills/math-div.scss";
+@import "utils/cast-to-number.scss";
+
+@function compute-radial-gradient-position(
+   $parsed-gradient,
+   $box
+) {
+   $x: map-get($box, "x");
+   $y: map-get($box, "y");
+   $w: map-get($box, "w");
+   $h: map-get($box, "h");
+   
+   $center: (
+      math-div($w, 2),
+      math-div($h, 2)
+   );
+   @if map-has-key($parsed-gradient, "pos") {
+      $pos: map-get($parsed-gradient, "pos");
+      $i:   1;
+      @for $i through length($pos) {
+         $item: nth($pos, $i);
+         $j:    $i;
+         $v:    $item;
+         @if $item == "center" {
+            $v: $w;
+            @if $i == 2 {
+               $v: $h;
+            }
+            $v: math-div($v, 2);
+         } @else if $item == "top" {
+            $v: 0;
+            $j: 2;
+         } @else if $item == "bottom" {
+            $v: $h;
+            $j: 2;
+         } @else if $item == "left" {
+            $v: 0;
+            $j: 1;
+         } @else if $item == "left" {
+            $v: $w;
+            $j: 1;
+         } @else {
+            $v:    cast-to-number($item);
+            $unit: unit($v);
+            @if $unit == "%" {
+               $v: remove-unit($v) / 100;
+               @if $j == 1 {
+                  $v: $v * $w;
+               } @else {
+                  $v: $v * $h;
+               }
+            }
+            // TODO: handle other units e.g. em, vw
+         }
+         $center: set-nth($center, $j, $v);
+      }
+   }
+   
+   $shape: map-get($parsed-gradient, "shape");
+   $size:  map-get($parsed-gradient, "size");
+   @if type-of($size) == "string" {
+      @if $size == "closest-side" {
+         //
+         // TODO: set $size-x
+         //
+      } @else if $size == "farthest-side" {
+         //
+         // TODO: set $size-x
+         //
+      } @else if $size == "closest-corner" {
+         //
+         // TODO: set $size-x
+         //
+      } @else if $size == "farthest-corner" {
+         //
+         // TODO: set $size-x
+         //
+      }
+      $size-y: $size-x;
+   } @else {
+      $size-x: nth($size, 1);
+      $size-y: nth($size, 2);
+      
+      // TODO
+   }
+   // By here, $size-x and $size-y should be unitless values.
+   
+   // By here, we should have the following:
+   //    $center // list with two unitless numbers as a position to use
+   //    $shape  // "circle" or "ellipse"
+   //    $size-x // unitless number
+   //    $size-y // unitless number
+   
+   $position-offset: (
+      $x - nth($center, 1),
+      $y - nth($center, 2)
+   );
+   $distance-to-center: sqrt-floor(
+      nth($position-offset, 1) * nth($position-offset, 1)
+    + nth($position-offset, 2) * nth($position-offset, 2)
+   );
+   
+   //
+   // To find the offset to render at, we:
+   //
+   //  - Find a new ellipse with the same aspect ratio as our gradient shape, which 
+   //    intersects the point we're sampling the color of.
+   //
+   //  - Find the intersection between the new ellipse, and a line projected rightward 
+   //    from the gradient centerpoint with length $size-x.
+   //3
+   //  - At this point, the math is the same as for linear gradients. The offset is the 
+   //    distance from the gradient center to the ellipse/line intersection, divided by 
+   //    the length of the gradient line (i.e. $size-x).
+   //
+   
+   // TODO
+}

@@ -1,0 +1,38 @@
+@function char-is-space($char) {
+   @if $char == " " or $char == "\a" {
+      @return true;
+   }
+   @return false;
+}
+
+@function str-trim-start($string) {
+   $length: str-length($string);
+   
+   $i: 1;
+   @while $i <= $length {
+      $c: str-slice($string, $i, $i);
+      @if not char-is-space($c) {
+         @return str-slice($string, $i);
+      }
+      $i: $i + 1;
+   }
+   @return "";
+}
+
+@function str-trim-end($string) {
+   $length: str-length($string);
+   
+   $i: $length;
+   @while $i >= 0 {
+      $c: str-slice($string, $i, $i);
+      @if not char-is-space($c) {
+         @return str-slice($string, 1, $i);
+      }
+      $i: $i - 1;
+   }
+   @return "";
+}
+
+@function str-trim($string) {
+   @return str-trim-end(str-trim-start($string));
+}

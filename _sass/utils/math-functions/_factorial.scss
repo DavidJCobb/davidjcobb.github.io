@@ -1,0 +1,20 @@
+@function factorial($n) {
+   $result: 1;
+   $i:      2;
+   @while $i <= $n {
+      $result: $result * $i;
+      $i:      $i + 1;
+   }
+   @return $result;
+}
+
+// factorial(n) == factorial_to(n, s) * factorial(s)
+@function factorial_to($n, $start-from) {
+   $result: 1;
+   $i:      $start-from + 1;
+   @while $i <= $n {
+      $result: $result * $i;
+      $i:      $i + 1;
+   }
+   @return $result;
+}

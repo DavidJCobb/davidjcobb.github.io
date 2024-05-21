@@ -1,0 +1,27 @@
+@import "polyfills/math-div.scss";
+
+@function sqrt-floor($n) {
+   $low: min(1, $n);
+   $hi:  max(1, $n);
+   
+   @while 100 * $low * $low < $n {
+      $low: $low * 10;
+   }
+   @while 0.01 * $hi * $hi > $n {
+      $hi:  $hi * 0.1;
+   }
+   
+   $mid: 0;
+   @for $i from 0 to 100 {
+      $mid: math-div($low + $hi, 2);
+      @if $mid * $mid == $n {
+         @return $mid;
+      }
+      @if $mid * $mid > $n {
+         $hi:  $mid;
+      } @else {
+         $low: $mid;
+      }
+   }
+   @return $mid;
+}

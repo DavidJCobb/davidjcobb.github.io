@@ -1,0 +1,55 @@
+
+@import "utils/unpack-backgrounds.function.scss";
+
+.grand-header {
+   text-align: center;
+   margin:     4rem 0;
+   color:      #FFFFFF;
+   
+   // Overlaying several subtle shadows results in a softer, gentler look:
+   text-shadow:
+       0   0  2px #000000,
+       0   0  3px #000000,
+       2px 0  4px rgba(0, 0, 0, 0.30),
+      -2px 0  4px rgba(0, 0, 0, 0.30),
+       4px 0  6px rgba(0, 0, 0, 0.20),
+      -4px 0  6px rgba(0, 0, 0, 0.20),
+       8px 0  8px rgba(0, 0, 0, 0.15),
+      -8px 0  8px rgba(0, 0, 0, 0.15),
+      12px 0 12px rgba(0, 0, 0, 0.10),
+     -12px 0 12px rgba(0, 0, 0, 0.10);
+   
+   &.no-descenders {
+      line-height: 1.7rem;
+   }
+   
+   code {
+      background:    rgba(255, 255, 255, 0.14);
+      padding:       .3ch calc(.3ch + 3px);
+      margin:        0 -.3ch;
+      border-radius: .5rem;
+      color:         #F4F8FF;
+      
+      position:relative;
+      &::after {
+         content:"";
+         border-radius:inherit;
+         position:absolute;
+         inset:2px;
+         border:3px solid rgba(0, 0, 0, 0.14);
+         user-select:none;
+         pointer-events:none;
+         z-index:-1;
+      }
+   }
+}
+.grand-header-cluster .grand-header {
+   line-height: 1.2em;
+
+   &:not(:last-child) {
+      margin-bottom: 0;
+   }
+   &:not(:first-child) {
+      margin-top: .5rem;
+   }
+}

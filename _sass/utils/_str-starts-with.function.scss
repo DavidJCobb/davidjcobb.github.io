@@ -1,0 +1,13 @@
+@function str-starts-with($haystack, $prefix) {
+   $prefix-length: str-length($prefix);
+   
+   @if str-length($haystack) < $prefix-length {
+      @return false;
+   }
+   
+   $slice: str-slice($haystack, 1, $prefix-length);
+   @if $slice == $prefix {
+      @return true;
+   }
+   @return false;
+}
