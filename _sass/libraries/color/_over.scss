@@ -1,3 +1,8 @@
+///
+///   color-over
+///
+///      Alpha-blends the $foreground color over the $background color.
+///
 @function color-over($foreground, $background) {
    $fg-a: alpha($foreground);
    $bg-a: alpha($background);

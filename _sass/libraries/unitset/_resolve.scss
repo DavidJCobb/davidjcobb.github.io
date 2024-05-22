@@ -3,10 +3,22 @@
 @import "libraries/str/trim.scss";
 @import "polyfills/math-div.scss";
 
+///
+///   unitset-resolve
+///
+///      Member function for `unitset` objects, which can be used to convert 
+///      a number from an arbitrary unit to intrinsic units (i.e. a unitless 
+///      value).
+///
+///      If you specify an $extent, then that value will be what 100% maps to.
+///
+///      If $number has a unit which isn't defined in the unitset, or if its 
+///      unit is "%" and you didn't specify an $extent, then an error will 
+///      occur.
+///
 @function unitset-resolve($self, $number, $extent: null) {
    @if $number == null {
-      @error "null";
-      @return null;
+      @error "cannot resolve a null value";
    }
    
    $unit: null;

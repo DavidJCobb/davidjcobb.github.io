@@ -1,6 +1,44 @@
 
 @import "polyfills/map-set.scss";
 
+///
+///   unitset-new
+///
+///      Static function which constructs a new `unitset` object. Unitsets can 
+///      be used to "resolve" numbers with varying units. To create a unitset, 
+///      pass a map with lowercase unit names as keys and their multipliers into 
+///      intrinsic units as values.
+///
+///      For example: suppose you have a linear gradient of length 30vw, and 
+///      you wish to know that color would be at offset 123px on a 1920x1080px 
+///      screen. You can construct a unitset which maps 1vw to (1920 / 1000), 
+///      and then use the `unitset-resolve` member function to convert numbers 
+///      with the "vw" unit. The resolved offsets can then be used with the 
+///      gradient-related classes to sample the color at that position.
+///
+///      In general, unitsets can be used to map any unit of measurement to an 
+///      arbitrary "intrinsic unit of measurement" whose values are unitless.
+///
+///      Please note that you cannot define the following units:
+///
+///         vmin and friends
+///
+///            Automatically computed if you specify both viewport dimensions.
+///
+///         vmax and friends
+///
+///            Automatically computed if you specify both viewport dimensions.
+///
+///         %
+///
+///            Not stored as part of a unitset. When calling `unitset-resolve`, 
+///            you can optionally pass an "extent" value which will be used to 
+///            resolve percentage values.
+///
+///      Additionally, for units which have a root-relative counterpart, such 
+///      as em and rem, if you only specify one of the pair, then the other 
+///      will be set to equal the specified one.
+///
 @function unitset-new($params: null) {
    @if $params == null {
       $params: (

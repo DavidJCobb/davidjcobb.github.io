@@ -4,6 +4,18 @@
 @import "polyfills/math-cos.scss";
 @import "polyfills/math-sin.scss";
 
+///
+///   gradientbox-get-line
+///
+///      Member function for `gradientbox` objects, which returns the gradient line 
+///      segment as a map with named fields.
+///
+///      All gradients in CSS can be conceptualized as having a straight line which 
+///      points from the start of the gradient to its end. Different gradient types 
+///      determine the color of any given pixel (x, y) in the gradient box based on 
+///      varying relationships to the gradient line -- generally intersections with 
+///      some other line or shape.
+///
 @function gradientbox-get-line($self) {
    $gradient: map-get($self, "gradient");
    $unitset:  map-get($self, "units");
@@ -12,11 +24,31 @@
    $w: map-get($self, "w");
    @if $type == linear {
       $h:     map-get($self, "h");
+      
       $angle: gradient-get-linear-angle($gradient);
+      //
+      // In most systems, 0deg points to the right. In CSS, however, 0deg points 
+      // upward. Thankfully they at least kept it clockwise, so we just have to 
+      // add 90deg to match their conventions.
+      //
       $angle: $angle + 90deg;
+      
       $cos:   math-cos($angle);
       $sin:   math-sin($angle);
       
+      //
+      // NOTE: The spec's equation for the gradient line length is
+      //
+      //    abs(w * sin) + abs(h * cos)
+      //
+      // However, this is because they kept the invariant that sin(90deg) == 1, and 
+      // not the relationship that sin(straight up) == 1; so in the CSS spec, sin is 
+      // the horizontal axis and cos is the vertical. Unhinged.
+      //
+      // Our trig functions are built to the rest of the world's standards, not to 
+      // the CSS WG's standards, so we have to write the formula differently, with 
+      // cos providing the horizontal component and sin, the vertical.
+      //
       $length: abs($w * $cos) + abs($h * $sin);
       @return (
          "x1":     ($w / 2) + $cos * ($length / 2),

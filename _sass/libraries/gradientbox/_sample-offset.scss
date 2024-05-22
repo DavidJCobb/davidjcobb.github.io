@@ -4,7 +4,11 @@
 @import "libraries/unitset/resolve.scss";
 
 ///
-/// $offset should be a number in the range [0, 1]
+///   gradientbox-sample-offset
+///
+///      Member function for `gradientbox` objects: given a <length-percentage>, 
+///      the function returns the appropriate color at that position along the 
+///      gradient line.
 ///
 @function gradientbox-sample-offset($self, $offset) {
    $stops: map-get(map-get($self, "gradient"), "stops");
@@ -38,18 +42,11 @@
          
          $dist: $offset-b - $offset;
          $span: $offset-b - $offset-a;
-         /*
-         $blend: math-div($dist, $span);
-         $blend: $blend * 100%;
-         
-         @return mix(nth($next, 1), nth($here, 1), $blend);
-         */
-         
          
          $dist:  $offset-b - $offset;
          $blend: math-div($dist, $span);
          $blend: $blend * 100%;
-//@debug "<<blend>> #{$blend} between #{nth($here, 1)} and #{nth($next, 1)}";
+         
          @return mix(nth($here, 1), nth($next, 1), $blend);
       }
    }

@@ -1,4 +1,13 @@
 
+///
+///   gradient-get-linear-angle
+///
+///      Member function for `gradient` objects which, if called on a linear 
+///      gradient, returns the gradient's angle; side-or-corner values like 
+///      "bottom left" are converted to CSS angles.
+///
+///      If the gradient is not a linear gradient, then an error will occur.
+///
 @function gradient-get-linear-angle($self) {
    @if map-get($self, "type") != linear {
       @error "only linear gradients have a linear angle";

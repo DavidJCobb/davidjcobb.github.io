@@ -5,6 +5,14 @@
 @import "libraries/unitset/new.scss";
 @import "libraries/unitset/resolve.scss";
 
+///
+///   gradientbox-new
+///
+///      Static function which constructs a new `gradientbox` object, given a 
+///      parsed gradient (see `gradient-parse`), a box size, and a unitset. 
+///      Once you have a `gradientbox`, you can use it to sample pixel colors 
+///      at varying positions.
+///
 @function gradientbox-new($gradient, $width, $height, $unitset: null) {
    $RADIAL-EXTENTS: (
       "closest-corner",

@@ -1,6 +1,22 @@
 
 // based on:
 // https://kittygiraudel.com/2014/01/15/casting-a-string-to-a-number-in-sass/
+
+///
+///   cast-to-number
+///
+///      Converts the input `$string` to a numeric value, if possible.
+///
+///      If `$allow-potential-units` is `true`, then parsing stops at the first 
+///      non-numeric character; otherwise, parsing fails at any non-numeric 
+///      character.
+///
+///      Accepts minus signs at the start of the string. Does not trim the 
+///      string or otherwise ignore whitespace.
+///
+///      Optionally allows you to specify the numeric base. Bases higher than 
+///      16 are not supported.
+///
 @function cast-to-number($string, $base: 10, $allow-potential-units: true) {
    @if type-of($string) == "number" {
       @return $string;

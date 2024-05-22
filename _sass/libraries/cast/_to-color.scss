@@ -1,6 +1,13 @@
 
 @import "./to-number.scss";
 
+///
+///   cast-to-color
+///
+///      Converts a stringified color to a color-type value. Currently only 
+///      understands hex colors and the `transparent` keyword. Returns null 
+///      on failure.
+///
 @function cast-to-color($v) {
    @if type-of($v) == "color" {
       @return $v;

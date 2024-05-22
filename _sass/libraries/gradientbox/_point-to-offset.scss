@@ -4,6 +4,19 @@
 @import "libraries/gradientbox/get-line.scss";
 @import "libraries/unitset/resolve.scss";
 
+///
+///   gradientbox-point-to-offset
+///
+///      Member function for `gradientbox` objects, which, given an (x, y) position, 
+///      returns the corresponding gradient offset. This offset can be compared to 
+///      the positions of the gradient's color stops, to allow you to smaple the 
+///      gradient via the `gradientbox-sample-offset` member function.
+///
+///      The offset is generally going to be in intrinsic units unless you specify 
+///      that it should be normalized to the range [0, 1]. Even in the latter case, 
+///      offsets that would be past the gradient's start or end points may result in 
+///      values less than zero or greater than 1.
+///
 @function gradientbox-point-to-offset($self, $x, $y, $in-zero-to-one-range: false) {
    $gradient: map-get($self, "gradient");
    $unitset:  map-get($self, "units");

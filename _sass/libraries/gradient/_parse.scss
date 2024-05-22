@@ -8,6 +8,55 @@
 @import "libraries/str/trim.scss";
 @import "polyfills/map-set.scss";
 
+///
+///   gradient-parse
+///
+///      Static function which parses a string and constructs a new `gradient` 
+///      object. This object will have, at minimum, a `type` key and a `stops` 
+///      key. Additional keys depend on the gradient type.
+///
+///      Keys for linear gradients:
+///
+///         angle
+///
+///            Optional. If present, represents whatever number was given for 
+///            the gradient's angle. The value is cast to a number and retains 
+///            whatever unit it had originally. No further processing is done, 
+///            i.e. we here keep to CSS's convention of 0deg pointing up rather 
+///            than right.
+///
+///         side-or-corner
+///
+///            Optional. If present, represents the side or corner for the 
+///            gradient's end (i.e. "bottom left" given "to bottom left, ...").
+///
+///      Keys for radial gradients:
+///
+///         shape
+///
+///            Either "circle" or "ellipse".
+///
+///         size
+///
+///            Either a <radial-extent> string constant, or a list of the two 
+///            values given for the gradient's size. (If only one value is 
+///            given, then it is duplicated within the list.) In the latter 
+///            case, the values remain stringified; use `cast-to-number` or 
+///            `unitset-resolve` to deal with them further.
+///
+///         center
+///
+///            Optional. If the gradient specified a centerpoint, then this 
+///            will be a list of two values. The values may be keywords e.g. 
+///            "top" and "left", or they may be stringified numbers; in the 
+///            latter case, use `cast-to-number` or `unitset-resolve` to 
+///            deal with them further.
+///
+///      To work with a gradient further, e.g. sampling the color shown at a 
+///      given position or offset along the gradient line, you will need to 
+///      construct a `gradientbox` object that wraps the gradient, and then 
+///      query that object; see `gradientbox-new`.
+///
 @function gradient-parse($src) {
    $RADIAL-EXTENTS: (
       "closest-corner",

@@ -13,8 +13,7 @@
 ///      uses the slash symbol for its own purposes.
 ///
 ///      Post-Ruby versions of Sass offer `math.div($a, $b)` as an alternative, but that 
-///      was never backported to Ruby Sass. Even if it had been, Jekyll wouldn't have 
-///      adopted it, for obvious reasons.
+///      was never backported to Ruby Sass.
 ///
 @function remove-unit($number) {
    @if type-of($number) == "number" and not unitless($number) {
