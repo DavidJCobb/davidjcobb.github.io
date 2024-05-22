@@ -97,3 +97,8 @@
    
    @return $str;
 }
+
+@function borderimage-total-display-thickness-h($self) {
+   $displayed: map-get($self, "displayed");
+   @return nth($displayed, 1) + nth($displayed, 3);
+}

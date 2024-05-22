@@ -30,7 +30,12 @@ $card-corner-size: 1rem;
    border: 1px solid transparent;
    
    @if $inset {
+      /*
       border-image: url("./card-shadow-inset.svg") 41 29 17 / 2.5625rem 1.8125rem 1.0625rem / 0;
+      min-height:calc(3.625em - 2px);
+      */
+      
+      border-image: url("./card-shadow-inset.png") 82 58 34 / 2.5625rem 1.8125rem 1.0625rem / 0;
       min-height:calc(3.625em - 2px);
    } @else {
       $borderimage: (
@@ -124,6 +129,11 @@ $card-corner-size: 1rem;
    border-radius: 1rem;
    padding:       1rem;
    @include card-shadow(true);
+   
+   // Needed so that cards inside the cutout have their shadows visible.
+   // Something to do with how stacking contexts interact with z-index on 
+   // the shadows. Don't have time to figure out the specifics right now.
+   isolation: isolate;
 }
 
 @mixin revert-card-shadow-styles {

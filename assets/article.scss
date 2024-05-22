@@ -364,11 +364,22 @@ section>aside {
 
 .card-cutout {
    @include card-cutout;
+   
+   //
+   // Although the wide margin is inconsistent with PRE tags, I do like how 
+   // it looks when apart from them.
+   //
+   margin: 1em 2.5em;
+   //
+   // Of course, it's a bit awkward on mobile, so...
+   //
+   @include for-smartphones-only {
+      margin: 1em 0;
+   }
 }
 figure.card-cutout>.wrap {
    @include card;
    @include card-mobile-fallback-hack;
-   
    width:min-content;
    margin:0 auto;
 }
