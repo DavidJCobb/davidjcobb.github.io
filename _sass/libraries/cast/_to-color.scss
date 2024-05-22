@@ -1,15 +1,12 @@
 
-@import "./cast-to-number.scss";
+@import "./to-number.scss";
 
 @function cast-to-color($v) {
    @if type-of($v) == "color" {
       @return $v;
    }
    @if $v == "transparent" {
-      @return adjust-color(
-         #000000,
-         $alpha: -1
-      );
+      @return #00000000;
    }
    
    $c: str-slice($v, 1, 1);

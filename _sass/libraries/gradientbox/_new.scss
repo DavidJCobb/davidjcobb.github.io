@@ -1,0 +1,185 @@
+
+@import "polyfills/map-set.scss";
+@import "polyfills/math-div.scss";
+@import "polyfills/math-sqrt.scss";
+@import "libraries/unitset/new.scss";
+@import "libraries/unitset/resolve.scss";
+
+@function gradientbox-new($gradient, $width, $height, $unitset: null) {
+   $RADIAL-EXTENTS: (
+      "closest-corner",
+      "closest-side",
+      "farthest-corner",
+      "farthest-side"
+   );
+   
+   @if $unitset == null {
+      $unitset: unitset-new();
+   }
+
+   $width:  unitset-resolve($unitset, $width);
+   $height: unitset-resolve($unitset, $height);
+   $out: (
+      "gradient": $gradient,
+      "w":        $width,
+      "h":        $height,
+      "units":    $unitset
+   );
+   
+   @if map-get($gradient, "type") == radial {
+      $radial: (
+         center: ( $width / 2, $height / 2 ),
+         radii:  ()
+      );
+      
+      $radii: ();
+      @if map-get($gradient, "center") {
+         $src: map-get($gradient, "center");
+         $dst: ( $width / 2, $height / 2 );
+         
+         $INDEX-X: 1;
+         $INDEX-Y: 2;
+         
+         $x-keyword:  null;
+         $y-keyword:  null;
+         $any-center: false;
+         @for $i from $INDEX-X through $INDEX-Y {
+            $item: nth($src, $i);
+            @if index(("top", "bottom"), $item) {
+               $y-keyword: $i;
+            } @else if index(("left", "right"), $item) {
+               $x-keyword: $i;
+            }
+         }
+         @if $x-keyword != null {
+            $item: nth($src, $x-keyword);
+            @if $item == "left" {
+               $item: 0;
+            } @else {
+               $item: $width;
+            }
+            $dst: set-nth($dst, $INDEX-X, $item);
+            @if $y-keyword == null {
+               $item: nth($src, 3 - $x-keyword);
+               @if $item == "center" {
+                  $item: math-div($height, 2);
+               } @else {
+                  $item: unitset-resolve($unitset, $item, $height);
+               }
+               $dst: set-nth($dst, $INDEX-Y, $item);
+            }
+         }
+         @if $y-keyword != null {
+            $item: nth($src, $y-keyword);
+            @if $item == "top" {
+               $item: 0;
+            } @else {
+               $item: $height;
+            }
+            $dst: set-nth($dst, $INDEX-Y, $item);
+            @if $x-keyword == null {
+               $item: nth($src, 3 - $y-keyword);
+               @if $item == "center" {
+                  $item: math-div($width, 2);
+               } @else {
+                  $item: unitset-resolve($unitset, $item, $width);
+               }
+               $dst: set-nth($dst, $INDEX-X, $item);
+            }
+         }
+         @if $x-keyword == null and $y-keyword == null {
+            @for $i from $INDEX-X through $INDEX-Y {
+               $item: nth($src, $i);
+               @if $item == "center" {
+                  $item: $width;
+                  @if $i == $INDEX-Y {
+                     $item: $height;
+                  }
+                  $item: math-div($item, 2);
+               } @else {
+                  $extent: $width;
+                  @if $i == 1 {
+                     $extent: $height;
+                  }
+                  $item: unitset-resolve($unitset, $item, $extent);
+               }
+               $dst: set-nth($dst, $i, $item);
+            }
+         }
+         $radial: map-set($radial, "center", $dst);
+      }
+      
+      $shape: map-get($gradient, "shape");
+      
+      @if index($RADIAL-EXTENTS, map-get($gradient, "size")) {
+         $left:   nth(map-get($radial, "center"), 1);
+         $top:    nth(map-get($radial, "center"), 2);
+         $right:  abs($width - $left);
+         $bottom: abs($height - $top);
+         
+         $size: map-get($gradient, "size");
+         @if $size == "closest-side" {
+            $sx: min($left, $right);
+            $sy: min($top, $bottom);
+            @if $shape == "circle" {
+               $sx: min($sx, $sy);
+               $sy: $sx;
+            }
+            $radii: ($sx, $sy);
+         } @else if $size == "farthest-side" {
+            $sx: max($left, $right);
+            $sy: max($top, $bottom);
+            @if $shape == "circle" {
+               $sx: max($sx, $sy);
+               $sy: $sx;
+            }
+            $radii: ($sx, $sy);
+         } @else if $size == "closest-corner" {
+            $sx: min($left, $right);
+            $sy: min($top, $bottom);
+            @if $shape == "circle" {
+               $sx: math-sqrt($sx*$sx + $sy*$sy);
+               $sy: $sx;
+            } @else {
+               $sx: $sx * 1.41421356237309504880; // times sqrt(2)
+               $sy: $sy * 1.41421356237309504880; // times sqrt(2)
+            }
+            $radii: ($sx, $sy);
+         } @else if $size == "farthest-corner" {
+            $sx: max($left, $right);
+            $sy: max($top, $bottom);
+            @if $shape == "circle" {
+               $sx: math-sqrt($sx*$sx + $sy*$sy);
+               $sy: $sx;
+            } @else {
+               $sx: $sx * 1.41421356237309504880; // times sqrt(2)
+               $sy: $sy * 1.41421356237309504880; // times sqrt(2)
+            }
+            $radii: ($sx, $sy);
+         }
+      } @else {
+         $radii: map-get($gradient, "size");
+         $radii: (
+            unitset-resolve($unitset, nth($radii, 1), $width),
+            unitset-resolve($unitset, nth($radii, 2), $height)
+         );
+      }
+      
+      // Handle degenerate cases.
+      @if $shape == "circle" {
+         @if nth($radii, 1) == 0 {
+            $radii: (0.00001, 0.00001);
+         }
+      } @else {
+         @if nth($radii, 1) == 0 {
+            $radii: (0.00001, 10000000000);
+         } @else if nth($radii, 2) == 0 {
+            $radii: (10000000000, 0.00001);
+         }
+      }
+      
+      $radial: map-set($radial, "radii",  $radii);
+      $out:    map-set($out,    "radial", $radial);
+   }
+   @return $out;
+}

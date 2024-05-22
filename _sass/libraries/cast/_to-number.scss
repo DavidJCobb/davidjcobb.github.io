@@ -1,7 +1,7 @@
 
 // based on:
 // https://kittygiraudel.com/2014/01/15/casting-a-string-to-a-number-in-sass/
-@function cast-to-number($string, $base: 10) {
+@function cast-to-number($string, $base: 10, $allow-potential-units: true) {
    @if type-of($string) == "number" {
       @return $string;
    }
@@ -20,8 +20,7 @@
       $numbers: $n;
    } @else if $base > 10 {
       @if $base > 16 {
-         @warn "base too high";
-         @return false;
+         @error "base too high (#{$base})";
       }
       
       $s: 'A' 'B' 'C' 'D' 'E' 'F';
@@ -31,27 +30,35 @@
          $strings: append($strings, nth($s, $i - 9));
          $numbers: append($numbers, nth($n, $i - 9));
       }
+      
+      $string: to-upper-case($string);
    }
    
    $result: 0;
+   $sign:   1;
    @for $i from 1 through str-length($string) {
       $character: str-slice($string, $i, $i);
       $index:     index($strings, $character);
 
       @if not $index {
-         @if $character == "%" and $i == str-length($string) {
+         @if $character == "%" and ($allow-potential-units or $i == str-length($string)) {
             $result: $result * 1%;
+            $result: $result * $sign;
             @return $result;
          } @else if $character == "-" and $i == 1 {
-            $result: $result * -1;
+            $sign: $sign * -1;
          } @else {
-            @warn "Unknown character `#{$character}`.";
-            @return false;
+            @if $i == 1 or not $allow-potential-units {
+               @error "Unknown character `#{$character}` at position ${i} in string #{inspect($string)}";
+            }
+            $result: $result * $sign;
+            @return $result;
          }
+      } @else {
+         $number: nth($numbers, $index);
+         $result: $result * $base + $number;
       }
-
-      $number: nth($numbers, $index);
-      $result: $result * $base + $number;
    }
+   $result: $result * $sign;
    @return $result;
 }

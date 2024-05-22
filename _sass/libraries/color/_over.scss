@@ -1,0 +1,40 @@
+@function color-over($foreground, $background) {
+   $fg-a: alpha($foreground);
+   $bg-a: alpha($background);
+   
+   $bg-a-per-c: $bg-a*(1 - $fg-a);
+
+   $Oa: $fg-a + $bg-a-per-c;
+   @if $Oa == 0 {
+      @return #00000000;
+   }
+   
+   $GETTERS: (
+      get-function("red"),
+      get-function("green"),
+      get-function("blue")
+   );
+   $colors: (null, null, null);
+   @for $i from 1 through 3 {
+      $getter: nth($GETTERS, $i);
+      $fg-c:   call($getter, $foreground);
+      $bg-c:   call($getter, $background);
+      
+      $fg-c: $fg-c / 255;
+      $bg-c: $bg-c / 255;
+      
+      $Oc: $fg-c*$fg-a + $bg-c*$bg-a-per-c;
+      $Oc: $Oc / $Oa;
+      $Oc: round($Oc * 255);
+      
+      $colors: set-nth($colors, $i, $Oc);
+   }
+   
+   @return change-color(
+      transparent,
+      $red:   nth($colors, 1),
+      $green: nth($colors, 2),
+      $blue:  nth($colors, 3),
+      $alpha: $Oa
+   );
+}

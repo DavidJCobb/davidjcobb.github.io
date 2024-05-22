@@ -1,0 +1,6 @@
+@function str-is-space($char) {
+   @if $char == " " or $char == "\a" {
+      @return true;
+   }
+   @return false;
+}

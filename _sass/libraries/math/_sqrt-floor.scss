@@ -1,6 +1,6 @@
 @import "polyfills/math-div.scss";
 
-@function sqrt-floor($n) {
+@function math-sqrt-floor($n) {
    $low: min(1, $n);
    $hi:  max(1, $n);
    

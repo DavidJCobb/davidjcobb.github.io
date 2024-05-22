@@ -1,0 +1,58 @@
+
+@import "polyfills/math-div.scss";
+@import "libraries/gradientbox/get-line.scss";
+@import "libraries/unitset/resolve.scss";
+
+///
+/// $offset should be a number in the range [0, 1]
+///
+@function gradientbox-sample-offset($self, $offset) {
+   $stops: map-get(map-get($self, "gradient"), "stops");
+   @if length($stops) == 1 {
+      @return nth(nth($stops, 1), 1);
+   }
+   
+   $unitset: map-get($self, "units");
+   
+   $line:   gradientbox-get-line($self);
+   $length: map-get($line, "length");
+   $offset: unitset-resolve($unitset, $offset, $length);
+   
+   @for $i from 1 through length($stops) - 1 {
+      $here: nth($stops, $i);
+      $next: nth($stops, $i + 1);
+      
+      $offset-a: unitset-resolve($unitset, nth($here, 2), $length);
+      $offset-b: unitset-resolve($unitset, nth($next, 2), $length);
+      
+      @if $i == 0 and $offset <= $offset-a {
+         @return nth($here, 1);
+      }
+      @if $i == length($stops) - 1 and $offset >= $offset-b {
+         @return nth($next, 1);
+      }
+      @if $offset >= $offset-a and $offset <= $offset-b {
+         @if $offset == $offset-a {
+            @return nth($here, 1);
+         }
+         
+         $dist: $offset-b - $offset;
+         $span: $offset-b - $offset-a;
+         /*
+         $blend: math-div($dist, $span);
+         $blend: $blend * 100%;
+         
+         @return mix(nth($next, 1), nth($here, 1), $blend);
+         */
+         
+         
+         $dist:  $offset-b - $offset;
+         $blend: math-div($dist, $span);
+         $blend: $blend * 100%;
+//@debug "<<blend>> #{$blend} between #{nth($here, 1)} and #{nth($next, 1)}";
+         @return mix(nth($here, 1), nth($next, 1), $blend);
+      }
+   }
+   
+   @return #00000000;
+}

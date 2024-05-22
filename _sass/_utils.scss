@@ -3,10 +3,6 @@
 
 @import "polyfills/map-set.scss";
 
-// near-polyfills:
-
-@import "./utils/_list-prepend.function.scss";
-
 // custom:
 
 @function apply-all-to($properties, $list) {
@@ -18,7 +14,6 @@
 }
 
 @import "./utils/_remove-unit.function.scss";
-@import "./utils/_str-replace.function.scss";
 
 @function text-shadows-for-outline($color) {
    $text-shadows: ();

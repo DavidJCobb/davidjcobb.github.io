@@ -1,0 +1,60 @@
+
+@import "libraries/gradient/get-linear-angle.scss";
+@import "libraries/unitset/resolve.scss";
+@import "polyfills/math-cos.scss";
+@import "polyfills/math-sin.scss";
+
+@function gradientbox-get-line($self) {
+   $gradient: map-get($self, "gradient");
+   $unitset:  map-get($self, "units");
+   $type:     map-get($gradient, "type");
+   
+   $w: map-get($self, "w");
+   @if $type == linear {
+      $h:     map-get($self, "h");
+      $angle: gradient-get-linear-angle($gradient);
+      $angle: $angle + 90deg;
+      $cos:   math-cos($angle);
+      $sin:   math-sin($angle);
+      
+      $length: abs($w * $cos) + abs($h * $sin);
+      @return (
+         "x1":     ($w / 2) + $cos * ($length / 2),
+         "x2":     ($w / 2) - $cos * ($length / 2),
+         "y1":     ($h / 2) + $sin * ($length / 2),
+         "y2":     ($h / 2) - $sin * ($length / 2),
+         "length": $length
+      );
+   } @else if $type == radial {
+      $RADIAL-EXTENTS: (
+         "closest-corner",
+         "closest-side",
+         "farthest-corner",
+         "farthest-side"
+      );
+   
+      $radial: map-get($self,   "radial");
+      $center: map-get($radial, "center");
+      
+      $length: 0;
+      @if index($RADIAL-EXTENTS, map-get($gradient, "size")) != null {
+         $length: nth(map-get($radial, "radii"), 1);
+      } @else {
+         $length: unitset-resolve(
+            $unitset,
+            nth(map-get($gradient, "size"), 1),
+            $w
+         );
+      }
+      
+      @return (
+         "x1":     nth($center, 1),
+         "x2":     nth($center, 1) + $length,
+         "y1":     nth($center, 2),
+         "y2":     nth($center, 2),
+         "length": $length
+      );
+   } @else {
+      @error "gradientbox-get-line does not support gradient type #{inspect($type)}";
+   }
+}

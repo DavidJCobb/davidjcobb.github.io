@@ -1,0 +1,127 @@
+
+@import "polyfills/map-set.scss";
+
+@function unitset-new($params: null) {
+   @if $params == null {
+      $params: (
+         "px": 1,
+         
+         "em": 16,
+         "ex": 16 * 0.5,
+         "ch": 16 * 0.5,
+         "lh": 16 * 1.25,
+         
+         "vw": 1920,
+         "vh": 1080
+      );
+   }
+
+   $UNITS:
+      "px",
+      
+      "rcap", "cap",
+      "rch",  "ch",
+      "rem",  "em",
+      "rex",  "ex",
+      "ric",  "ic",
+      "rlh",  "lh",
+      
+      "vh",   "svh",   "lvh",   "dvh",
+      "vw",   "svw",   "lvw",   "dvw"
+   ;
+   
+   $FIXED-UNITS-TO-PIXELS: (
+      "in": 96,
+      "pc": 96 / 6,
+      "pt": 96 / 72,
+      
+      "cm": 96 / 2.54,
+      "mm": (96 / 2.54) / 10,
+      "Q":  (96 / 2.54) / 40
+   );
+
+   $out: ( px: 1 );
+   
+   @for $i from 1 through length($UNITS) {
+      $unit: nth($UNITS, $i);
+      @if map-has-key($params, $unit) {
+         $out: map-set($out, $unit, map-get($params, $unit));
+      }
+   }
+   
+   $VIEWPORT-PREFIXES: "s", "l", "d";
+   
+   $px: map-get($out, "px");
+   @for $i from 1 through length($FIXED-UNITS-TO-PIXELS) {
+      $pair: nth($FIXED-UNITS-TO-PIXELS, $i);
+      $out:  map-set($out,
+         nth($pair, 1),
+         nth($pair, 2) * $px
+      );
+   }
+   
+   @for $i from 1 through length($UNITS) {
+      $unit: nth($UNITS, $i);
+      $char: str-slice($unit, 1, 1);
+      
+      @if $char == "r" {
+         $local-unit: str-slice($unit, 2);
+         
+         $has-local: map-has-key($out, $local-unit);
+         $has-root:  map-has-key($out, $unit);
+         
+         @if $has-local != $has-root {
+            @if $has-local and not $has-root {
+               $out: map-set($out, $unit, map-get($out, $local-unit));
+            } @else {
+               $out: map-set($out, $local-unit, map-get($out, $unit));
+            }
+         }
+      } @else if $char == "v" {
+         @if map-has-key($out, $unit) {
+            @for $j from 1 through length($VIEWPORT-PREFIXES) {
+               $prefix: nth($VIEWPORT-PREFIXES, $j);
+               $pu:     $prefix + $unit;
+               @if not map-has-key($out, $pu) {
+                  $out: map-set($out, $pu, map-get($out, $unit));
+               }
+            }
+         } @else {
+            $fallback: map-get($out, "l" + $unit);
+            @if $fallback == null {
+               $fallback-d: map-get($out, "d" + $unit);
+               $fallback-s: map-get($out, "s" + $unit);
+               @if $fallback-d != null {
+                  $fallback: $fallback-d;
+                  @if $fallback-s != null and $fallback-s > $fallback-d {
+                     $fallback: $fallback-s;
+                  }
+               } @else if $fallback-s != null {
+                  $fallback: $fallback-s;
+               }
+            }
+            @if $fallback != null {
+               $out: map-set($out, $unit, $fallback);
+            }
+         }
+      }
+   }
+   
+   $vw: map-get($out, "vw");
+   $vh: map-get($out, "vh");
+   @if $vw != null and $vh != null {
+      $out: map-set($out, "vmin", min($vw, $vh));
+      $out: map-set($out, "vmax", max($vw, $vh));
+   }
+   @for $j from 1 through length($VIEWPORT-PREFIXES) {
+      $prefix: nth($VIEWPORT-PREFIXES, $j);
+      $w:      map-get($out, $prefix + "vw");
+      $h:      map-get($out, $prefix + "vh");
+      @if $w != null and $h != null {
+         $out: map-set($out, $prefix + "vmin", min($w, $h));
+         $out: map-set($out, $prefix + "vmax", max($w, $h));
+      }
+   }
+   
+   @return $out;
+}

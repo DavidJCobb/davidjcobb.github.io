@@ -39,9 +39,13 @@ $theme-gradient-background-layers: apply-all-to(
 ) !default;
 
 @mixin scanline-bg-params {
-   --pinstripe-color: rgba(0, 0, 0, 0.06);
-   --pinstripe-width: 1;
-   --pinstripe-gap:   2;
+   $scanline-color: rgba(0, 0, 0, 0.6);
+   $scanline-width: 1;
+   $scanline-gap:   3;
+
+   --pinstripe-color: #{$scanline-color};
+   --pinstripe-width: #{$scanline-width};
+   --pinstripe-gap:   #{$scanline-gap};
    
    --pinstripe-adapt: calc(100% / ((var(--pinstripe-width) + var(--pinstripe-gap)) * 2));
    --pinstripe-x-a:   var(--pinstripe-width);

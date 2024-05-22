@@ -1,0 +1,85 @@
+
+@import "libraries/cast/to-color.scss";
+@import "libraries/cast/to-number.scss";
+@import "utils/remove-unit.function.scss";
+
+///
+///   fix-gradient-stop-list
+///
+///      Given a list of stops, where each stop is a list where the first element 
+///      is meant to be a color, and the second element is a position or null, 
+///      this function performs fix-up steps similar to those specified in CSS. 
+///      Specifically:
+///
+///       - The first element's type is manually converted to a color, in case it 
+///         is currently a string that resembles a color.
+///
+///       - Any positions that are present are manually converted to numbers, in 
+///         case any of them are currently strings that resemble numbers.
+///
+///       - If the first stop lacks a position, it is given position 0.
+///
+///       - If the last stop lacks a position, it is given position 100%.
+///
+///       - For any contiguous group of N many stops which lack positions, we grab 
+///         the preceding and following stops, identify the span between them, and 
+///         place the N un-positioned stops within that span at even spacing.
+///
+@function gradient-fix-stops($self) {
+   $stops: map-get($self, "stops");
+   
+   $result: ();
+   
+   $last-pos-at: null;
+   @for $i from 1 through length($stops) {
+      $src: nth($stops, $i);
+      $dst: cast-to-color(nth($src, 1)) null;
+      $pos: nth($src, 2);
+      
+      @if nth($dst, 1) == null {
+         @error "unable to fix stop: invalid color. stop #{inspect($src)} is #{$i}th in full list #{inspect($stops)}";
+      }
+      
+      @if $pos == null {
+         @if $i == 1 {
+            $pos:         0;
+            $last-pos-at: $i;
+         } @else if $i == length($stops) {
+            $pos: 100%;
+         }
+      }
+      @if $pos != null {
+         $pos: cast-to-number($pos);
+         $dst: set-nth($dst, 2, $pos);
+         
+         @if $last-pos-at != null and $last-pos-at < $i - 1 {
+            $per:  $i - $last-pos-at;
+            $per:  $last-pos-at / $per;
+            $from: nth(nth($result, $last-pos-at), 1);
+            
+            @if $from == null or (not unitless($from) and unit($from) != "%") {
+               @error "unable to fill in missing color stop position";
+            }
+            @if unit($from) == "%" {
+               $unit: 1%;
+               $from: $from / $unit;
+            }
+            
+            @for $j from $last-pos-at + 1 to $i {
+               $k: $j - $last-pos-at;
+               
+               $revised: nth($result, $j);
+               $revised: set-nth($revised, 1, $from + $per * $k);
+               $result:  set-nth($result, $j, $revised);
+            }
+         }
+         $last-pos-at: $i;
+      }
+      
+      $result: append($result, $dst);
+   }
+   $result: join((), $result, comma);
+   
+   $self: map-set($self, "stops", $result);
+   @return $self;
+}

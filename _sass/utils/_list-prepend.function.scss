@@ -1,8 +1,0 @@
-@function list-prepend($list, $item) {
-   $result: ();
-   $result: append($result, $item);
-   @each $prior in $list {
-      $result: append($result, $prior);
-   }
-   @return $result;
-}

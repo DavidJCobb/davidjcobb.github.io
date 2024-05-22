@@ -1,0 +1,47 @@
+
+@import "libraries/cast/to-number.scss";
+@import "libraries/str/trim.scss";
+@import "polyfills/math-div.scss";
+
+@function unitset-resolve($self, $number, $extent: null) {
+   @if $number == null {
+      @error "null";
+      @return null;
+   }
+   
+   $unit: null;
+   
+   @if type-of($number) == "string" {
+      $string: str-trim($number);
+      $number: cast-to-number($number);
+      
+      @if unitless($number) {
+         $string: str-slice($string, str-length("#{$number}") + 1);
+         @if str-length($string) == 0 {
+            @return $number;
+         }
+         $unit: $string;
+      } @else {
+         $unit: unit($number);
+      }
+   } @else {
+      @if unitless($number) {
+         @return $number;
+      }
+      $unit: unit($number);
+   }
+   @if $unit == "%" {
+      @if $extent == null {
+         @error "Failed to resolve value #{$number} using a unitset: no extent provided.";
+      }
+      @return math-div($number, 100%) * $extent;
+   }
+   @if not map-has-key($self, $unit) {
+      @error "Failed to resolve value #{$number} using a unitset: the unitset does not define unit #{$unit}.";
+   }
+   
+   $unit-divisor: $number * 0 + 1;
+   $unitless-num: $number / $unit-divisor;
+   
+   @return $unitless-num * map-get($self, $unit);
+}

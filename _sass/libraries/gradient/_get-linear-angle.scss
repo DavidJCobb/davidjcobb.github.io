@@ -1,15 +1,16 @@
 
-@import "utils/str-split.function.scss";
-
-///
-///   linear-gradient-side-or-corner-to-angle
-///
-///      Given a string with a value like "top" or "bottom left", this function 
-///      returns the equivalent CSS angle value in degrees.
-///
-@function linear-gradient-side-or-corner-to-angle($side-or-corner) {
-   $corner: str-split($side-or-corner, " ");
-         
+@function gradient-get-linear-angle($self) {
+   @if map-get($self, "type") != linear {
+      @error "only linear gradients have a linear angle";
+   }
+   
+   $angle: map-get($self, "angle");
+   @if $angle != null {
+      @return $angle;
+   }
+   
+   $corner: str-split(map-get($self, "side-or-corner"), " ");
+   
    $side-x: null;
    $side-y: null;
    

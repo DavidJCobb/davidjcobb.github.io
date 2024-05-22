@@ -1,0 +1,78 @@
+
+@import "polyfills/math-div.scss";
+@import "polyfills/math-sqrt.scss";
+@import "libraries/gradientbox/get-line.scss";
+@import "libraries/unitset/resolve.scss";
+
+@function gradientbox-point-to-offset($self, $x, $y, $in-zero-to-one-range: false) {
+   $gradient: map-get($self, "gradient");
+   $unitset:  map-get($self, "units");
+   $type:     map-get($gradient, "type");
+   $line:     gradientbox-get-line($self);
+   
+   $x: unitset-resolve($unitset, $x, map-get($self, "w"));
+   $y: unitset-resolve($unitset, $y, map-get($self, "h"));
+   
+   $offset: null;
+   @if $type == linear {
+      $x1: map-get($line, "x1");
+      $x2: map-get($line, "x2");
+      $y1: map-get($line, "y1");
+      $y2: map-get($line, "y2");
+   
+      $k: math-div(
+         ($y2 - $y1) * ($x - $x1) - ($x2 - $x1) * ($y - $y1)
+         ,
+         ($y2 - $y1)*($y2 - $y1) + ($x2 - $x1)*($x2 - $x1)
+      );
+      
+      // intersection between the gradient line and a perpendicular line extending from (x, y)
+      $x-intersect: $x - $k*($y2 - $y1);
+      $y-intersect: $y + $k*($x2 - $x1);
+      
+      $x-diff: $x-intersect - $x1;
+      $y-diff: $y-intersect - $y1;
+      
+      $offset: math-sqrt($x-diff*$x-diff + $y-diff*$y-diff);
+   } @else if $type == radial {
+      $radial: map-get($self,   "radial");
+      $radii:  map-get($radial, "radii");
+      $center: map-get($radial, "center");
+      
+      $Eu: nth($radii, 1);
+      $Ev: nth($radii, 2);
+         
+      // Equation for our ending shape:
+      // 1 = (x^2 / Eu^2) + (y^2 / Ev^2)
+      
+      $dx: $x - nth($center, 1);
+      $dy: $y - nth($center, 2);
+      
+      // Equation for the ellipse we need:
+      //    1 = dx^2/Fu^2 + dy^2/Fv^2
+      // 
+      // Substitute out Fv:
+      //    1 = dx^2/Fu^2 + dy^2/(Fu*Ev/Eu)^2
+      //
+      // Exponent rules: (a/b)^m = a^m/b^m and (ab)^m = a^m*b^m
+      //    1 = dx^2/Fu^2 + dy^2/Fu^2/Ev^2*Eu^2
+      //    1 = dx^2/Fu^2 + dy^2*Eu^2/Ev^2/Fu^2
+      //
+      // Multiply both sides by Fu^2:
+      //    Fu^2 = dx^2 + dy^2*Eu^2/Ev^2
+      //
+      
+      $Fu: math-sqrt(($dx*$dx) + ($dy*$dy*$Eu*$Eu/($Ev*$Ev)));
+@if $in-zero-to-one-range {
+   @debug "mapping ellipse #{$Eu},#{$Ev} to point (#{$dx}, #{$dy}) gives x-radius #{$Fu}";
+}
+      
+      $offset: $Fu;
+   } @else {
+      @error "gradientbox-point-to-offset does not support gradient type #{inspect($type)}";
+   }
+   @if $in-zero-to-one-range {
+      $offset: math-div($offset, map-get($line, "length"));
+   }
+   @return $offset;
+}

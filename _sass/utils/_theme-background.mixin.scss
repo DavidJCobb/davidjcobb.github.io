@@ -1,7 +1,13 @@
 
 @import "utils/for-smartphones-only.mixin.scss";
-@import "utils/list-prepend.function.scss";
 @import "utils/unpack-backgrounds.function.scss";
+
+@import "libraries/color/over.scss";
+@import "libraries/list/prepend.scss";
+@import "libraries/gradient/parse.scss";
+@import "libraries/gradientbox/new.scss";
+@import "libraries/gradientbox/point-to-offset.scss";
+@import "libraries/gradientbox/sample-offset.scss";
 
 ///
 ///   theme-background
@@ -28,18 +34,80 @@
    background: unpack-backgrounds($all-backgrounds), $theme-background-color;
    
    @include for-smartphones-only {
-      background: fixed linear-gradient(
-         to bottom,
-         #4d567f,
-         #636b8f 5%,
-         #6d7496 10%,
-         #797e9c 20%,
-         #9594a6 40%,
-         #a7a1ad 50%,
-         #af9da4 60%,
-         #d2a08f 80%,
-         #ca9585 90%,
-         #b97c6c 100%
-      ), $theme-background-color;
+      //
+      // Generate a simpler linear gradient as a fallback for smartphones.
+      //
+   
+      $STOP-COUNT:    20;
+      $RENDER-WIDTH:  1920;
+      $RENDER-HEIGHT: 1080;
+      
+      // test
+      $RENDER-WIDTH:  412;
+      $RENDER-HEIGHT: 883;
+      $RENDER-WIDTH:  1080;
+      $RENDER-HEIGHT: 2340;
+   
+      //
+   
+      $layers: $theme-gradient-background-layers;
+      
+      $unitset: unitset-new((
+         em: 16,
+         vw: $RENDER-WIDTH  / 100,
+         vh: $RENDER-HEIGHT / 100
+      ));
+      
+      
+      // Account for the scanlines.
+      //
+      $scanline-color: rgba(0, 0, 0, 0.6); // HACK; DEFINE THESE AS THEMING CONSTANTS SOMEWHERE
+      $scanline-width: 1;
+      $scanline-gap:   3;
+      //
+      $scanline-final-color: $scanline-color;
+      @if $scanline-width <= 0 {
+         $scanline-final-color: null;
+      } @else {
+         $alpha: alpha($scanline-color);
+         $alpha: $alpha * ($scanline-width / ($scanline-width + $scanline-gap));
+         $scanline-final-color: change-color($scanline-color, $alpha: $alpha);
+      }
+      
+      $fallback: "linear-gradient(to bottom, ";
+      @for $i from 0 through $STOP-COUNT {
+         $ip: $i * (100 / $STOP-COUNT) * 1%;
+         
+         $color: #FFF;
+         
+         @for $j from length($layers) through 1 {
+            $layer: nth($layers, $j);
+            $image: map-get($layer, "image");
+            
+            $gradient: gradient-parse($image);
+            $gbox:     gradientbox-new($gradient, $RENDER-WIDTH, $RENDER-HEIGHT, $unitset);
+            
+            $offset: gradientbox-point-to-offset($gbox, $RENDER-WIDTH / 2, $ip);
+            $sample: gradientbox-sample-offset($gbox, $offset);
+
+            $color: color-over($sample, $color);
+         }
+         
+         // Account for the scanlines.
+         @if $scanline-final-color {
+            $color: color-over($scanline-final-color, $color);
+         }
+         
+         @if $i > 0 {
+            $fallback: $fallback + ", ";
+         }
+         $fallback: $fallback + $color;
+         @if $i > 0 {
+            $fallback: "#{$fallback} #{$ip}";
+         }
+      }
+      $fallback: $fallback + ")";
+      
+      background: fixed #{$fallback}, $theme-background-color;
    }
 }

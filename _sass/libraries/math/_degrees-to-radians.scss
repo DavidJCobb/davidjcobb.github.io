@@ -1,6 +1,6 @@
 @import "polyfills/math-div.scss";
 
-@function degrees-to-radians($angle) {
+@function math-degrees-to-radians($angle) {
    @if unit($angle) == "deg" {
       $angle: math-div($angle, 1deg);
    }

@@ -1,0 +1,9 @@
+@import "polyfills/math-div.scss";
+
+@function math-sqrt($n) {
+   $guess: 1;
+   @for $i from 1 through 30 {
+      $guess: $guess - ($guess*$guess - $n) / (2 * $guess);
+   }
+   @return $guess;
+}
