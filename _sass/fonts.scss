@@ -44,6 +44,14 @@ $font-source-sans-pro: (
 );
 
 $all-fonts: [$font-source-sans-pro, $font-raleway, $font-inconsolata];
+
+
+
+/* start include guard */
+$include-guard-fonts: false !default;
+@if not $include-guard-fonts {
+   $include-guard-fonts: true;
+
 //
 // Put the Latin and Latin Extended fonts up front, since those will represent most of 
 // the content on the site; we want the browser to get to them first.
@@ -53,4 +61,7 @@ $all-fonts: [$font-source-sans-pro, $font-raleway, $font-inconsolata];
 }
 @each $font in $all-fonts {
    @include font-faces-from-font-info($font, $skip-charsets: ["latin", "latin-ext"]);
+}
+
+/* end include guard */
 }

@@ -6,6 +6,8 @@
 {% endif %}
 
 @import "utils";
+@import "fonts.scss";
+@import "fonts-article-only.scss";
 @import "common-visual.scss";
 @import "elements/pre.scss";
 @import "elements/tables.scss";

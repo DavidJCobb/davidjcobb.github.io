@@ -25,38 +25,34 @@ $include-guard-layout-page-github-history: false !default;
       @extend %cannot-handle-auto-dark-mode;
       $inset: 2px;
    
-      line-height:1.5em;
-      text-align:center;
-      text-decoration:none;
-      white-space:nowrap;
+      line-height:     1.5em;
+      text-align:      center;
+      text-decoration: none;
+      white-space:     nowrap;
       
-      display:block;
-      padding:$inset 1em calc(0.25em + #{$inset});
-      border-radius:1em;
-      background:rgba(255, 255, 255, 0.8);
-      
-      background: unpack-backgrounds( append( (), $theme-scanline-background-layer, comma) ), rgba(255, 255, 255, 0.65);
-      text-shadow:
-         text-shadows-for-outline(rgba(255, 255, 255, 0.5)),
-          4px 0 4px #FFF,
-         -4px 0 4px #FFF
-      ;
-      
-      &:hover {
-         background-color: rgba(255, 255, 255, 0.8) !important;
-      }
+      display:       block;
+      padding:       $inset 1em calc(0.25em + #{$inset});
+      border-radius: 1em;
+      background:    #E5E6EC;
       
       position:relative;
       &::after {
-         content:"";
-         pointer-events:none;
-         user-select:none;
+         content:        "";
+         pointer-events: none;
+         user-select:    none;
          
-         position:absolute;
-         inset:2px;
-         border-radius:inherit;
+         position:      absolute;
+         inset:         2px;
+         border-radius: inherit;
          
-         border:2px solid #AAA;
+         border: calc(max(.15em, 2px)) solid #AAA;
+      }
+      
+      &:hover {
+         background-color: #FFF;
+         &::after {
+            border-color: #BBB;
+         }
       }
    }
 }

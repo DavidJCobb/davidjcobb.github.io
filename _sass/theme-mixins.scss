@@ -3,9 +3,7 @@
 
 $theme-mixins-are-imported: true;
 
-$theme-header-font-family: "Raleway", "Segoe UI", "Source Sans Pro", sans-serif;
-$theme-body-font-family: "Segoe UI", "Source Sans Pro", sans-serif;
-$theme-code-font-family: Inconsolata, monospace;
+@import "theme-config/fonts.scss";
 
 %cannot-handle-auto-dark-mode {
    /*

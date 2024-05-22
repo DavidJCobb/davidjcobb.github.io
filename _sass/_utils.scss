@@ -79,13 +79,16 @@ $font-charset-vietnamese:   "U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169,
 ///   Accepts a font and, optionally, charsets to generate or skip. The font should be 
 ///   defined as a map with the following properties:
 ///   
-///      name        Required. The name of the @font-face to create.
-///      base        Required. The base filename.
-///      charsets    Required. See below.
-///      display     Optional. If specified, a font-display value.
-///      stretch     Optional. If specified, a font-stretch value.
-///      style       Optional. If specified, a font-style value.
-///      weight      Optional. If specified, a font-weight value.
+///      name              Required. The name of the @font-face to create.
+///      base              Required. The base filename.
+///      charsets          Optional. See below.
+///      display           Optional. If specified, a font-display value.
+///      stretch           Optional. If specified, a font-stretch value.
+///      style             Optional. If specified, a font-style value.
+///      weight            Optional. If specified, a font-weight value.
+///      adjust-size       Optional. If specified, written directly into the font-face rule.
+///      ascent-override   Optional. If specified, written directly into the font-face rule.
+///      descent-override  Optional. If specified, written directly into the font-face rule.
 ///   
 ///   The "charsets" property should have as its value another map, whose keys are the 
 ///   names of character sets to generate,  and whose values are unicode-range values. 
@@ -131,7 +134,30 @@ $font-charset-vietnamese:   "U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169,
    $name:     map-get($font, "name");
    $base:     map-get($font, "base");
    
+   $format:   map-get($font, "format");
+   @if not $format {
+      $format: "woff2";
+   }
+   $format: quote($format);
+   //
+   $ext: $format;
+   @if $format == "truetype" {
+      $ext: "ttf";
+   }
+   
+   $props: ();
+   @each $key in ("ascent-override", "descent-override", "size-adjust") {
+      $value: map-get($font, $key);
+      @if $value {
+         $props: map-set($props, $key, $value);
+      }
+   }
+   
    $path-stem: unquote("#{$base-href}#{$path}#{unquote($base)}");
+   
+   @if $charsets == null {
+      $charsets: ( unquote(""): unquote("") );
+   }
    
    @each $key, $unicode-range in $charsets {
       $write: true;
@@ -153,11 +179,15 @@ $font-charset-vietnamese:   "U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169,
       }
       
       @if $write {
-         $path: url("#{$path-stem}-#{unquote($key)}.woff2");
+         $charset-suffix: "-#{unquote($key)}";
+         @if $key == unquote("") {
+            $charset-suffix: "";
+         }
+         $path: url("#{$path-stem}#{$charset-suffix}.#{$ext}");
       
          @if type-of($weight) == "list" {
             @each $wt in $weight {
-               $path: url("#{$path-stem}-#{$wt}-#{unquote($key)}.woff2");
+               $path: url("#{$path-stem}-#{$wt}#{$charset-suffix}.#{$ext}");
                
                @font-face {
                   font-family: $name;
@@ -171,8 +201,13 @@ $font-charset-vietnamese:   "U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169,
                   @if $display != auto {
                      font-display: $display;
                   }
-                  src: $path format('woff2');
-                  unicode-range: unquote($unicode-range);
+                  src: $path format($format);
+                  @if $unicode-range {
+                     unicode-range: unquote($unicode-range);
+                  }
+                  @each $key, $value in $props {
+                     #{$key}: #{$value};
+                  }
                }
             }
          } @else {
@@ -190,8 +225,13 @@ $font-charset-vietnamese:   "U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169,
                @if $display != auto {
                   font-display: $display;
                }
-               src: $path format('woff2');
-               unicode-range: unquote($unicode-range);
+               src: $path format($format);
+               @if $unicode-range {
+                  unicode-range: unquote($unicode-range);
+               }
+               @each $key, $value in $props {
+                  #{$key}: #{$value};
+               }
             }
          }
       }
