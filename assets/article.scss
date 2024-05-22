@@ -378,8 +378,7 @@ section>aside {
    }
 }
 figure.card-cutout>.wrap {
-   @include card;
-   @include card-mobile-fallback-hack;
+   @include card-in-cutout;
    width:min-content;
    margin:0 auto;
 }

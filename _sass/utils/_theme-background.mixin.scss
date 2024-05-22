@@ -37,77 +37,129 @@
       //
       // Generate a simpler linear gradient as a fallback for smartphones.
       //
-   
       $STOP-COUNT:    10;
-      $RENDER-WIDTH:  1920;
-      $RENDER-HEIGHT: 1080;
-      
-      // test
-      $RENDER-WIDTH:  412;
-      $RENDER-HEIGHT: 883;
-      $RENDER-WIDTH:  1080;
+      $RENDER-WIDTH:  1080; // Galaxy A50 screen resolution
       $RENDER-HEIGHT: 2340;
+      //
+      $USE-SIMPLE-GRADIENT-ON-MOBILE: true;
+      
+      $AVOID-FIXED-ATTACHMENT:        true;
    
       //
-   
-      $layers: $theme-gradient-background-layers;
       
-      $unitset: unitset-new((
-         em: 16,
-         vw: $RENDER-WIDTH  / 100,
-         vh: $RENDER-HEIGHT / 100
+      $non-fixed-background: unpack-backgrounds(apply-all-to(
+         (
+            "attach": "scroll"
+         ),
+         $all-backgrounds
       ));
+      $fixed-background: unpack-backgrounds($all-backgrounds);
       
-      
-      // Account for the scanlines.
-      //
-      $scanline-color: rgba(0, 0, 0, 0.06); // HACK; DEFINE THESE AS THEMING CONSTANTS SOMEWHERE
-      $scanline-width: 1;
-      $scanline-gap:   2;
-      //
-      $scanline-final-color: $scanline-color;
-      @if $scanline-width <= 0 {
-         $scanline-final-color: null;
-      } @else {
-         $alpha: alpha($scanline-color);
-         $alpha: $alpha * ($scanline-width / ($scanline-width + $scanline-gap));
-         $scanline-final-color: change-color($scanline-color, $alpha: $alpha);
-      }
-      
-      $fallback: "linear-gradient(to bottom, ";
-      @for $i from 0 through $STOP-COUNT {
-         $ip: $i * (100 / $STOP-COUNT) * 1%;
+      @if $USE-SIMPLE-GRADIENT-ON-MOBILE {
+         $layers: $theme-gradient-background-layers;
          
-         $color: #FFF;
+         $unitset: unitset-new((
+            em: 16,
+            vw: $RENDER-WIDTH  / 100,
+            vh: $RENDER-HEIGHT / 100
+         ));
          
-         @for $j from length($layers) through 1 {
-            $layer: nth($layers, $j);
-            $image: map-get($layer, "image");
+         
+         // Account for the scanlines. We won't be including them in the 
+         // simplified gradient, so we should darken the gradient as a 
+         // whole proportionally to how much darker the background would 
+         // be were the scanlines still there.
+         //
+         $scanline-color: rgba(0, 0, 0, 0.06); // HACK; DEFINE THESE AS THEMING CONSTANTS SOMEWHERE
+         $scanline-width: 1;
+         $scanline-gap:   2;
+         //
+         $scanline-final-color: $scanline-color;
+         @if $scanline-width <= 0 {
+            $scanline-final-color: null;
+         } @else {
+            $alpha: alpha($scanline-color);
+            $alpha: $alpha * ($scanline-width / ($scanline-width + $scanline-gap));
+            $scanline-final-color: change-color($scanline-color, $alpha: $alpha);
+         }
+         
+         $fallback: "linear-gradient(to bottom, ";
+         @for $i from 0 through $STOP-COUNT {
+            $ip: $i * (100 / $STOP-COUNT) * 1%;
             
-            $gradient: gradient-parse($image);
-            $gbox:     gradientbox-new($gradient, $RENDER-WIDTH, $RENDER-HEIGHT, $unitset);
+            $color: #FFF;
             
-            $offset: gradientbox-point-to-offset($gbox, $RENDER-WIDTH / 2, $ip);
-            $sample: gradientbox-sample-offset($gbox, $offset);
+            @for $j from length($layers) through 1 {
+               $layer: nth($layers, $j);
+               $image: map-get($layer, "image");
+               
+               $gradient: gradient-parse($image);
+               $gbox:     gradientbox-new($gradient, $RENDER-WIDTH, $RENDER-HEIGHT, $unitset);
+               
+               $offset: gradientbox-point-to-offset($gbox, $RENDER-WIDTH / 2, $ip);
+               $sample: gradientbox-sample-offset($gbox, $offset);
 
-            $color: color-over($sample, $color);
+               $color: color-over($sample, $color);
+            }
+            
+            // Account for the scanlines.
+            @if $scanline-final-color {
+               $color: color-over($scanline-final-color, $color);
+            }
+            
+            @if $i > 0 {
+               $fallback: $fallback + ", ";
+            }
+            $fallback: $fallback + $color;
+            @if $i > 0 {
+               $fallback: "#{$fallback} #{$ip}";
+            }
          }
-         
-         // Account for the scanlines.
-         @if $scanline-final-color {
-            $color: color-over($scanline-final-color, $color);
-         }
-         
-         @if $i > 0 {
-            $fallback: $fallback + ", ";
-         }
-         $fallback: $fallback + $color;
-         @if $i > 0 {
-            $fallback: "#{$fallback} #{$ip}";
-         }
+         $non-fixed-background: $fallback + ")";
+         $fixed-background:     "fixed " + $non-fixed-background;
       }
-      $fallback: $fallback + ")";
       
-      background: fixed #{$fallback}, $theme-background-color;
+      @if $AVOID-FIXED-ATTACHMENT {
+         background: #{$fixed-background}, $theme-background-color;
+         
+         //
+         // Fixed-attachment background layers perform poorly in web browsers, because 
+         // they need to be repainted whenever you scroll: the browser paints the page 
+         // content directly onto the backdrop, so the backdrop needs to be repainted 
+         // when you scroll.
+         //
+         // You can mitigate this by moving the backdrop onto its own layer, and using 
+         // `will-change: transform` to force the GPU to composite it separately. This 
+         // ensures that the backdrop is painted separately from the content, reducing 
+         // the work done to repaint the page as a whole when scrolling.
+         //
+         // This optimization does not work for individual elements within a page that 
+         // are meant to have fixed-position backgrounds, e.g. "windows" through which 
+         // you're meant to see the page background. There is no way to have the split 
+         // backdrop layer for such elements mimic a fixed-attachment background while 
+         // still being constrained to those elements' area. For those elements, you 
+         // will need to come up with optimizations specific to the situation you're 
+         // using them in. In general, all you have to do is ensure that the background 
+         // and the content are composited separately, so if you can't split off the 
+         // background, you can instead split off the content by applying `will-change` 
+         // to it; however, this will create a separate stacking context as well, which 
+         // can have knock-on effects for how other CSS properties render (one known 
+         // problem child is `border-image`).
+         //
+         &:root {
+            background-image: none;
+            
+            &::after {
+               content: "";
+               background: #{$non-fixed-background};
+               position: fixed;
+               inset:    0;
+               z-index:  -1;
+               will-change: transform;
+            }
+         }
+      } @else {
+         background: #{$fixed-background}, $theme-background-color;
+      }
    }
 }

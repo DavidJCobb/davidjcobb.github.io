@@ -25,7 +25,7 @@ $card-corner-size: 1rem;
 /// edges so they don't cover anything. (The latter functionaliy exists for 
 /// our mobile-specific top navbar.)
 ///
-@mixin card-shadow-border-image($inset: false, $clip-shadow-edges: null) {
+@mixin card-shadow-border-image($inset: false, $clip-shadow-edges: null, $image-includes-box-background: false) {
    /* crbug.com/1417526 -- Chromium fails to render border-images without a non-zero border-width */
    border: 1px solid transparent;
    
@@ -47,6 +47,13 @@ $card-corner-size: 1rem;
          //outsets:   6px 36px 132px 36px,
          repeat:    repeat
       );
+      @if $image-includes-box-background {
+         $borderimage: map-set(
+            $borderimage,
+            "source", 
+            url("./card-shadow-outset.webp")
+         );
+      }
       
       @if $clip-shadow-edges {
          $borderimage: borderimage-clip-sides($borderimage, $clip-shadow-edges);
@@ -123,6 +130,12 @@ $card-corner-size: 1rem;
    @include card-shadow(false, $use-mobile-fallback);
 }
 
+///
+/// Allow the page background to show through a "hole" cut through a card widget. This 
+/// means applying the page background to the card cutout as a fixed-attachment layer, 
+/// which performs suboptimally in web browsers, with the effects generally felt on 
+/// mobile. We work around this through a relatively arcane set of performance tweaks.
+///
 @mixin card-cutout {
    @include theme-background();
    
@@ -130,10 +143,39 @@ $card-corner-size: 1rem;
    padding:       1rem;
    @include card-shadow(true);
    
-   // Needed so that cards inside the cutout have their shadows visible.
-   // Something to do with how stacking contexts interact with z-index on 
-   // the shadows. Don't have time to figure out the specifics right now.
+   // Help with performance optimizations (see below). This seems to have a slight 
+   // beneficial effect on scrolling frame rate when testing on my phone.
    isolation: isolate;
+}
+@mixin card-in-cutout {
+   @include card;
+   @include card-mobile-fallback-hack;
+   
+   //
+   // As noted in the documentation for the `theme-background` mixin, the popular 
+   // optimization for fixed-attachment backgrounds only works for the whole page's 
+   // background, and not for things like our cutouts.
+   //
+   // The solution? If we can't move the cutout's background to a separate layer 
+   // for compositing, then move its contents to separate layers for compositing 
+   // instead. Thus, `will-change: transform` here on cards-in-cutouts.
+   //
+   will-change: transform;
+   
+   @include for-smartphones-only {
+      //
+      // The `will-change: transform` property has the additional effect of creating 
+      // a new stacking context for cards-in-cutouts, which affects how these cards' 
+      // border-images stack: specifically, it forces the border-image to "cut into" 
+      // the cards' own backgrounds and rounded corners.
+      //
+      // To mitigate this, we have a separate border-image graphic which includes the 
+      // background color and rounded corners.
+      //
+      &::after {
+         @include card-shadow-border-image(false, null, true);
+      }
+   }
 }
 
 @mixin revert-card-shadow-styles {
