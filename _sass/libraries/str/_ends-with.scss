@@ -6,7 +6,7 @@
       @return false;
    }
    
-   $slice: str-slice($haystack, $haystack-length - $prefix-length);
+   $slice: str-slice($haystack, $haystack-length - $prefix-length + 1);
    @if $slice == $prefix {
       @return true;
    }

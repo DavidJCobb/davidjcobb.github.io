@@ -1,3 +1,19 @@
 @function list-prepend($list, $item) {
-   @return join(($item), $list);
+
+   // `join` is janky. Among other things, it seems to deeply convert all 
+   // maps contained within the list into lists.
+   //
+   // "But why does that matter? Maps are just lists of key/value pairs, 
+   // right?" Tell that to built-ins like `map-has-key`.
+   //
+   // "But the documentation said--" The documentation lied.
+   //
+   //@return join(($item), $list);
+   
+   $result: ();
+   $result: append($result, $item);
+   @each $prior in $list {
+      $result: append($result, $prior);
+   }
+   @return $result;
 }
