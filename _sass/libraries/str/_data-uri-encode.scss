@@ -1,0 +1,46 @@
+
+@function str-data-uri-encode($string, $be-nice-to-ie: false) {
+   $bad-chars:  '"'  "'"  "#"  "%"  "["  "]"  "^"  "`"  "{"  "|"  "}";
+   $char-codes: "22" "00" "23"  25  "5B" "5D" "5E" "60" "7B" "7C" "7D";
+   @if $be-nice-to-ie {
+      $bad-chars:  join($bad-chars,  ("<"   ">"));
+      $char-codes: join($char-codes, ("%3C" "%3E"));
+   }
+   $bad-char-count: length($bad-chars);
+
+   $out: "";
+   
+   $i: null;
+   $c: null;
+   @for $j from 1 through $bad-char-count {
+      $char:  nth($bad-chars, $j);
+      $index: str-index($string, $char);
+      @if $index != null and ($i == null or $index < $i) {
+         $i: $index;
+         $c: $j;
+      }
+   }
+   @if $i == null {
+      @return $string;
+   }
+   
+   $out: "";
+   @while $i != null {
+      $subst:  "%" + nth($char-codes, $c);
+      $out:    $out + str-slice($string, 1, $i - 1) + $subst;
+      $string: str-slice($string, $i + 1);
+      
+      $i: null;
+      $c: null;
+      @for $j from 1 through $bad-char-count {
+         $char:  nth($bad-chars, $j);
+         $index: str-index($string, $char);
+         @if $index != null and ($i == null or $index < $i) {
+            $i: $index;
+            $c: $j;
+         }
+      }
+   }
+   $out: $out + $string;
+   @return $out;
+}

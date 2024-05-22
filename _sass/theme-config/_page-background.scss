@@ -39,9 +39,9 @@ $theme-gradient-background-layers: apply-all-to(
 ) !default;
 
 @mixin scanline-bg-params {
-   $scanline-color: rgba(0, 0, 0, 0.6);
+   $scanline-color: rgba(0, 0, 0, 0.06);
    $scanline-width: 1;
-   $scanline-gap:   3;
+   $scanline-gap:   2;
 
    --pinstripe-color: #{$scanline-color};
    --pinstripe-width: #{$scanline-width};
@@ -54,7 +54,7 @@ $theme-gradient-background-layers: apply-all-to(
 }
 
 $theme-scanline-background-layer: (
-   "image": quote(linear-gradient(to bottom,
+   "image": linear-gradient(to bottom,
          var(--pinstripe-color) 0%,
          var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-a)),
          transparent            calc(var(--pinstripe-adapt) * var(--pinstripe-x-a)),
@@ -62,7 +62,7 @@ $theme-scanline-background-layer: (
          var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-b)),
          var(--pinstripe-color) calc(var(--pinstripe-adapt) * var(--pinstripe-x-c)),
          transparent            calc(var(--pinstripe-adapt) * var(--pinstripe-x-c))
-      )),
+      ),
    "attach": "fixed",
    "repeat": "repeat",
    "size":   "10px calc((var(--pinstripe-width) + var(--pinstripe-gap)) * 2px)"

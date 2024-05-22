@@ -1,0 +1,456 @@
+$social-icon-size: null;
+
+//
+// Desktop-only styles.
+//
+// The plan was to put these in a media query which was the negation of the 
+// smartphones-only media query. Unfortunately, however, Ruby Sass doesn't 
+// fully support media queries:
+//
+//  - Only Dart Sass supports applying the `not` keyword to individual media 
+//    features.
+//
+//  - Ruby Sass attempts to merge nested media queries. However, it doesn't 
+//    do so reliably and it most certainly doesn't do so accurately: the 
+//    `not` keyword is ignored when considering possible merges, and it'll 
+//    be stripped out when performing them.
+//
+//    This means that even if we accept the constraint that `not` can only 
+//    appear at the beginning of a query, to nullify it, Sass doesn't even 
+//    consider that when choosing merges: (not a and not b and c) will be 
+//    merged into (a and b and c), for example.
+//
+//  - The merge step happens after media queries have been serialized. This 
+//    means that while interpolation e.g. `@media #{foo}` will allow you to 
+//    sneak things past the parser when it otherwise wouldn't understand 
+//    them, you CANNOT sneak past the broken query merging. In fact, if you 
+//    write a query like `@media #{"not abc"}`, it gets merged to form the 
+//    invalid query `@media not`. Just incredible.
+//
+// It's strange that Sass has a "breaking changes" page about their support 
+// for Media Queries Level 4 as if they ever even fully supported Level 3.
+//
+@if true {
+   $social-icon-size: 1em;
+   
+   #site-chrome {
+      display:contents;
+   }
+   #logo {
+      grid-area: icon;
+      margin:    2rem auto;
+      
+      >img {
+         /*
+            The IMG element will have explicit dimensions set in order to avoid insensible behavior 
+            (e.g. SVGs eating the whole screen) in the moments before the styles load. Clear those 
+            explicit dimensions here so we have full control in CSS.
+         */
+         width:auto;
+         
+         height:calc(2rem * 2 + 2.5rem * 1.2); /* half the h1.grand-header margin, times two, plus the grand-header font-size times the line height */
+      }
+      
+      position:relative;
+      &::after {
+         user-select:none;
+         pointer-events:none;
+         content:"";
+         position:absolute;
+         left:0;
+         top:0;
+         right:0;
+         bottom:0;
+         z-index:-1;
+         width:calc(2rem * 2 + 2.5rem * 1.2);
+         height:calc(2rem * 2 + 2.5rem * 1.2);
+         border-radius:calc(2rem * 2 + 2.5rem * 1.2 / 2);
+         
+         box-shadow:none;
+         transition-property:box-shadow;
+         transition-duration:0.8s;
+         
+         color-scheme: light dark;
+      }
+      &:hover::after {
+         box-shadow:
+            0 0 4.00rem rgba(255,255,255,0.3),
+            0 0 2.00rem rgba(255,255,255,0.4),
+            0 0 1.25rem rgba(255,255,255,0.2),
+            0 0 4px rgba(255,255,255,0.4),
+            0 0 2px rgba(255,255,255,0.5)
+         ;
+         transition-duration:3s;
+         transition-timing-function:cubic-bezier(.08,1.92,.81,.69);
+      }
+   }
+   @media (prefers-reduced-motion) {
+      #logo::after {
+         display:none!important;
+      }
+   }
+   
+   #socials,
+   #site-nav,
+   #page-nav>details {
+      @include card(false);
+   }
+   #site-nav {
+      grid-area:  sitenav;
+      margin-top: 2rem;
+   }
+   #page-nav {
+      grid-area:  pagenav;
+      margin-top: 2rem;
+      
+      >details {
+         position: sticky;
+         top:      2rem;
+      }
+   }
+   #site-nav,
+   #page-nav {
+      summary {
+         padding: 0 .5em;
+         list-style-position: outside;
+      }
+      
+      menu {
+         list-style:none;
+         padding:0;
+         margin:0;
+      }
+      a {
+         display:block;
+         padding:.25em .5em;
+         line-height:1.4em;
+         text-decoration:none;
+         border-radius:.5em;
+         
+         &:not(.you-are-here):hover {
+            background:#EEE;
+         }
+         
+         &.you-are-here {
+            cursor:default;
+            font-weight:bold;
+         }
+      }
+   }
+   #site-nav {
+      li:nth-last-of-type(2)>a {
+         border-radius:.5em .5em 0 0; /* flatten bottom edge of item before "View All," to match drawn border */
+      }
+      li.view-all>a {
+         border-top:1px solid #DDD;
+         border-radius:0 0 .5em .5em; /* flatten top edge of "View All," to match drawn border */
+      }
+   }
+
+   #socials {
+      grid-area: socials;
+      
+      header {
+         font-weight:bold;
+         padding:.25em .5em;
+      }
+      ul {
+         list-style:none;
+         padding:0;
+         margin:0;
+      }
+      li {
+         margin:0;
+      }
+      a {
+         display:block;
+         padding:.25em .5em;
+         text-decoration:none;
+         border-radius:.5em;
+         
+         &:hover {
+            background:#EEE;
+         }
+      }
+      a::before {
+         content:" ";
+         display:inline-block;
+         color-scheme:light dark;
+         width:1em;
+         height:1em;
+         margin-right:.5em;
+         vertical-align:-10%;
+         background-size:1em 1em;
+         background-image:url(icons/generic.png);
+         background-repeat:no-repeat;
+      }
+      li.github a::before {
+         background-image:url(icons/github.png);
+         color-scheme:light;
+      }
+      li.nexus a::before {
+         background-image:url(icons/nexusmods.png);
+      }
+   }
+   #socials {
+      a {
+         padding:.25em .5em;
+         text-decoration:none;
+         border-radius:.5em;
+         
+         &:hover {
+            background:#EEE;
+         }
+      }
+      a::before {
+         display: inline-block;
+         width:  $social-icon-size;
+         height: $social-icon-size;
+         margin-right:      .5em;
+         vertical-align:    -10%;
+      }
+      li.github a::before {
+         background-image:url(icons/github.png);
+         color-scheme:light;
+      }
+      li.nexus a::before {
+         background-image:url(icons/nexusmods.png);
+      }
+   }
+}
+
+@import "theme/corner-stripe-background.scss";
+
+@include for-smartphones-only {
+   $social-icon-size: 1.7rem;
+   
+   $theme-topbar-back-color:         $card-back-color !default;
+   $theme-topbar-fancy-back-enabled: true             !default;
+   
+   $topbar-logo-size: 64px;
+   $topbar-padding:   .5rem;
+   //
+   @include for-smartphones-only-portrait {
+      $topbar-logo-size:1.7rem;
+   }
+   
+   //
+   // End of config vars.
+   //
+   
+   $topbar-height: calc(#{$topbar-padding * 2} + #{$topbar-logo-size});
+   
+   /*
+      Nullify desktop styles. We can't put them inside of a desktop-only 
+      media query, because Ruby Sass doesn't properly parse @media queries: 
+      parsing of individual queries can spuriously fail if you use nested 
+      parentheticals or try to apply the `not` keyword to individual features; 
+      and Sass's attempts at merging nested queries will strip out all `not` 
+      keywords. The latter problem also breaks interpolation, so you can't use 
+      that to sneak media queries past the broken parser.
+   */
+   #site-chrome,
+   #logo,
+   #site-nav,
+   #page-nav,
+   :is(#site-nav, #page-nav) summary,
+   #socials {
+      all: revert;
+   }
+   
+   #site-chrome {
+      position: fixed;
+      left:     0;
+      top:      0;
+      width:    100vw;
+      z-index:  100;
+      
+      display:     flex;
+      flex-flow:   row nowrap;
+      align-items: center;
+   
+      //@include card-shadow-border-image(false, (top left right));
+      background: $theme-topbar-back-color;
+      border-image: url("./card-shadow-bottom-only.png") 0 0 164 0 / 0 0 4.125em 0 / 0 0 4.125em 0 repeat;
+   }
+   #logo {
+      order: 0;
+   
+      display: block;
+      margin:  0;
+      padding: $topbar-padding;
+      
+      img {
+         display: block;
+         width:   1.7rem;
+         height:  1.7rem;
+      }
+      max-width: $topbar-height; /* just in case */
+   }
+   #site-nav {
+      order: 1;
+      flex:  1 1 auto;
+   
+      background:    transparent none;
+      box-shadow:    none;
+      border-radius: 0;
+      margin:        0;
+      padding:       0;
+      
+      >summary {
+         list-style-position:inside; /* don't overlap the logo */
+         padding:$topbar-padding;
+      }
+      >menu {
+         position:      absolute;
+         top:           100%;
+         left:          $topbar-height;
+         right:         0;
+         padding:       2px $topbar-padding $topbar-padding $topbar-padding;
+         margin:        -2px 0 0 0;
+         border-radius: 0 0 $card-corner-size $card-corner-size;
+         
+         //@include card-shadow(false, false);
+         &::after {
+            @include card-shadow-border-image(false, (top));
+            position:absolute;
+            top:0;bottom:0;left:0;right:0;
+            z-index:-1;
+            content:" ";
+         }
+      }
+      
+      li + li:not(.view-all) {
+         /* borders between list items */
+         @if $theme-topbar-fancy-back-enabled {
+            border-top:1px solid #00000011;
+         } @else {
+            border-top:1px solid #EEE;
+         }
+         /*
+            NOTE: The A elements have border-radius applied; putting our borders on the LIs means 
+            we don't need to bother to unset that.
+         */
+      }
+      a {
+         text-overflow:ellipsis;
+      }
+      @if $theme-topbar-fancy-back-enabled {
+         .view-all>a {
+            border-top:1px solid #00000022!important;
+         }
+      }
+   }
+   #page-nav {
+      display:none!important;
+   }
+   
+   #socials {
+      order:9999; /* move below footer */
+      
+      text-align:center;
+      
+      header {
+         font-size:0;
+         padding:0;
+      }
+      ul {
+         display:         flex;
+         flex-flow:       row nowrap;
+         justify-content: center;
+         gap:             $social-icon-size;
+      }
+      a {
+         font-size:1px;
+         padding:0;
+         
+         &::before {
+            display:   block;
+            font-size: $social-icon-size;
+            margin:    0;
+            /*
+            @include card-shadow(false);
+            */
+            background-color: #FFF;
+            background-position: center center;
+            border-radius: 50%;
+            padding:       .2em;
+         }
+         
+         /*
+            Kiwi/Chromium mobile is failing to apply the box-shadow to all pseudo-elements 
+            matching the selector. Don't even ask me why; I have no idea. We'll apply the 
+            needed styles to the closest real element instead. Everything works fine on 
+            desktop (including when emulating smartphones) and in Firefox.
+            
+            What a stupid bug.
+            
+            [2/29/2024]
+         */
+         width:  $social-icon-size * 1.4; /* calc to emulate padding on the pseudo-element */
+         height: $social-icon-size * 1.4;
+         border-radius:50%;
+         @include card-shadow(false, false);
+      }
+   }
+   
+   @if $theme-topbar-fancy-back-enabled {
+      #site-chrome,
+      #site-nav,
+      #site-nav>menu {
+         @include corner-stripe-background;
+      }
+
+      /*
+         Ensure easily legible text by outlining it in the base background color.
+      */
+      #site-nav>menu li {
+         text-shadow: text-shadows-for-outline($theme-topbar-back-color), 0 0 .5em #FFFFFF40;
+      }
+   }
+}
+
+//
+// Common styles
+//
+
+#logo {
+   display: block;
+   
+   >img {
+      display:      block;
+      color-scheme: light dark;
+   }
+}
+#socials {
+   ul {
+      list-style:none;
+      padding:0;
+      margin:0;
+   }
+   li {
+      margin:0;
+   }
+   a {
+      display:block;
+   }
+   a::before {
+      content: " ";
+      color-scheme:      light dark;
+      background-size:   1em 1em;
+      background-image:  url(icons/generic.png);
+      background-repeat: no-repeat;
+   }
+   li.github a::before {
+      background-image:url(icons/github.png);
+      color-scheme:light;
+   }
+   li.nexus a::before {
+      background-image:url(icons/nexusmods.png);
+   }
+}
+#site-nav summary,
+#page-nav summary {
+   font-weight: bold;
+   cursor:      pointer;
+}

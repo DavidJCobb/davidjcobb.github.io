@@ -4,6 +4,7 @@
 @import "theme-mixins";
 @import "fonts";
 @import "theme-config/scrollbars.scss";
+@import "widgets/card.scss";
 
 $cobb-common-visual-was-imported: false !default;
 @if not $cobb-common-visual-was-imported { /* start include guard */
@@ -80,8 +81,7 @@ body{
       main{flex:1 1 760px}
 
 main>section {
-   @include content-card;
-   @include content-card-shadow-mobile-optimization;
+   @include card;
    
    &>:first-child:is(h1, h2, h3, h4, h5, h6) {
       padding-top:1rem;

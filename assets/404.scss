@@ -48,4 +48,5 @@ $theme-gradient-background-layers: apply-all-to(
    )
 );
 
+@import "widgets/card.scss";
 @import "common-visual.scss";

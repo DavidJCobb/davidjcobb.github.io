@@ -1,0 +1,105 @@
+
+@import "libraries/str/data-uri-encode.scss";
+@import "libraries/str/replace.scss";
+@import "polyfills/math-sqrt.scss";
+@import "utils/remove-unit.function.scss";
+
+@mixin corner-stripe-background {
+   $EXPERIMENTAL-USE-SVG-BACKGROUND:     true;
+   $EXPERIMENTAL-OPTIMIZE-SVG-FOR-SPACE: true;
+
+   $stripe-color-a: #FF7400;
+   $stripe-color-b: #ECE7E0;
+   $stripe-color-c: #000000;
+   //
+   $stripe-color-a: mix($stripe-color-a, #FFF, 50%);
+   $stripe-color-b: mix($stripe-color-b, #FFF, 50%);
+   $stripe-color-c: mix($stripe-color-c, #FFF, 50%);
+   
+   $colors: (
+      $stripe-color-a,
+      $stripe-color-c,
+      $stripe-color-b,
+      $stripe-color-c,
+      $stripe-color-a,
+      $stripe-color-c
+   );
+   $count: length($colors);
+   
+   $stripe-thickness: 1.5em;
+   $stripe-count:     3;
+   
+   background-attachment:fixed;
+   
+   
+   @if $EXPERIMENTAL-USE-SVG-BACKGROUND {
+      $lateral-size: remove-unit($stripe-thickness);
+      $lateral-size: $lateral-size / 0.70710678118654752440084436210485;
+   
+      $width: $lateral-size * 6;
+      
+      $svg: '<svg version="1.1" width="#{$count}" height="#{$count}" xmlns="http://www.w3.org/2000/svg">';
+      
+      @if $EXPERIMENTAL-OPTIMIZE-SVG-FOR-SPACE and
+         length($colors) == 6 and
+         nth($colors, 2) == nth($colors, 4) and nth($colors, 2) == nth($colors, 6) and
+         nth($colors, 1) == nth($colors, 5)
+      {
+         //
+         // Optimize for space:
+         //
+         $color-3-uses: nth($colors, 2);
+         $color-2-uses: nth($colors, 1);
+         $color-1-uses: nth($colors, 3);
+         
+         $style: '<style>';
+         $style: $style + "*{transform-origin:top right}";
+         $style: $style + "use:nth-child(2n-1){fill:#{$color-3-uses}}";
+         $style: $style + ".o{fill:#{$color-2-uses}}";
+         $style: $style + '</style>';
+         $svg: $svg + $style;
+         
+         $svg: $svg + '<defs><path id="a" d="M #{$count},0 l -1,0 l 1,1 Z"/></defs>';
+         $svg: $svg + '<use href="#a" transform="scale(6)"/>';
+         $svg: $svg + '<use href="#a" transform="scale(5)" class="o"/>';
+         $svg: $svg + '<use href="#a" transform="scale(4)"/>';
+         $svg: $svg + '<use href="#a" transform="scale(3)" fill="#{$color-1-uses}"/>';
+         $svg: $svg + '<use href="#a" transform="scale(2)"/>';
+         $svg: $svg + '<use href="#a" class="o"/>';
+      } @else {
+         @for $i from length($colors) through 1 {
+            $color: nth($colors, $i);
+            $shape: "M #{$count},0 l -#{$i},0 l #{$i},#{$i} Z";
+            
+            $svg: $svg + '<path d="#{$shape}" fill="#{$color}"/>';
+         }
+      }
+      
+      $svg: $svg + '</svg>';
+      
+      $svg: str-data-uri-encode($svg);
+      
+      background-image: url('data:image/svg+xml;utf8,#{$svg}');
+      background-repeat: no-repeat;
+      background-position: top right;
+      background-size: $lateral-size * 6em;
+   } @else {
+      $stops: ();
+      @for $i from 1 through $count {
+         $here: nth($colors, $i);
+      
+         $stops: append(
+            $stops,
+            $here #{$stripe-thickness * ($i - 1)} #{$stripe-thickness * $i},
+            comma
+         );
+      }
+      $stops: append($stops, transparent #{$stripe-thickness * $stripe-count * 2} 100%, comma);
+      background-image:
+         linear-gradient(225deg,
+            $stops
+         )
+      ;
+   }
+   background-color:#FFF;
+}

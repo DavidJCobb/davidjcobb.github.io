@@ -3,6 +3,7 @@
 
 @import "utils";
 @import "theme-mixins";
+@import "widgets/card.scss";
 @import "widgets/different-wording-for-the-blind.scss";
 
 main p,
@@ -361,11 +362,11 @@ section>aside {
 }
 
 .card-cutout {
-   @include content-card-cutout;
+   @include card-cutout;
 }
 figure.card-cutout>.wrap {
-   @extend  %content-card;
-   @include content-card-shadow-mobile-optimization;
+   @include card;
+   @include card-mobile-fallback-hack;
    
    width:min-content;
    margin:0 auto;
@@ -417,7 +418,7 @@ figure.mathematical-graph:not(.multi-figure) {
       }
    }
    &.card-cutout>.graph {
-      @extend %content-card;
+      @include card;
       
       padding:1rem;
       border-radius:1rem;

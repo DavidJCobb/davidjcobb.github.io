@@ -1,0 +1,99 @@
+
+///
+///   $borderimage: (
+///      source:    url("foo.png"),
+///      intrinsic: 0 0 0 0,
+///      displayed: 0 0 0 0,
+///      outsets:   0 0 0 0,
+///      repeat:    repeat
+///   )
+///
+
+@function borderimage-set-display-size($self, $side, $value) {
+   $displayed: map-get($self, "displayed");
+   
+   $n: index((top, left, bottom, right), $side);
+   @if not $n {
+      @error "unrecognized border image side #{inspect($side)}";
+   }
+   $displayed: set-nth($displayed, $n, $value);
+   
+   $self: map-set($self, "displayed", $displayed);
+   @return $self;
+}
+
+@function borderimage-set-outset($self, $side, $value) {
+   $outsets: map-get($self, "outsets");
+   
+   $n: index((top, left, bottom, right), $side);
+   @if not $n {
+      @error "unrecognized border image side #{inspect($side)}";
+   }
+   $outsets: set-nth($outsets, $n, $value);
+   
+   $self: map-set($self, "outsets", $outsets);
+   @return $self;
+}
+
+@function borderimage-clip-sides($self, $sides) {
+   $displayed: map-get($self, "displayed");
+   $outsets:   map-get($self, "outsets");
+   
+   $valid-sides: (top, left, bottom, right);
+   @for $i from 1 through length($valid-sides) {
+      $side: nth($valid-sides, $i);
+      @if index($sides, $side) {
+         $outsets:   set-nth($outsets,   $i, 0);
+         $displayed: set-nth($displayed, $i, 0);
+      }
+   }
+   
+   $self: map-set($self, "displayed", $displayed);
+   $self: map-set($self, "outsets",   $outsets);
+   @return $self;
+}
+
+@function borderimage-to-string($self) {
+   $str: "";
+   
+   $v: map-get($self, "source");
+   @if $v {
+      $str: $v;
+   }
+   
+   $v: map-get($self, "intrinsic"); // width
+   @if $v {
+      $v: join((), $v, space);
+      $str: $str + " " + $v;
+   }
+   
+   $v: map-get($self, "displayed"); // slice
+   @if $v {
+      $v: join((), $v, space);
+      
+      $str: $str + " ";
+      @if map-has-key($self, "intrinsic") {
+         $str: $str + "/ ";
+      }
+      $str: $str + $v;
+   } @else if map-has-key($self, "outsets") {
+      $str: $str + " ";
+      @if map-has-key($self, "intrinsic") {
+         $str: $str + "/ ";
+      }
+      $str: $str + "auto";
+   }
+   
+   $v: map-get($self, "outsets"); // outset
+   @if $v {
+      $v: join((), $v, space);
+      $str: $str + " / " + $v;
+   }
+   
+   $v: map-get($self, "repeat");
+   @if $v {
+      $str: $str + " " + $v;
+   }
+   
+   @return $str;
+}

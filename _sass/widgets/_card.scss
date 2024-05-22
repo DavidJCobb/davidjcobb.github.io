@@ -3,6 +3,8 @@ $card-back-color:  #FFF;
 $card-text-color:  #000;
 $card-corner-size: 1rem;
 
+@import "libraries/borderimage";
+
 ///
 /// Cards are white boxes with rounded corners and a soft, realistic shadow. 
 /// The shadow is implemented with box-shadow by default, but on smartphones, 
@@ -16,7 +18,79 @@ $card-corner-size: 1rem;
 /// to show through.
 ///
 
-@mixin content-card-shadow($inset: false, $use-mobile-fallback: true, $clip-shadow-edges: false) {
+//
+
+///
+/// Display a card shadow as a border-image, and optionally clip off specific 
+/// edges so they don't cover anything. (The latter functionaliy exists for 
+/// our mobile-specific top navbar.)
+///
+@mixin card-shadow-border-image($inset: false, $clip-shadow-edges: null) {
+   /* crbug.com/1417526 -- Chromium fails to render border-images without a non-zero border-width */
+   border: 1px solid transparent;
+   
+   @if $inset {
+      border-image: url("./card-shadow-inset.svg") 41 29 17 / 2.5625rem 1.8125rem 1.0625rem / 0;
+      min-height:calc(3.625em - 2px);
+   } @else {
+      $borderimage: (
+         source:    url("./card-shadow-outset-no-fill.png"),
+         intrinsic: 144     144    164     144,
+         displayed: 4.5em   4.5em  5.125em 4.5em,
+         //displayed: 72px 72px 82px 72px,
+         outsets:   0.375em 2.25em 4.125em 2.25em,
+         //outsets:   6px 36px 132px 36px,
+         repeat:    repeat
+      );
+      
+      @if $clip-shadow-edges {
+         $borderimage: borderimage-clip-sides($borderimage, $clip-shadow-edges);
+      }
+      
+      border-image: borderimage-to-string($borderimage);
+   }
+}
+
+@mixin card-mobile-fallback-hack($inset: false, $clip-shadow-edges: null) {
+   @if $inset {
+      /*
+         Having too many box-shadows on-screen at one time can cause lag for weaker devices, 
+         such as smartphones. For that reason, we're going to have inset card shadows fall 
+         back to using a border-image instead of multiple box-shadows. The result will look 
+         marginally less pretty, but not too noticeably so.
+      */
+      @include for-smartphones-only {
+         box-shadow: none;
+         @include card-shadow-border-image(true);
+      }
+   } @else {
+      @include for-smartphones-only {
+         box-shadow: none;
+         @at-root {
+            //
+            // Drop back to the root so we can use :where(...) with SASS interpolation, to 
+            // apply `position: relative` with the lowest possible priority.
+            //
+            :where(#{&}) {
+               position: relative;
+            }
+         }
+         &::after {
+            content:  " ";
+            position: absolute;
+            z-index:  -1;
+            inset:    0;
+            
+            user-select:    none;
+            pointer-events: none;
+            
+            @include card-shadow-border-image(false, $clip-shadow-edges);
+         }
+      }
+   }
+}
+
+@mixin card-shadow($inset: false, $use-mobile-fallback: true, $clip-shadow-edges: false) {
    $-inset-str: unquote("");
    @if $inset {
       $-inset-str: inset;
@@ -31,90 +105,32 @@ $card-corner-size: 1rem;
       $-inset-str 0 20px 24px rgba(0, 0, 0, 0.07),
       $-inset-str 0 30px 36px rgba(0, 0, 0, 0.08);
    
-   @if $inset {
-      /*
-         Having too many box-shadows on-screen at one time can cause lag for weaker devices, 
-         such as smartphones. For that reason, we're going to have inset card shadows fall 
-         back to using a border-image instead of multiple box-shadows. The result will look 
-         marginally less pretty, but not too noticeably so.
-      */
-      
-      /* crbug.com/1417526 -- Chromium fails to render border-images without a non-zero border-width */
-      /*  - If you set a border-width on your element, make sure to do so AFTER including this mixin */
-      border-style: solid;
-      border-color: transparent;
-      border-width: 1px;
-      
-      @if $use-mobile-fallback {
-         @include for-smartphones-only {
-            box-shadow: none;
-            border-image: url("./card-shadow-inset.svg") 41 29 17 / 2.5625rem 1.8125rem 1.0625rem / 0;
-            min-height:calc(3.625em - 2px);
-         }
-      }
-   } @else {
-      @if $use-mobile-fallback {
-         @include for-smartphones-only {
-            $sizes:   4.5em   4.5em  5.125em 4.5em;
-            $outsets: 0.375em 2.25em 4.125em 2.25em;
-            
-            //
-            // Hack for the mobile top navbar: allow it to clip off certain 
-            // border-image sides so that its background doesn't get covered 
-            // by the border image.
-            //
-            @if $clip-shadow-edges {
-               @if index($clip-shadow-edges, "top") != null {
-                  $sizes:   set-nth($sizes,   1, 0);
-                  $outsets: set-nth($outsets, 1, 0);
-               }
-               @if index($clip-shadow-edges, "right") != null {
-                  $sizes:   set-nth($sizes,   2, 0);
-                  $outsets: set-nth($outsets, 2, 0);
-               }
-               @if index($clip-shadow-edges, "bottom") != null {
-                  $sizes:   set-nth($sizes,   3, 0);
-                  $outsets: set-nth($outsets, 3, 0);
-               }
-               @if index($clip-shadow-edges, "left") != null {
-                  $sizes:   set-nth($sizes,   4, 0);
-                  $outsets: set-nth($outsets, 4, 0);
-               }
-            }
-         
-            box-shadow:   none;
-            border-image: url("./card-shadow-outset.png") 144 144 164 144 / #{$sizes} / #{$outsets} repeat;
-            
-            /*
-               Chromium on Android: a radius prevents border-images from rendering? Sometimes??
-            */
-            border-radius: 0;
-         }
-      }
+   @if $use-mobile-fallback {
+      @include card-mobile-fallback-hack($inset, $clip-shadow-edges);
    }
 }
 
-@mixin content-card {
+@mixin card($use-mobile-fallback: true) {
    background:    $card-back-color;
    color:         $card-text-color;
    border-radius: $card-corner-size;
    padding:       1.5rem 2rem;
-   @include content-card-shadow(false);
+   @include card-shadow(false, $use-mobile-fallback);
 }
 
-%content-card {
-   @include content-card;
-}
-
-@mixin content-card-cutout {
+@mixin card-cutout {
    @include theme-background();
    
    border-radius: 1rem;
    padding:       1rem;
-   @include content-card-shadow(true);
+   @include card-shadow(true);
 }
 
 @mixin revert-card-shadow-styles {
    box-shadow:   none;
    border-image: none;
+   &::after {
+      content: "";
+      border-image: none;
+   }
 }

@@ -9,6 +9,7 @@ $inline-asides-on-smartphone: true !default;
 
 @import "common-visual.scss";
 @import "utils.scss";
+@import "widgets/card.scss";
 
 section {
    &.published-work {

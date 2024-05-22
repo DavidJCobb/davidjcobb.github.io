@@ -9,6 +9,7 @@
 @import "common-visual.scss";
 @import "elements/pre.scss";
 @import "elements/tables.scss";
+@import "widgets/card.scss";
 @import "syntax-highlighting.scss";
 
 /*
@@ -52,660 +53,122 @@ a[name="page-content"] {
    
     - The site logo and site navigation are placed into a topbar.
     
-       - The site navigation will anchor to the top of the screen only if the user actually 
-         opens it.
-    
     - The page navigation is hidden entirely.
 
 */
 
 body {
+   box-sizing: border-box;
+   min-height: 100vh;
+   width:      max-content;
+   max-width:  100%;
+}
 
-   $-bottom-grid-row: "_ footer";
-   @if $theme-center-footer-under-full-page {
-      $-bottom-grid-row: "footer footer";
-   }
-
-   box-sizing:border-box;
-   min-height:100vh;
-
-   width:max-content;
-   max-width:100%;
-   margin:0 auto;
-   padding:0 0 7rem 0;
-   
-   display:grid;
-   grid-template-columns: min-content 1fr;
-   grid-template-rows: min-content 1fr;
-   grid-template: 
-      "icon    header "
-      "socials page   "
-      "sitenav page   "
-      "pagenav page   " 1fr
-      $-bottom-grid-row / minmax(16em, 20em) minmax(720px, 960px);
-   gap: 0 2rem;
-}
-#site-chrome {
-   display:contents;
-}
-#logo {
-   grid-area: icon;
-
-   display:block;
-   margin:2rem auto;
-   
-   >img {
-      display:block;
-      color-scheme: light dark;
-      
-      /*
-         The IMG element will have explicit dimensions set in order to avoid insensible behavior 
-         (e.g. SVGs eating the whole screen) in the moments before the styles load. Clear those 
-         explicit dimensions here so we have full control in CSS.
-      */
-      width:auto;
-      
-      height:calc(2rem * 2 + 2.5rem * 1.2); /* half the h1.grand-header margin, times two, plus the grand-header font-size times the line height */
-   }
-   
-   position:relative;
-   &::after {
-      user-select:none;
-      pointer-events:none;
-      content:"";
-      position:absolute;
-      left:0;
-      top:0;
-      right:0;
-      bottom:0;
-      z-index:-1;
-      width:calc(2rem * 2 + 2.5rem * 1.2);
-      height:calc(2rem * 2 + 2.5rem * 1.2);
-      border-radius:calc(2rem * 2 + 2.5rem * 1.2 / 2);
-      
-      box-shadow:none;
-      transition-property:box-shadow;
-      transition-duration:0.8s;
-      
-      color-scheme: light dark;
-   }
-   &:hover::after {
-      box-shadow:
-         0 0 4.00rem rgba(255,255,255,0.3),
-         0 0 2.00rem rgba(255,255,255,0.4),
-         0 0 1.25rem rgba(255,255,255,0.2),
-         0 0 4px rgba(255,255,255,0.4),
-         0 0 2px rgba(255,255,255,0.5)
-      ;
-      transition-duration:3s;
-      transition-timing-function:cubic-bezier(.08,1.92,.81,.69);
-   }
-}
-@media (prefers-reduced-motion) {
-   #logo::after {
-      display:none!important;
-   }
-}
-#content {
-   display:contents;
-   
-   >header {
-      grid-area: header;
-   }
-   >main {
-      grid-area: page;
-   }
-}
-#page-github-history {
-   grid-area: header; /* same box as the page header */
-   align-self: end;
-   margin:0 0 .5em;
-   
-   order:10; /* show in front of header */
-   
-   display:flex;
-   flex-flow:row nowrap;
-   width:min-content;
-   gap:.5rem;
-   
-   font-size:.85em;
-   
-   >a {
-      @extend %cannot-handle-auto-dark-mode;
-      $inset: 2px;
-   
-      line-height:1.5em;
-      text-align:center;
-      text-decoration:none;
-      white-space:nowrap;
-      
-      display:block;
-      padding:$inset 1em calc(0.25em + #{$inset});
-      border-radius:1em;
-      background:rgba(255, 255, 255, 0.8);
-      
-      background: unpack-backgrounds( append( (), $theme-scanline-background-layer, comma) ), rgba(255, 255, 255, 0.65);
-      text-shadow:
-         text-shadows-for-outline(rgba(255, 255, 255, 0.5)),
-          4px 0 4px #FFF,
-         -4px 0 4px #FFF
-      ;
-      
-      &:hover {
-         background-color:rgba(255, 255, 255, 0.8) !important;
+//
+// Desktop-only styles.
+//
+// The plan was to put these in a media query which was the negation of the 
+// smartphones-only media query. Unfortunately, however, Ruby Sass doesn't 
+// fully support media queries:
+//
+//  - Only Dart Sass supports applying the `not` keyword to individual media 
+//    features.
+//
+//  - Ruby Sass attempts to merge nested media queries. However, it doesn't 
+//    do so reliably and it most certainly doesn't do so accurately: the 
+//    `not` keyword is ignored when considering possible merges, and it'll 
+//    be stripped out when performing them.
+//
+//    This means that even if we accept the constraint that `not` can only 
+//    appear at the beginning of a query, to nullify it, Sass doesn't even 
+//    consider that when choosing merges: (not a and not b and c) will be 
+//    merged into (a and b and c), for example.
+//
+//  - The merge step happens after media queries have been serialized. This 
+//    means that while interpolation e.g. `@media #{foo}` will allow you to 
+//    sneak things past the parser when it otherwise wouldn't understand 
+//    them, you CANNOT sneak past the broken query merging. In fact, if you 
+//    write a query like `@media #{"not abc"}`, it gets merged to form the 
+//    invalid query `@media not`. Just incredible.
+//
+// It's strange that Sass has a "breaking changes" page about their support 
+// for Media Queries Level 4 as if they ever even fully supported Level 3.
+//
+@if true {
+   body {
+      $-bottom-grid-row: "_ footer";
+      @if $theme-center-footer-under-full-page {
+         $-bottom-grid-row: "footer footer";
       }
+
+      margin:  0 auto;
+      padding: 0 0 7rem 0;
       
-      position:relative;
-      &::after {
-         content:"";
-         pointer-events:none;
-         user-select:none;
-         
-         position:absolute;
-         inset:2px;
-         border-radius:inherit;
-         
-         border:2px solid #AAA;
+      display:               grid;
+      grid-template-columns: min-content 1fr;
+      grid-template-rows:    min-content 1fr;
+      grid-template: 
+         "icon    header "
+         "socials page   "
+         "sitenav page   "
+         "pagenav page   " 1fr
+         $-bottom-grid-row / minmax(16em, 20em) minmax(720px, 960px);
+      gap: 0 2rem;
+   }
+   #content {
+      display:contents;
+      
+      >header {
+         grid-area: header;
+      }
+      >main {
+         grid-area: page;
       }
    }
-}
-body>footer {
-   grid-area: footer;
-}
-
-#socials,
-#site-nav,
-#page-nav>details {
-   @include content-card;
-}
-#site-nav,
-#page-nav {
-   summary {
-      font-weight: bold;
-      padding:0 .5em;
-      list-style-position: outside;
-      cursor:pointer;
-   }
-   
-   menu {
-      list-style:none;
-      padding:0;
-      margin:0;
-   }
-   a {
-      display:block;
-      padding:.25em .5em;
-      line-height:1.4em;
-      text-decoration:none;
-      border-radius:.5em;
-      
-      &:not(.you-are-here):hover {
-         background:#EEE;
-      }
-      
-      &.you-are-here {
-         cursor:default;
-         font-weight:bold;
-      }
+   body>footer {
+      grid-area: footer;
    }
 }
-#site-nav {
-   li:nth-last-of-type(2)>a {
-      border-radius:.5em .5em 0 0; /* flatten bottom edge of item before "View All," to match drawn border */
-   }
-   li.view-all>a {
-      border-top:1px solid #DDD;
-      border-radius:0 0 .5em .5em; /* flatten top edge of "View All," to match drawn border */
-   }
-}
-
-#socials {
-   grid-area: socials;
-   
-   header {
-      font-weight:bold;
-      padding:.25em .5em;
-   }
-   ul {
-      list-style:none;
-      padding:0;
-      margin:0;
-   }
-   li {
-      margin:0;
-   }
-   a {
-      display:block;
-      padding:.25em .5em;
-      text-decoration:none;
-      border-radius:.5em;
-      
-      &:hover {
-         background:#EEE;
-      }
-   }
-   a::before {
-      content:" ";
-      display:inline-block;
-      color-scheme:light dark;
-      width:1em;
-      height:1em;
-      margin-right:.5em;
-      vertical-align:-10%;
-      background-size:1em 1em;
-      background-image:url(icons/generic.png);
-      background-repeat:no-repeat;
-   }
-   li.github a::before {
-      background-image:url(icons/github.png);
-      color-scheme:light;
-   }
-   li.nexus a::before {
-      background-image:url(icons/nexusmods.png);
-   }
-}
-#site-nav {
-   grid-area: sitenav;
-   margin-top:2rem;
-}
-#page-nav {
-   grid-area: pagenav;
-   margin-top:2rem;
-   
-   >details {
-      position:sticky;
-      top:2rem;
-   }
-}
-
-/*
-=================================================================================
-
-   MOBILE STYLES BELOW
-   
-   These were in a separate file. That worked in my local Jekyll installation, 
-   but apparently it makes GitHub Pages choke.
-
-=================================================================================
-*/
+@import "layout-elements/sidebar-and-socials.scss";
 
 @include for-smartphones-only {
+   $topbar-logo-size:64px;
+   $topbar-padding:.5rem;
 
-$theme-topbar-always-follows-user: true             !default;
-$theme-topbar-back-color:          $card-back-color !default;
-$theme-topbar-fancy-back-enabled:  true             !default;
-
-$theme-topbar-allow-fullheight-expand: false !default; /* if false, expanded topbar menu can't consume full screen height */
-
-$topbar-logo-size:64px;
-$topbar-padding:.5rem;
-
-@include for-smartphones-only-portrait {
-   $topbar-logo-size:1.7rem;
-}
-
-$topbar-height: calc(#{$topbar-padding * 2} + #{$topbar-logo-size});
-
-$social-icon-size:64px;
-@include for-smartphones-only-portrait {
-   /* MUST NOT use em, ch, etc.; can use rem and friends though. */
-   $social-icon-size:1.7rem;
-}
-
-body {
-   width:100%;
-   max-width:none;
-   margin:0;
-   padding-bottom:2rem;
-   
-   display:flex;
-   grid-template:none;
-   flex-flow:column nowrap;
-}
-#content {
-   display:block;
-   width:960px;
-   margin:0 auto;
-   flex:1 0 auto;
-}
-#page-nav {
-   display:none!important;
-}
-
-#socials {
-   order:9999; /* move below footer */
-   
-   background:transparent none;
-   @include revert-card-shadow-styles;
-   
-   text-align:center;
-   
-   header {
-      font-size:0;
-      padding:0;
+   @include for-smartphones-only-portrait {
+      $topbar-logo-size:1.7rem;
    }
-   ul {
-      display:flex;
-      flex-flow:row nowrap;
-      justify-content:center;
-      gap: $social-icon-size;
-   }
-   a {
-      font-size:1px;
-      padding:0;
+   
+   //
+
+   $topbar-height: calc(#{$topbar-padding * 2} + #{$topbar-logo-size});
+   
+   body {
+      width:     100%;
+      max-width: none;
+      padding:   $topbar-height 0 2rem 0;
+      margin:    0;
       
-      &::before {
-         display:   block;
-         font-size: $social-icon-size;
-         margin:    0;
-         /*
-         @include content-card-shadow(false);
-         */
-         background-color: #FFF;
-         background-position: center center;
-         border-radius: 50%;
-         padding:       .2em;
-      }
-      
-      /*
-         Kiwi/Chromium mobile is failing to apply the box-shadow to all pseudo-elements 
-         matching the selector. Don't even ask me why; I have no idea. We'll apply the 
-         needed styles to the closest real element instead. Everything works fine on 
-         desktop (including when emulating smartphones) and in Firefox.
-         
-         What a stupid bug.
-         
-         [2/29/2024]
-      */
-      width:  $social-icon-size * 1.4; /* calc to emulate padding on the pseudo-element */
-      height: $social-icon-size * 1.4;
-      border-radius:50%;
-      @include content-card-shadow(false, false);
+      display:       flex;          // NOTE: reverts desktop-specific styles
+      grid-template: none;          // NOTE: reverts desktop-specific styles
+      flex-flow:     column nowrap;
    }
-}
+   #content {
+      display: block;    // NOTE: reverts desktop-specific styles
+      width:   960px;
+      margin:  0 auto;
+      flex:    1 0 auto;
+   }
 
-/*
-   Topbar visuals:
-*/
+   #page-github-history {
+      font-size:1rem;
+      margin:0 0 .5em;
 
-body {
-   padding-top:$topbar-height;
-}
-#logo {
-   margin:0;
-   padding:$topbar-padding;
-   
-   img {
-      width:1.7rem;
-      height:1.7rem;
-   }
-   max-width:$topbar-height; /* just in case */
-}
-#site-nav {
-   background:transparent none;
-   box-shadow:none;
-   border-radius:0;
-   margin:0;
-   padding:0;
-   
-   >summary {
-      list-style-position:inside; /* don't overlap the logo */
-      padding:$topbar-padding;
-   }
-   >menu {
-      padding:2px $topbar-padding $topbar-padding $topbar-padding;
-      margin:0;
-      border-radius:0 0 $card-corner-size $card-corner-size;
-      
-      /*
-         Ensure that we never cast a shadow upward onto the topbar, by clipping it:
-      */
-      clip-path: inset(1px -50% -200% -50%);
-      clip-path: border-box inset(1px -50% -200% -50%);
-      
-      /*
-         Ensure that it doesn't take up too much of the screen.
-      */
-      @if $theme-topbar-allow-fullheight-expand {
-         max-height:calc(100vh - #{$topbar-height - $topbar-padding});
-      } @else {
-         max-height:calc(50vh - #{$topbar-height});
-      }
-      overflow-y:auto;
-      overflow-x:hidden;
-   }
-   
-   li + li:not(.view-all) {
-      /* borders between list items */
-      @if $theme-topbar-fancy-back-enabled {
-         border-top:1px solid #00000011;
-      } @else {
-         border-top:1px solid #EEE;
-      }
-      /*
-         NOTE: The A elements have border-radius applied; putting our borders on the LIs means 
-         we don't need to bother to unset that.
-      */
-   }
-   a {
-      text-overflow:ellipsis;
-   }
-   @if $theme-topbar-fancy-back-enabled {
-      .view-all>a {
-         border-top:1px solid #00000022!important;
+      >a {
+         background-color:rgba(255, 255, 255, 0.8);
+         padding:.25em .75em;
       }
    }
 }
-#page-github-history {
-   font-size:1rem;
-   margin:0 0 .5em;
 
-   >a {
-      background-color:rgba(255, 255, 255, 0.8);
-      padding:.25em .75em;
-   }
-}
-
-/*
-   Topbar layout:
-*/
-
-/*
-   Making a topbar that can expand without JavaScript is... tricky. The usual pure-CSS 
-   hack is to use :target, but that doesn't play nice with page anchors. The new HTML5 
-   DETAILS element, however, gives us something that's only moderately subpar.  We can 
-   modify the styling of the DETAILS element  itself and any nextSiblings based on the 
-   presence of its OPEN attribute. We unfortunately cannot force the element open with 
-   CSS,  nor control its default open state via CSS,  which means that to default-open 
-   it on desktop, we need JavaScript.
-      
-   Our topbar consists  of two top-level elements:  the site logo,  which links to the 
-   homepage; and the DETAILS element containing our site nav.  The logo itself is an A 
-   element wrapping an IMG.
-   
-*/
-
-@if $theme-topbar-always-follows-user {
-   #site-chrome {
-      @include content-card-shadow(false);
-      background:$theme-topbar-back-color;
-   }
-   
-   #site-nav>menu {
-      @include content-card-shadow(
-         false,
-         true,
-         ( top right )
-      );
-      background:$theme-topbar-back-color;
-   }
-   
-   #site-chrome {
-      position:fixed;
-      left:0;
-      top:0;
-      /*right:0;*/ width:100vw;
-      z-index:100;
-      
-      display:flex;
-      flex-flow:row nowrap;
-      align-items:center;
-      
-      @include for-smartphones-only {
-         box-shadow: none;
-         border-image: url("./card-shadow-bottom-only.png") 0 0 164 0 / 0 0 4.125em 0 / 0 0 4.125em 0 repeat;
-      }
-   }
-   
-   #logo {
-      order:0;
-   }
-   #site-nav {
-      order:1;
-      flex:1 1 auto;
-      
-      @include revert-card-shadow-styles;
-      
-      >menu {
-         position:absolute;
-         top:100%;
-         left:$topbar-height;
-         right:0;
-         margin-top:-2px;
-      }
-   }
-} @else {
-
-   #logo::after,
-   #site-nav>menu {
-      /*
-         Put this here to avoid duplicating these styles *quite* as much...
-      */
-      @include content-card-shadow(false);
-      background:$theme-topbar-back-color;
-   }
-   #site-nav>menu {
-      @include content-card-shadow-mobile-optimization;
-   }
-   
-   /*
-      What we want, currently, is a topbar that anchors to the top of the page initially. 
-      If the user opens it,  then it should follow them as they scroll,  but otherwise it 
-      should leave them alone.  This means that we need to be able to switch the topbar's 
-      CSS `position` based on the DETAILS OPEN attribute,  which in turn means that we're 
-      not able to use a container for the topbar as a whole.  (Not until Mozilla finishes 
-      an implementation of :has that isn't broken, anyway...)  We can put the elements in 
-      a container for the sake of clean HTML, but we'll need to use `display:contents` on 
-      that container, so from a CSS standpoint, it may as well not even be there.
-      
-      For our topbar background,  then,  we'll use a pseudo-element on the logo. We can't 
-      apply the background to each of the topbar's constituent parts individually,  since 
-      the background includes a box-shadow, and we don't want parts of the navbar to cast 
-      shadows on each other.
-   */
-   #site-chrome {
-      display:contents;
-   }
-   #logo,
-   #site-nav {
-      position:absolute;
-      top:0;
-      @include revert-card-shadow-styles;
-   }
-   
-   #logo {
-      left:0;
-      
-      /*
-         Topbar background and shadow:
-      */
-      &::after {
-         content:"";
-         pointer-events:none;
-         user-select:none;
-         
-         padding:0;
-         
-         position:absolute;
-         left:-64px; /* left offset so the shadow doesn't curve or blur towards the left corner */
-         top:0;
-         width:calc(100vw + 64px);
-         bottom:0;
-         z-index:-1;
-      }
-   }
-   #site-nav {
-      left:$topbar-height;
-      z-index:1; /* override element order in the document and place this in front of the logo */
-      
-      &[open] {
-         position:fixed;
-         right:0;
-         
-         &+#logo {
-            position:fixed;
-         }
-      }
-   }
-   
-}
-
-@if $theme-topbar-fancy-back-enabled {
-
-   /*
-      Ensure easily legible text by outlining it in the base background color.
-   */
-   #site-nav>menu li {
-      text-shadow: text-shadows-for-outline($theme-topbar-back-color), 0 0 .5em #FFFFFF40;
-   }
-
-   #site-chrome,
-   #site-nav,
-   #site-nav>menu {
-      $stripe-color-a: #FF7400;
-      $stripe-color-b: #ECE7E0;
-      $stripe-color-c: #000000;
-      
-      $stripe-thickness: 1.5em;
-      $stripe-count:     3;
-      
-      background-attachment:fixed;
-      
-      /*
-         Render stripes as straight lines. Due to how linear gradients are 
-         positioned, you don't need to line anything up to avoid having an 
-         "out-of-bounds" area "behind" the gradient show.
-      */
-      $stripe-color-a: mix($stripe-color-a, #FFF, 50%);
-      $stripe-color-b: mix($stripe-color-b, #FFF, 50%);
-      $stripe-color-c: mix($stripe-color-c, #FFF, 50%);
-      
-      $stops: ();
-      @for $i from 0 to $stripe-count {
-         $here: $stripe-color-a;
-         @if $i % 2 == 1 {
-            $here: $stripe-color-b;
-         }
-         
-         $stops: append(
-            $stops,
-            $here #{$stripe-thickness * ($i * 2 + 0)} #{$stripe-thickness * ($i * 2 + 1)},
-            comma
-         );
-         $stops: append(
-            $stops,
-            $stripe-color-c #{$stripe-thickness * ($i * 2 + 1)} #{$stripe-thickness * ($i * 2 + 2)},
-            comma
-         );
-      }
-      $stops: append($stops, transparent #{$stripe-thickness * $stripe-count * 2} 100%, comma);
-      background-image:
-         linear-gradient(225deg,
-            $stops
-         )
-      ;
-      background-color:#FFF;
-   }
-}
-   
-}
+@import "layout-elements/page-github-history.scss";

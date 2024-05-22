@@ -6,9 +6,9 @@
    
    $ssize: str-length($substring);
    
-   $out: str-slice($string, 1, $i - 1);
+   $out: "";
    @while $i != null {
-      $out:    $out + $target;
+      $out:    $out + str-slice($string, 1, $i - 1) + $target;
       $string: str-slice($string, $i + $ssize);
       $i:      str-index($string, $substring);
    }

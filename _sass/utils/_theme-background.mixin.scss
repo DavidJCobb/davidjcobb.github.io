@@ -61,9 +61,9 @@
       
       // Account for the scanlines.
       //
-      $scanline-color: rgba(0, 0, 0, 0.6); // HACK; DEFINE THESE AS THEMING CONSTANTS SOMEWHERE
+      $scanline-color: rgba(0, 0, 0, 0.06); // HACK; DEFINE THESE AS THEMING CONSTANTS SOMEWHERE
       $scanline-width: 1;
-      $scanline-gap:   3;
+      $scanline-gap:   2;
       //
       $scanline-final-color: $scanline-color;
       @if $scanline-width <= 0 {

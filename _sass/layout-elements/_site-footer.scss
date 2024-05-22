@@ -29,7 +29,7 @@ body>footer {
       display: block;
       padding: .25em 1em;
       
-      @include content-card-shadow(false, false);
+      @include card-shadow(false, false);
       background:    $card-back-color;
       border-radius: $card-corner-size;
       
