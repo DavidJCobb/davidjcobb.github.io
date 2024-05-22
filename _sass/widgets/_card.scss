@@ -35,11 +35,11 @@ $card-corner-size: 1rem;
       min-height:calc(3.625em - 2px);
       */
       
-      border-image: url("./card-shadow-inset.png") 82 58 34 / 2.5625rem 1.8125rem 1.0625rem / 0;
+      border-image: url("./card-shadow-inset.webp") 82 58 34 / 2.5625rem 1.8125rem 1.0625rem / 0;
       min-height:calc(3.625em - 2px);
    } @else {
       $borderimage: (
-         source:    url("./card-shadow-outset-no-fill.png"),
+         source:    url("./card-shadow-outset-no-fill.webp"),
          intrinsic: 144     144    164     144,
          displayed: 4.5em   4.5em  5.125em 4.5em,
          //displayed: 72px 72px 82px 72px,
