@@ -108,8 +108,7 @@ $social-icon-size: null;
          top:      2rem;
       }
    }
-   #site-nav,
-   #page-nav {
+   :is(#site-nav, #page-nav) {
       summary {
          padding: 0 .5em;
          list-style-position: outside;
