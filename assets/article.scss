@@ -60,7 +60,8 @@ mark {
 .source-list {
    >li {
       >a {
-         font-weight: bold;
+         font-weight:  bold;
+         text-justify: none;
       }
       .archives {
          font-size: .85em;

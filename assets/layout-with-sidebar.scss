@@ -132,6 +132,7 @@ body {
    }
 }
 @import "layout-elements/sidebar-and-socials.scss";
+@import "layout-elements/page-github-history.scss";
 
 @include for-smartphones-only {
    $topbar-logo-size:64px;
@@ -172,5 +173,3 @@ body {
       }
    }
 }
-
-@import "layout-elements/page-github-history.scss";
