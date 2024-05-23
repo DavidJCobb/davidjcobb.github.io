@@ -87,7 +87,7 @@ $card-corner-size: 1rem;
                position: relative;
             }
          }
-         &::after {
+         &::before {
             content:  " ";
             position: absolute;
             z-index:  -1;
@@ -172,17 +172,8 @@ $card-corner-size: 1rem;
       // To mitigate this, we have a separate border-image graphic which includes the 
       // background color and rounded corners.
       //
-      &::after {
+      &::before {
          @include card-shadow-border-image(false, null, true);
       }
-   }
-}
-
-@mixin revert-card-shadow-styles {
-   box-shadow:   none;
-   border-image: none;
-   &::after {
-      content: "";
-      border-image: none;
    }
 }
