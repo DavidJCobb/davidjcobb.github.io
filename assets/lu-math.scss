@@ -35,13 +35,11 @@ $lu-math-line-box-height-max: ($lu-math-line-height * 1em) + ($lu-math-font-lead
    width:1px;
    height:1px;
    overflow:hidden;
-   margin:-1px 0 0 -1px;
    
    /* let's move it out of the document flow, too */
    /* this approach breaks: copying the text forces line breaks
    position:absolute;
    */
-   text-indent:-999999px;
    flex:0 0 1px;
    
    &:first-child {
@@ -813,7 +811,7 @@ lu-math :is(
       width:1px;
       margin-right:var(--glyph-width);
       
-      text-indent: -1000vw;
+      color: transparent;
       
       &::after {
          content: "";
