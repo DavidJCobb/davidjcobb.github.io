@@ -6,22 +6,31 @@ tags:
 social_media:
    description: "A CSS media query for smartphones, and a dive into meta viewport behaviors."
 table_of_contents:
- - id:    broken-approaches
-   title: Approaches that don't work
+ - id:    media-query-limits
+   title: The limitations of <code>@media</code> queries
  - id:    css-dpi
    title: Browsers lie about DPI
+ - id:    viewports
+   title: What are the viewports?
  - id:    meta-viewport
-   title: <code>&lt;meta viewport&gt;</code> is counterintuitive and unreliable
+   title: How are the viewports sized?
+ - id:    reviewport
+   title: A quick review of viewport size computations
+ - id:    resolution-media-query
+   title: Using the <code>resolution</code> media query
 ---
 <section>
    <p>
       As of this writing, this site uses the following CSS media queries to target smartphones in portrait orientation:
    </p>
 {% highlight css %}
-@media only screen and (hover: none) and (max-aspect-ratio:3/5) {
+@media only screen and (min-resolution: 2dppx) and (pointer: coarse) and (max-aspect-ratio:3/5),
+       only screen and (min-resolution: 2dppx) and (pointer: none)   and (max-aspect-ratio:3/5) {
+   /* ... */
+}
 {% endhighlight %}
    <p>
-      The <code>max-aspect-ratio</code> query ensures that we only target devices in portrait orientation. We use <code>only screen and (hover: none)</code> to detect devices that have screens but not mice.
+      The <code>max-aspect-ratio</code> query ensures that we only target devices in portrait orientation. We use <code>pointer</code> to check for devices that don't have precise pointers (i.e. mice). We also use <code>min-resolution</code> to limit ourselves to high-resolution devices such as typical smartphones; this media query is not fully precise or reliable, but for typical Android browsers, it would affect devices with a DPI of 320 or greater.
    </p>
    <p>
       So why this particular set of queries? Well, there's no exact way to detect smartphones using CSS media queries. Actually, let's be more specific: there's no exact way to detect high-resolution, small-size, touch-only devices using CSS media queries or similar features.
@@ -29,87 +38,125 @@ table_of_contents:
 </section>
 
 <section>
-   <h2><a name="broken-approaches"></a>Approaches that don't work</h2>
+   <h2><a name="media-query-limits"></a>The limitations of <code>@media</code> queries</h2>
    <p>
       In media queries, the <code>handheld</code> device type is deprecated, and current standards require that it match no device.
    </p>
    <p>
-      To quote the <a href="https://drafts.csswg.org/mediaqueries/#resolution" target="_blank">Media Queries Level 4</a> spec, the <code>resolution</code> media query "does not refer to the number of device pixels per physical length unit, but the number of device pixels per CSS unit." The special <code>dpi</code> unit usable in these queries, then, doesn't actually describe the dots per inch &mdash; the number of physical pixels per physical inch &mdash; but rather the number of device pixels per <em>CSS inch</em>, which isn't the same thing for reasons we'll get to shortly.
+      To quote the <a href="https://drafts.csswg.org/mediaqueries/#resolution" target="_blank">Media Queries Level 4</a> spec, the <code>resolution</code> media query "does not refer to the number of device pixels per physical length unit, but the number of device pixels per CSS unit." The special <code>dpi</code> unit usable in these queries, then, doesn't actually describe the dots per inch &mdash; the number of physical pixels per physical inch &mdash; but rather the number of device pixels per <em>CSS inch</em>. This isn't the same thing for reasons we'll get into later, which means that using this media query properly is more complicated than just entering a known device's DPI and expecting that to just work.
    </p>
    <p>
-      Targeting touch devices won't meet our use case either. Not all touch-capable devices are smartphones; tablets and even many laptops have touch-capable screens. The nearest analogue is to test for devices that are hover-incapable despite having screens.
+      <code>96dpi</code> is defined as being equal to <code>1dppx</code>. MDN advises developers that a value of <code>2dppx</code> is "expected" for Retina displays, and values greater than 2 are common in smartphones; but no attempt is made to describe the <em>precise</em> relationship between the <code>dppx</code> unit and a device's real-world DPI. It doesn't feel terribly exact; if these media queries can be used to check the DPI, it's only after navigating layers of abstraction. (Spoiler for later: on Android browsers, <code>1dppx</code> or <code>96dpi</code> are more likely to equal a physical DPI of 160.)
    </p>
    <p>
-      So why is there no better option?
+      Are there any other media queries we could use?
+   </p>
+   <p>
+      Targeting touch devices won't meet our use case, because not all touch-capable devices are smartphones; tablets and even many laptops have touch-capable screens. The nearest analogue is to test for devices that are hover-incapable despite having screens. Unfortunately, as of this writing, <a href="https://issues.chromium.org/issues/41445959" target="_blank">the <code>hover</code> feature query tests incorrectly in most Samsung devices manufactured since 2019</a>, and neither Firefox for Android nor Chromium for Android make any attempt to work around this. (A Chromium developer reached out to Samsung, who was unable to "find the right people" to investigate on their end. Nothing ever came of it, and Chromium never implemented a workaround on their end.) Meanwhile, as of this writing, the fact that the <code>hover</code> query is broken for <a href="https://www.statista.com/statistics/276477/global-market-share-held-by-samsung-smartphones/" target="_blank">roughly 18% of all devices in the world that need it the most</a> appears to be completely undocumented in all widely used compatibility data (e.g. CanIUse and MDN).
+   </p>
+   <p>
+      Thanks to Samsung, then, the <em>least unreliable</em> way to detect smartphone-like devices without relying on resolution queries is by testing for devices which have a coarse pointer. This will work as long as <a href="https://techcommunity.microsoft.com/discussions/edgeinsiderdiscussions/incorrect-media-query-pointer-coarse-not-fine-on-windows-10-desktoplaptop-with-t/3667184" target="_blank">laptops running Windows 10</a> are considered "smartphone-like" by the general public.
+   </p>
+   <p>
+      ...
+   </p>
+   <p>
+      Okay, so let's circle back to the janky <code>resolution</code> query. What's wrong with it, and how do we use it anyway?
    </p>
 </section>
 
 <section>
    <h2><a name="css-dpi"></a>Browsers lie about DPI</h2>
    <p>
-      The CSS standard definition of a "pixel" is somewhat counterintuitive &mdash; a pile-up of historical compromises and assumptions with a result that isn't entirely optimal today. The standard mandates fixed relationships between all length units, physical and digital, and assumes a DPI of 96 in order to allow this; ergo <code>96px</code> is equivalent to <code>1in</code> regardless of the actual properties of the device displaying the page. Devices which support CSS are allowed to implement these fixed relationships in one of two ways, choosing at their discretion:
+      The CSS standard definition of a "pixel" is very counterintuitive. Large amounts of content were authored back when 96 DPI displays were the norm, and this content broke when rendered with higher-DPI displays, so <a href="https://drafts.csswg.org/css-values-4/#anchor-unit" target="_blank">the CSS spec was updated</a> to require that CSS actively lie about the current DPI. The standard now mandates fixed relationships between all length units, physical and digital, and assumes a DPI of 96 in order to allow this; ergo <code>96px</code> is equivalent to <code>1in</code> regardless of the actual properties of the device displaying the page. Devices which support CSS are allowed to implement these fixed relationships in one of two ways, choosing at their discretion:
    </p>
    <ul>
       <li>Map <code>1px</code> to a single device pixel, thereby making all physical units (e.g. <code>1in</code>) inaccurate for DPIs other than 96. This implies a need for the device to lie to pages and JavaScript about the DPI, screen size, and similar, in order to maintain the 96 DPI conversion factor.</li>
       <li>Map <code>1px</code> to one ninety-sixth of a physical inch, thereby making the basic pixel unit inaccurate on devices with DPIs other than 96: <code>1in</code> is accurate, but <code>1px</code> no longer maps to a single hardware pixel.</li>
    </ul>
    <p>
-      The term for this is "anchoring:" you anchor either the physical units to the digital, or the digital to the physical. The standard encourages screen devices to make the former choice, and print media to make the latter choice. However, browsers can choose at their discretion.
+      The term for this is "anchoring:" you anchor either the physical units to the digital, or the digital to the physical. The standard encourages screen devices to make the former choice, and print media to make the latter choice. However, browsers can choose at their discretion. Commonly, Android browsers will anchor <em>both</em> the digital and physical units to a separate abstraction which <em>doesn't</em> adhere to the simulated 96 DPI, such that <code>96px</code> and <code>1in</code> remain equivalent but don't map to one real-world inch <em>or</em> ninety-six hardware pixels.
    </p>
    <p>
-      Of course, on mobile, the unit mapping becomes even more skewed thanks to the <code>meta viewport</code> tag... and often, mobile user-agents will supply default values for <code>meta viewport</code> behavior even if the tag isn't present.
+      Don't worry, though: it gets worse. Even though this entire behavior exists for legacy compatibility, it also applies to new CSS features, including the <code>dpi</code> resolution unit &mdash; something that is only usable in <code>resolution</code> media queries, which are explicitly meant to help websites cope with differing DPIs. The <code>dpi</code> unit of measurement is defined in relation to "CSS pixels" rather than real ones, which means that in browsers where neither <code>1in</code> nor <code>96px</code> map to their real-world equivalents (read: the browsers where DPI checks are the most needed), the value <code>96dpi</code> does not represent a real-world DPI of 96. To wit, for Chromium on Android, a value of <code>96dpi</code> will tend to map to a real-world DPI of 160.
+   </p>
+   <p>
+      I'll reiterate this: <code>dpi</code> was created to let you handle differing DPIs, but it's broken, because it's defined in terms of <code>px</code>, which behaves the way that it does to ensure backwards-compatibility with websites that couldn't and didn't handle differing DPIs: the solution is intentionally broken to maintain consistency with the problems it was supposed to solve, and as a result, <code>96dpi</code> is not guaranteed to be 96 DPI, and likely <em>won't</em> be 96 DPI on the platforms where you're likely to have to use it.
+   </p>
+   <p>
+      So is there any way to at least <em>try</em> to map real-world DPIs to CSS's resolution units? Before we can get into how resolution queries work (or more accurately, how they don't), we need to figure out how mobile viewport sizing works.
    </p>
 </section>
 
 <section>
-   <h2><a name="meta-viewport"></a><code>&lt;meta viewport&gt;</code> is counterintuitive and unreliable</h2>
+   <h2><a name="viewports"></a>What are the viewports?</h2>
    <p>
-      The <code>meta viewport</code> tag allows you to set several mobile-related parameters, including <code>width</code> and <code>height</code> parameters that are meant to control how CSS pixels map to device pixels. Simply put: you can control how large <code>100vw</code> and <code>100vh</code> are. However, this mapping is not straightforward.
+      Web developers are typically instructed to use the <code>meta viewport</code> tag to control how their page is sized and zoomed on mobile:
+   </p>
+{% highlight html %}
+<meta name="viewport" content="width=1000, user-scalable=yes" />
+{% endhighlight %}
+   <p>
+      Developers are taught to think in terms of "the viewport," whose size is influenced via <code>meta viewport</code> tags and usable through the <code>vh</code> and <code>vw</code> CSS units.
    </p>
    <p>
-      Let's consider the implementation of <code>meta viewport</code> just on Google Chrome. When you use <code>device-width</code> and <code>device-height</code>, Chrome takes the device pixel resolution and converts it to 160 DPI, to get a result measured in <code>dip</code>, an Android-specific unit called "density-independent pixels." They then shear off the unit, take these numbers as CSS pixel quantities, and use that as the viewport size.
+      In reality, however, there are two viewports we need to be aware of, and they exist on both mobile and desktop: the <dfn>layout viewport</dfn> and the <dfn>visual viewport</dfn>, <a href="https://drafts.csswg.org/cssom-view/#visual-viewport" target="_blank">as defined in the CSSOM View Module spec</a>. The layout viewport is, in simple terms, the box in which your page is laid out: its size is the size of the page's initial containing block (the box that contains the <code>&lt;html&gt;</code> element). The visual viewport is the box through which the user looks at the page: zooming, panning, and similar transformations generally apply to the visual viewport. On desktop, the zoom feature modifies the scaling factor of the visual viewport and, by extension, the size of a "CSS pixel," causing the layout to change. On mobile, pinch-zooming also modifies the size of the visual viewport and the CSS pixels, but it compensates for this and prevents the layout from changing by secretly scaling the dimensions of the layout viewport to match the change.
    </p>
    <p>
-      Let's look at <a href="https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/web-page-layout.md" target="_blank">an example from Chrome's developer documentation</a>.
+      You can inspect the state of the visual viewport in JavaScript via the Visual Viewport API: <code>window.visualViewport</code>. This allows you to see the visual viewport's size (<code>width</code> and <code>height</code>), panning position (<code>offsetLeft</code> and <code>offsetTop</code>), scaling factor (<code>scale</code>), and a handful of other properties that we don't really care about right now. All sizes and positions are measured in CSS pixels. As a side effect, when you pinch-zoom in, the scale increases, and so all other values decrease. If this doesn't make sense, then think of the <code>width</code> and <code>height</code> not as the dimensions of the viewport, but as the dimensions of the area you're seeing <em>through</em> the viewport.
+   </p>
+   <p>
+      Generally, you can inspect the size of the layout viewport by calculating the size of <code>100vw</code> and <code>100vh</code> in pixels (e.g. through <code>window.getComputedStyle</code>), or, as of this writing, by querying <code>window.innerWidth</code> and <code>window.innerHeight</code>. However, in some cases (generally involving content overflowing out of the page), browsers may expand the layout viewport without expanding <code>100vw</code> or <code>100vh</code>.
+   </p>
+   <p>
+      When you use a <code>meta viewport</code> tag, you're attempting to control the size of the layout viewport and consequently the initial size and scale of the visual viewport. Unfortunately, the calculations involved are... complex.
+   </p>
+</section>
+
+<section>
+   <h2><a name="meta-viewport"></a>How are the viewports sized?</h2>
+   <p>
+      On mobile, unless you set initial zoom options via <code>meta viewport</code>, the visual viewport's initial size and scale will match the layout viewport: the full width of the page will occupy the full width of the visual viewport. The layout viewport's size is also controlled by <code>meta viewport</code> (and if you don't use <code>meta viewport</code>, then it's controlled by the browser's default chosen size &mdash; often 960).
+   </p>
+   <p>
+      The <code>meta viewport</code> tag allows you to set several mobile-related parameters, including <code>width</code> and <code>height</code> parameters. Simply put: you can control how large <code>100vw</code> and <code>100vh</code> are. However, this mapping is not straightforward. Let's walk through how it works on Chromium on Android.
+   </p>
+   <p>
+      First, we need to define some terms. Though <a href="https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/web-page-layout.md" target="_blank">Google has documented <em>some</em> of the algorithm</a>, there are still pieces missing, and terminology is used inconsistently within their documentation. I've had to improvise some vocabulary here.
    </p>
    <ul>
       <li>
-         We start with the device pixel resolution. This may optionally exclude regions of the screen reserved for use by the OS-level UI, such as a tablet or phone's status bar and bottom action bar. For the example here, we're using the 2012-era Nexus 7; it has a device pixel resolution of 800x1280px, but Google here lists it as 800x1205px.
+         <p>We start by identifying the real-world screen resolution and DPI of the current device.</p>
+         <p>For Chromium on Android, we calculate the DPI from the device's screen resolution and physical dimensions. For a Samsung Galaxy S24, the screen resolution is 1080x2340 with a diagonal of roughly 6.2 inches; Chromium treats this as 420 DPI. Afterward, we compute the screen resolution based on the region of the screen that isn't occupied by the browser or OS toolbars. The browser toolbar is 147 pixels tall, and the OS toolbar is 214 pixels tall, so we're left with an effective screen resolution of 1080x1979 pixels with 420 DPI.</p>
       </li>
       <li>
-         <p>
-            We next need the screen's "density." Google does not here specify what that means, but looking at the Android API, they're referring to <a href="https://developer.android.com/reference/android/util/DisplayMetrics#density" target="_blank">the <code>DisplayMetrics.density</code> value</a>. This value is used as the scaling factor for the <code>dip</code> unit: divide the device pixel resolution by this value to get the resolution in <code>dip</code>s.
-         </p>
-         <p>
-            Per the documentation, <code>dip</code>s assume a resolution of 160 DPI; on such a screen, the <code>density</code> is <code>1.0</code>. Google states that the Nexus 7 has a density of <code>1.33</code>; if you multiply 160 by 1.33, the result is <code>212.8</code>. This result is pretty much accurate: it's the approximate DPI of the Nexus 7 given a device pixel resolution of 800x1205 and a diagonal of 6.8 inches (the real diagonal is 7 inches, but remember: Google is excluding parts of the screen from these measurements).
-         </p>
-      <li>
-         Dividing the device pixel resolution by the density value, we get the screen's size in density-independent "pixels:" 600x900dips. Shear off the unit, and these are used as the <code>device-width</code> and <code>device-height</code>.
-      </li>
-   </ul>
-   <p>
-      This means that contrary to what one would expect given their names, <code>device-width</code> and <code>device-height</code> are <em>not</em> the device pixel resolution &mdash; the true physical resolution of the device &mdash; but rather are the same kind of abstraction as CSS pixels, but with a different chosen DPI. The abstracted size is vaguely connected to the device's real resolution and real DPI, but the difference in the assumed DPIs (between <code>meta viewport</code> and CSS itself) adds another hurdle to jump over.
-   </p>
-   <p>
-      There's one other problem that a web designer might run into: if the page contains an element that overflows the specified viewport width, then browsers will expand the viewport width to ensure that that element fits. In these scenarios, however, <code>100vw</code> still refers to the non-expanded width i.e. the <em>intended</em> viewport width rather than the <em>actual</em> viewport width; <code>100vw</code> becomes <em>narrower</em> than the viewport.
-   </p>
-   
-   <h3>In summary</h3>
-   <ul>
-      <li>
-         On platforms where <code>meta viewport</code> is used (including platforms which use <code>meta viewport</code> behavior with some default width, e.g. 960 or 980, when the tag is omitted), the <code>width</code> option controls how many CSS pixels map to <code>100vw</code>. By implication, <code>1px</code> on these platforms never maps directly to one device pixel.
+         <p>Having identified our effective screen resolution and our physical DPI, we must now compute the screen density &mdash; that is, the <a href="https://developer.android.com/reference/android/util/DisplayMetrics#density" target="_blank"><code>DisplayMetrics.density</code> value</a> in Android's API. This is a scaling factor used to normalize physical screen resolutions to "density-independent" resolutions, which assume 160 DPI similarly to how CSS assumes 96 DPI.</p>
+         <p>This task is simple enough. Take the physical DPI and divide it by 160. For stock Google Chrome on a Samsung Galaxy S24, we'll get a density of 2.625.</p>
+         <p>There's a wrinkle here, though. Older versions of Chromium on Android (as recently as version 124 in my experience, but no newer than version 130) actually seem to check the OS-level font scaling setting, multiplying that into the density. For example, if the font scaling is roughly 90%, then the result will be roughly 2.3625. (Notably, Firefox doesn't appear to have ever behaved similarly, leading to lots of <a href="https://stackoverflow.com/questions/54152267/why-does-my-font-size-display-differently-on-firefox-vs-chrome-mobile-browsers" target="_blank">confused questions</a> about the inconsistency.) We'll call this font-scaled density the <dfn>effective screen density</dfn>, and we'll say that on newer Chromium versions that don't care about the OS-level font-size, the effective screen density is equal to the real screen density.</p>
+         <p>The effective screen density is accessible to JavaScript as <code>window.devicePixelRatio</code>.</p>
       </li>
       <li>
-         On Google Chrome, at the very least, setting <code>width=device-width</code> means that <code>160px</code> is equivalent to one physical inch, and <code>100vw</code> is equivalent to the full width of the screen, assuming the page doesn't overflow. That choice of DPI violates the CSS spec, but the behavior overall at least keeps to the <em>spirit</em> of the spec, anchoring digital units to physical ones as would be done for print media.
-      </li>
-      <li>
-         Setting <code>width</code> to any other value means that there's no longer any mapping between any CSS unit and any real-world unit: nothing is anchored to anything; the measurement system is completely unmoored from reality. This is a violation of the CSS spec. It's also the default behavior in pretty much every mobile browser, since again, most of them default the viewport width to 960 or 980.
+         <p>Once we have the real screen density and the effective screen density, we can compute the density-independent screen resolution. This one's pretty simple: divide the effective screen resolution by the effective screen density. For newer versions of Chromium running on a Samsung Galaxy S24, this gives us a density-independent screen resolution of about 412x754.</p>
+         <p>Because the visual viewport's initial size matches the layout viewport, we can check these values if we haven't panned or zoomed, by querying <code>window.visualViewport.width * window.visualViewport.scale</code> and ditto for the height.</p>
       </li>
    </ul>
    <p>
-      That middle bullet point almost sounds like something you could use in order to size things based on the device's real-world pixel density, though you'd only be able to size things in inches and not in device pixels. The problem is that there's no way to detect, from CSS alone, whether <code>meta viewport</code> is actually in use, let alone whether the viewport width is <code>device-width</code>. There are <a href="https://stackoverflow.com/questions/16758978/detect-support-for-meta-viewport-scaling/23708819#23708819" target="_blank">JavaScript hacks</a> to do it, but redoing all of your element sizes, throughout your stylesheet, in inches based on JavaScript strikes me as a bad idea.
+      Now that we've defined these terms, we can begin to reason about <code>meta viewport</code>. For starters, the <code>device-width</code> and <code>device-height</code> values are the density-independent screen resolution, with the unit sheared off: we take measurements that exist within Android's simulated 160 DPI, and pretend that they're actually CSS-friendly 96 DPI measurements. In other words, <code>device-width</code> and <code>device-height</code> are <em>not</em> the device pixel resolution &mdash; the true screen resolution of the device &mdash; as their names would imply, but rather are the same kind of abstraction as CSS pixels, with a different chosen DPI.
    </p>
    <p>
-      As a side note: Mozilla Developer Network's <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Viewport_meta_tag" target="_blank">current documentation for <code>meta viewport</code></a> is wrong about <code>device-width</code> and <code>device-height</code> as of this writing. They describe <code>device-width</code> and <code>device-height</code> as being equivalent to <code>100vw</code> and <code>100vh</code>, which is incorrect. The purpose of the <code>width</code> and <code>height</code> parameters is to control what <code>100vw</code> and <code>100vh</code> <em>are</em>, so <em>any value you use</em> is <code>100vw</code> and <code>100vh</code>, and any value you <em>don't</em> use <em>isn't</em>. If you use a number that isn't what <code>device-width</code> would've computed to, then <code>device-width</code> <em>isn't</em> <code>100vw</code>.
+      When you set the <code>width</code> or <code>height</code> of the viewport, newer versions of Chromium will honor the size that you choose. The older versions of Chromium which care about the OS-level font size, however, will divide your chosen sizes by the OS-level font scale. If your device has an OS-level font scale of 90%, and you're using older versions of Chromium which take the OS-level font scale into account, then a page that requests a layout viewport width of 1000 will instead get a viewport width of about 1111.
+   </p>
+   <p>
+      There's one other problem that a web designer might run into: if the page contains an element that overflows the specified viewport width, then browsers will expand the layout viewport width to ensure that that element fits. In these scenarios, however, <code>100vw</code> still refers to the non-expanded width i.e. the <em>intended</em> viewport width rather than the <em>actual</em> viewport width; <code>100vw</code> becomes <em>narrower</em> than the layout viewport.
+   </p>
+</section>
+
+<section>
+   <h2><a name="resolution-media-query"></a>Using the <code>resolution</code> media query</h2>
+   <p>
+      Now that we understand CSS's, uh, "solution" to differing DPIs, we can look at the <code>resolution</code> media query. There are three units available for us to use: <code>dppx</code>, which is the screen density computed above; <code>dpi</code>, which is anchored such that <code>96dpi</code> is always equal to <code>1dppx</code>; and <code>1dpcm</code>, which is similarly anchored. Since these units are all interrelated, and <code>dppx</code> is the least misleading of them, I'd recommend using it exclusively.
+   </p>
+   <p>
+      A value of <code>1dppx</code> is equal to a <code>window.devicePixelRatio</code> of 1. Therefore on Android, it's generally equal to a screen density of 1 and thus equal to a real-world DPI of 160. On desktop, however, it may still be equal to a real-world DPI of 96.
    </p>
 </section>

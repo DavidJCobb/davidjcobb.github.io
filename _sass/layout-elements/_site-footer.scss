@@ -59,11 +59,6 @@ body>footer {
 }
 
 @include for-smartphones-only-portrait {
-   // text size tweaks
-   html {
-      font-size:clamp(1rem, calc(1rem + 1vh), 2.5rem);
-   }
-   
    body>footer ul {
       flex-flow:column nowrap;
       justify-content:initial;

@@ -59,9 +59,10 @@ mark {
 }
 .source-list {
    >li {
+      text-align: start;
+      
       >a {
-         font-weight:  bold;
-         text-justify: none;
+         font-weight: bold;
       }
       .archives {
          font-size: .85em;
@@ -121,6 +122,10 @@ mark {
       box-shadow:0 0 6px 6px rgba(255, 255, 128, 0.5);
    }
    100% { background:transparent }
+}
+
+math[display="block"] {
+   margin: 1em 0;  
 }
 
 lu-math {

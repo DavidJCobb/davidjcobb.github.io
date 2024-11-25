@@ -120,7 +120,7 @@
       }
       
       @if $AVOID-FIXED-ATTACHMENT {
-         background: #{$fixed-background}, $theme-background-color;
+         background: none $theme-background-color;
          
          //
          // Fixed-attachment background layers perform poorly in web browsers, because 

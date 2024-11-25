@@ -8,14 +8,14 @@
 ///    
 ///
 @mixin for-smartphones-only {
-   @media only screen and (any-hover: none) and (pointer: coarse),
-          only screen and (any-hover: none) and (pointer: none) {
+   @media only screen and (min-resolution: 2dppx) and (pointer: coarse),
+          only screen and (min-resolution: 2dppx) and (pointer: none) {
       @content;
    }
 }
 @mixin for-smartphones-only-portrait {
-   @media only screen and (any-hover: none) and (pointer: coarse) and (max-aspect-ratio:3/5),
-          only screen and (any-hover: none) and (pointer: none)   and (max-aspect-ratio:3/5) {
+   @media only screen and (min-resolution: 2dppx) and (pointer: coarse) and (max-aspect-ratio:3/5),
+          only screen and (min-resolution: 2dppx) and (pointer: none)   and (max-aspect-ratio:3/5) {
       @content;
    }
 }
