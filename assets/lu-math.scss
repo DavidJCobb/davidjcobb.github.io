@@ -781,8 +781,8 @@ lu-math m-therefore {
        - m-content element containing group content
        - m-delim   element with closing delimiter as text content
    
-   Note that these containers have no way to cope with the word-rapping of 
-   their contents. Their content can wrap, but the delimiters won't be 
+   Note that these containers have no way to cope with the word-wrapping 
+   of their contents. Their content can wrap, but the delimiters won't be 
    limited to just one "logical line;" they'll stretch to the full height 
    of the entire container.
 */
