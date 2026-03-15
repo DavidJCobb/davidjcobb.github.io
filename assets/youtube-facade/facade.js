@@ -210,13 +210,14 @@ let YouTubeFacade = (function() {
             return;
          let node;
          {
-            let frag = document.createElement("template");
-            frag.innerHTML = noscript.innerHTML.trim();
-            node = frag.content.querySelector("iframe");
+            let parser = new DOMParser();
+            let doc    = parser.parseFromString(noscript.innerHTML, "text/html");
+            node = doc.querySelector("iframe");
          }
          if (!node)
             return;
-         this.#frame = node;
+         node.replaceChildren();
+         this.#frame = document.adoptNode(node);
          let url = new URL(node.getAttribute("src"));
          ["autoplay","playsinline"].forEach(e => url.searchParams.set(e, "1"));
          node.setAttribute("src", url.href);
